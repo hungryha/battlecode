@@ -20,7 +20,7 @@ public class RobotPlayer {
 					if (rc.isActive()) {
 						if (Clock.getRoundNum() < 200) {
 							// spawn robots
-							if (rc.canMove(enemyBaseDir)) {
+							if (rc.canMove(enemyBaseDir)) {				//TODO make it spawn in other positions if this position isn't open. check for a freespace
 								rc.spawn(enemyBaseDir);
 							}
 						} else {
@@ -67,10 +67,10 @@ public class RobotPlayer {
 
 	private static MapLocation senseAdjacentMine() {
 		Direction dir = Direction.EAST;
-		int[] directionOffsets = { 0, 1, -1, 2, -2 };
+		int[] directionOffsets = { 0, 1, -1, 2, -2, 3, -3, 4};
 		MapLocation lookingAtCurrently = rc.getLocation();
 		for (int d : directionOffsets) {
-			lookingAtCurrently = rc.getLocation().add(Direction.values()[(dir.ordinal() + d + 8) % 8]);
+			lookingAtCurrently = rc.getLocation().add(Direction.values()[(dir.ordinal() + d + 8) % 8]); //TODO optimize this so it just checks the 8 spaces rather than calling the "add" method to check them
 			if (rc.senseMine(lookingAtCurrently) != null) {
 				return lookingAtCurrently;
 			}
