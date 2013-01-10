@@ -94,4 +94,8 @@ public class RobotPlayer {
 			rc.move(lookingAtCurrently);
 		}
 	}
+	
+	private static void followWaypointPath(MapLocation[] waypoints){
+		
+	}
 }
