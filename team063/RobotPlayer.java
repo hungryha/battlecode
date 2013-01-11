@@ -1,19 +1,22 @@
-package team063;
+package nukeplayer;
 
 import battlecode.common.*;
 
 public class RobotPlayer {
 	private static RobotController rc;
 	private static Team myTeam;
+	private static Team otherTeam;
 
 	public static void run(RobotController myRC) {
 		rc = myRC;
 		myTeam = rc.getTeam();
+		otherTeam = myTeam.opponent();
 		Direction enemyBaseDir = rc.getLocation().directionTo(
 				rc.senseEnemyHQLocation());
 		while (true) {
 			try {
 				if (rc.getType() == RobotType.HQ) {
+					System.out.println("hq robot type");
 					if (rc.isActive()) {
 						if (Clock.getRoundNum() < 200) {
 							// spawn robots
@@ -36,16 +39,8 @@ public class RobotPlayer {
 							rc.defuseMine(mineLoc);
 						}
 						else {
-							// move outwards from our hq
-							Direction dir = Direction.values()[(int) (Math
-									.random() * 8)];
-							if (rc.canMove(dir)) {
-								rc.move(dir);
-								rc.setIndicatorString(
-										0,
-										"Last direction moved: "
-												+ dir.toString());
-							}
+							// move outwards from hq
+							moveOutwardsFromLocation(rc.senseHQLocation());
 						}
 					}
 
@@ -74,20 +69,24 @@ public class RobotPlayer {
 		return null;
 	}
 	
-	private static void goToLocation(MapLocation whereToGo) throws GameActionException {
-		int dist = rc.getLocation().distanceSquaredTo(whereToGo);
-		if (dist>0&&rc.isActive()){
-			Direction dir = rc.getLocation().directionTo(whereToGo);
-			int[] directionOffsets = {0,1,-1,2,-2};
-			Direction lookingAtCurrently = dir;
-			lookAround: for (int d:directionOffsets){
-				lookingAtCurrently = Direction.values()[(dir.ordinal()+d+8)%8];
-				if(rc.canMove(lookingAtCurrently)){
-					break lookAround;
-				}
+	private static void moveOutwardsFromLocation(MapLocation loc) throws GameActionException {
+		Direction locDir = rc.getLocation().directionTo(rc.senseHQLocation());
+		int[] offsets = { 2, -2, 1, -1, 0, 3, -3 };
+		Direction dir = Direction.values()[(locDir.ordinal() + 4) % 8];
+		Direction cur = dir;
+		for (int d:offsets) {
+			cur = Direction.values()[(dir.ordinal() + d + 8) % 8];
+			if (rc.canMove(cur)) {
+				break;
 			}
-			rc.move(lookingAtCurrently);
 		}
+		rc.move(cur);
+		rc.setIndicatorString(0,"Last direction moved: " + cur.toString());
+	}
+	
+	private static void defendBase() {
+		// attacks nearby enemies, otherwise, lays mines around base
+		
 	}
 	
 }
