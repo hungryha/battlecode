@@ -1,4 +1,4 @@
-package nukeplayer;
+package team063;
 
 import battlecode.common.RobotController;
 
@@ -19,6 +19,4 @@ public class RobotPlayer {
 		}
 		unit.loop();
 	}
-
-
 }
