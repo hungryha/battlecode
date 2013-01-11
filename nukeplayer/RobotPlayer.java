@@ -88,4 +88,8 @@ public class RobotPlayer {
 		// attacks nearby enemies, otherwise, lays mines around base
 		
 	}
+	
+	private static void followWaypointPath(MapLocation[] waypoints){
+		
+	}
 }

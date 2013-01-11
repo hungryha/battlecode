@@ -1,10 +1,9 @@
-package team063;
+package nukeplayer;
 
 import battlecode.common.RobotController;
 
 
 public class RobotPlayer {
-
 	public static void run(RobotController myRC) {
 		BaseUnit unit;
 		switch(myRC.getType()) {
@@ -21,5 +20,5 @@ public class RobotPlayer {
 		unit.loop();
 	}
 
-	
+
 }
