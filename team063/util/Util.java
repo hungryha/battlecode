@@ -1,6 +1,10 @@
 package team063.util;
 
-import battlecode.common.*;
+
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
 
 public class Util{
 	private static MapLocation senseAdjacentMine() {
@@ -16,7 +20,8 @@ public class Util{
 		return null;
 	}
 	
-	private static void goToLocationBrute(MapLocation whereToGo) throws GameActionException {
+
+	private static void goToLocationBrute(MapLocation whereToGo, RobotController rc) throws GameActionException {
 		int dist = rc.getLocation().distanceSquaredTo(whereToGo);
 		if (dist>0&&rc.isActive()){
 			Direction dir = rc.getLocation().directionTo(whereToGo);

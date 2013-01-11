@@ -1,8 +1,10 @@
 package nukeplayer;
 
-import battlecode.common.*;
+import battlecode.common.RobotController;
+
 
 public class RobotPlayer {
+<<<<<<< HEAD
 	private static RobotController rc;
 	private static Team myTeam;
 	private static Team otherTeam;
@@ -53,9 +55,26 @@ public class RobotPlayer {
 			}
 			// End turn
 			rc.yield();
+=======
+
+	public static void run(RobotController myRC) {
+		BaseUnit unit;
+		switch(myRC.getType()) {
+		case HQ:
+			unit = new HQUnit(myRC);
+			break;
+		case SOLDIER:
+			unit = new SoldierUnit(myRC);
+			break;
+		default:
+			unit = new EncampmentUnit(myRC);
+			break;
+>>>>>>> 010901f1527171592cf7c295828709b4b86deebf
 		}
+		unit.loop();
 	}
 
+<<<<<<< HEAD
 	private static MapLocation senseAdjacentMine() {
 		Direction dir = Direction.EAST;
 		int[] directionOffsets = { 0, 1, -1, 2, -2, 3, -3, 4};
@@ -88,5 +107,7 @@ public class RobotPlayer {
 		// attacks nearby enemies, otherwise, lays mines around base
 		
 	}
+=======
+>>>>>>> 010901f1527171592cf7c295828709b4b86deebf
 	
 }
