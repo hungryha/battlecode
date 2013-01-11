@@ -11,12 +11,13 @@ public abstract class BaseUnit {
 	public void loop() {
 		while (true) {
 			try {
-				this.run();
+				run();
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+			rc.yield();
+		}		
 	}
 	
 	abstract public void run();
