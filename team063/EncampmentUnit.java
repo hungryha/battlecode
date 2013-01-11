@@ -2,9 +2,9 @@ package team063;
 
 import battlecode.common.RobotController;
 
-public class SoldierUnit extends BaseUnit {
+public class EncampmentUnit extends BaseUnit {
 	
-	public SoldierUnit(RobotController rc) {
+	public EncampmentUnit(RobotController rc) {
 		super(rc);
 	}
 
