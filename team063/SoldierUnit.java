@@ -7,12 +7,15 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import battlecode.engine.instrumenter.lang.System;
 
 public class SoldierUnit extends BaseUnit {
 	private SoldierState state;
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
 	private MapLocation curLoc;
+	private int starting;
+	private int finish;
 	
 	public SoldierUnit(RobotController rc) {
 		super(rc);
@@ -47,7 +50,9 @@ public class SoldierUnit extends BaseUnit {
 		case CAPTURE_MOVE:
 			break;
 		case DEFEND_POSITION:
+			this.starting=Clock.getBytecodeNum();
 			defendPosition(targetLoc);
+			this.finish=Clock.getBytecodeNum();
 			break;
 		case BATTLE:
 			break;
@@ -72,14 +77,16 @@ public class SoldierUnit extends BaseUnit {
 	protected void defendPosition(MapLocation defendPoint) throws GameActionException{
 		Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 25, otherTeam);
 		if (nearbyEnemies.length >= 1){
-			System.out.println("enemy detected");
 			if (rc.senseNearbyGameObjects(Robot.class,4,myTeam).length <2){
+				rc.setIndicatorString(0,"not enough neraby allies to fight!");
 				this.goToLocationBrute(defendPoint);
 			}
 			else if (curLoc.distanceSquaredTo(defendPoint)<=49) {
-				this.goToLocationBrute(((RobotController) nearbyEnemies[0]).getLocation());
+				rc.setIndicatorString(0,"attacking nearby enemy!");
+				this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
 			}
 			else {
+				rc.setIndicatorString(0,"enemy is too far away to chase!");
 				this.goToLocationBrute(defendPoint);
 			}
 		} else {

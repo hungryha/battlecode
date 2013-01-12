@@ -14,7 +14,7 @@ public class HQUnit extends BaseUnit {
 	@Override
 	public void run() throws GameActionException {
 		if (this.rc.isActive()) {
-			if (this.rc.canMove(this.enemyBaseDir) && curSoldiers <=5) {
+			if (this.rc.canMove(this.enemyBaseDir) && curSoldiers <=10) {
 				this.rc.spawn(this.enemyBaseDir);
 				curSoldiers+=1;
 			}
