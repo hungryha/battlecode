@@ -11,9 +11,13 @@ public class HQUnit extends BaseUnit {
 
 	@Override
 	public void run() {
+		
+	}
+
+	@Override
+	public void decodeMsg(int encodedMsg) {
 		// TODO Auto-generated method stub
 		
 	}
 	
-
 }

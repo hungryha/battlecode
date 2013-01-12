@@ -10,7 +10,6 @@ import battlecode.common.RobotType;
  * The HQ will spawn soldiers continuously. 
  */
 public class RobotPlayer {
-	private static int count = 0;
 	public static void run(RobotController rc) {
 		while (true) {
 			try {
@@ -44,8 +43,6 @@ public class RobotPlayer {
 				}
 
 				// End turn
-				System.out.println("end turn" + count);
-				count++;
 				rc.yield();
 			} catch (Exception e) {
 				e.printStackTrace();
