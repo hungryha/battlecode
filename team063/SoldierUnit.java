@@ -12,7 +12,7 @@ public class SoldierUnit extends BaseUnit {
 	private int squadId;
 	public SoldierUnit(RobotController rc) {
 		super(rc);
-		state = SoldierState.DEFAULT;
+		state = SoldierState.BRUTE_MOVE;
 		targetLoc = null;
 	}
 
@@ -26,7 +26,35 @@ public class SoldierUnit extends BaseUnit {
 		//readbroadcast(channelNum)
 		int unitMsg = rc.readBroadcast(getUnitChannelNum());
 		int squadMsg = rc.readBroadcast(getSquadChannelNum());
-		this.goToLocationBrute(this.enemyBaseLoc);
+		int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
+		switch(state) {
+		case BRUTE_MOVE:
+			this.goToLocationBrute(this.enemyBaseLoc);
+			break;
+		case SMART_MOVE:
+			break;
+		case ATTACK_MOVE:
+			break;
+		case PATROL:
+			break;
+		case SCOUT:
+			break;
+		case CAPTURE_MOVE:
+			break;
+		case DEFEND_POSITION:
+			break;
+		case BATTLE:
+			break;
+		case CHASE_AND_DESTROY:
+			break;
+		case SEEK_AND_DESTROY_GUERILLA:
+			break;
+		case SECURE_ENCAMPMENT:
+			break;
+		default:
+			//do nothing if no instructions from hq
+			break;
+		}
 	}
 
 	@Override

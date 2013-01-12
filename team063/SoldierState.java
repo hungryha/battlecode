@@ -12,5 +12,4 @@ public enum SoldierState {
 	CHASE_AND_DESTROY,
 	SEEK_AND_DESTROY_GUERILLA,
 	SECURE_ENCAMPMENT, // protecting encampment
-	DEFAULT // no instructions from hq
 }

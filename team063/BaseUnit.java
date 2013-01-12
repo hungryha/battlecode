@@ -50,6 +50,10 @@ public abstract class BaseUnit {
 		return squadId;
 	}
 	
+	public int getAllUnitChannelNum() {
+		//TODO make better
+		return 0;
+	}
 	/**
 	 * bits 0-7: x coord
 	 * bits 8-14: y coord
