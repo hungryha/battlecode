@@ -14,13 +14,14 @@ public abstract class BaseUnit {
 	protected int id;
 	protected int squadId;
 	protected Direction enemyBaseDir;
-
+	protected MapLocation enemyBaseLoc;
 	public BaseUnit(RobotController rc) {
 		this.rc = rc;
 		this.myTeam = rc.getTeam();
 		this.otherTeam = myTeam.opponent();
 		this.id = rc.getRobot().getID();
 		this.enemyBaseDir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+		this.enemyBaseLoc = rc.senseEnemyHQLocation();
 	}
 
 	public void loop() {
@@ -34,7 +35,7 @@ public abstract class BaseUnit {
 		}
 	}
 
-	abstract public void run();
+	abstract public void run() throws GameActionException;
 
 	/**
 	 * Message/broadcast methods
@@ -67,7 +68,7 @@ public abstract class BaseUnit {
 	 * @param whereToGo
 	 * @throws GameActionException
 	 */
-	protected void goToLocationBrute(MapLocation whereToGo)
+	protected void goToLocationBrute(MapLocation whereToGo) //340 bytecode
 			throws GameActionException {
 		MapLocation curLoc = rc.getLocation();
 		int dist = curLoc.distanceSquaredTo(whereToGo);
@@ -75,16 +76,17 @@ public abstract class BaseUnit {
 			Direction dir = curLoc.directionTo(whereToGo);
 			int[] directionOffsets = { 0, 1, -1, 2, -2 };
 			Direction lookingAtCurrently = dir;
-			lookAround: for (int d : directionOffsets) {
+			for (int d : directionOffsets) {
 				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
-				if (rc.canMove(lookingAtCurrently)
-						&& ((rc.senseMine(curLoc.add(lookingAtCurrently)) == null) || (rc
-								.senseMine(curLoc.add(lookingAtCurrently)) == myTeam))) {
-					rc.move(lookingAtCurrently);
-					break lookAround;
-				} else if (rc.canMove(lookingAtCurrently)) {
-					rc.defuseMine(curLoc.add(lookingAtCurrently));
-					break lookAround;
+				if (rc.canMove(lookingAtCurrently)) {
+					if ((rc.senseMine(curLoc.add(lookingAtCurrently)) == null) || (rc
+								.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
+						rc.move(lookingAtCurrently);
+					}
+					else {
+						rc.defuseMine(curLoc.add(lookingAtCurrently));
+					}
+					break;
 				}
 			}
 		}
