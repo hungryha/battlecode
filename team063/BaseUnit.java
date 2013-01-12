@@ -16,7 +16,6 @@ public abstract class BaseUnit {
 	protected Team otherTeam;
 	protected int id;
 	protected int squadId;
-	protected Direction enemyBaseDir;
 	protected MapLocation enemyBaseLoc;
 	protected MapLocation myBaseLoc;
 	protected int mapHeight;
@@ -27,7 +26,6 @@ public abstract class BaseUnit {
 		this.myTeam = rc.getTeam();
 		this.otherTeam = myTeam.opponent();
 		this.id = rc.getRobot().getID();
-		this.enemyBaseDir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 		this.enemyBaseLoc = rc.senseEnemyHQLocation();
 		this.myBaseLoc = rc.senseHQLocation();
 		this.mapHeight = rc.getMapHeight();
@@ -77,13 +75,7 @@ public abstract class BaseUnit {
 	}
 	
 	abstract public void decodeMsg(int encodedMsg);
-	
-	/**
-	 * head straight towards target, defuse mines in the way
-	 * @param whereToGo
-	 * @throws GameActionException
-	 */
-	
+/*
 	protected MapLocation senseAdjacentMine() {
 		MapLocation curLoc = rc.getLocation();
 		MapLocation[] nearbyLocations = {new MapLocation(curLoc.x-1,curLoc.y-1),new MapLocation(curLoc.x,curLoc.y-1), new MapLocation(curLoc.x+1,curLoc.y-1), new MapLocation(curLoc.x-1,curLoc.y),											
@@ -98,7 +90,27 @@ public abstract class BaseUnit {
 		}
 		return null;
 	}
-	
+*/
+	// returns location of adjacent mine, or null if no adjacentneutral or enemy mine nearby
+	protected MapLocation senseAdjacentMine() {
+		Direction dir = Direction.NORTH;
+		int[] directionOffsets = { 0, 1, -1, 2, -2, 3, -3, 4 };
+		MapLocation curLoc = rc.getLocation();
+		MapLocation lookingAtCurrently = curLoc;
+		for (int d : directionOffsets) {
+			lookingAtCurrently = rc.getLocation().add(Direction.values()[(dir.ordinal() + d + 8) % 8]); //TODO optimize this so it just checks the 8 spaces rather than calling the "add" method to check them
+			Team mineTeam = rc.senseMine(lookingAtCurrently);
+			if (mineTeam != null && !(mineTeam.equals(myTeam))) {
+				return lookingAtCurrently;
+			}
+		}
+		
+		Team curLocMineTeam = rc.senseMine(curLoc);
+		if (curLocMineTeam != null && !(curLocMineTeam.equals(myTeam))) {
+			return curLoc;
+		}
+		return null;
+	}
 	protected void goToLocationBrute(MapLocation whereToGo) //340 bytecode
 			throws GameActionException {
 		MapLocation curLoc = rc.getLocation();

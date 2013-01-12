@@ -26,8 +26,8 @@ public class HQUnit extends BaseUnit {
 			System.out.println("getSortedEncampments bytecode usage: " + (Clock.getBytecodeNum() - start));
 		}
 		if (this.rc.isActive()) {
-			if (this.rc.canMove(this.enemyBaseDir) && curSoldiers <=5) {
-				this.rc.spawn(this.enemyBaseDir);
+			if (this.rc.canMove(this.myBaseLoc.directionTo(enemyBaseLoc)) && curSoldiers <=5) {
+				this.rc.spawn(this.myBaseLoc.directionTo(enemyBaseLoc));
 				curSoldiers+=1;
 			}
 		}

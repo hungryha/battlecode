@@ -49,7 +49,9 @@ public class SoldierUnit extends BaseUnit {
 		case CAPTURE_MOVE:
 			break;
 		case DEFEND_POSITION:
-			defendPosition(targetLoc);
+			if (rc.isActive()) {
+				defendPosition(targetLoc);
+			}
 			break;
 		case BATTLE:
 			break;
@@ -117,32 +119,40 @@ public class SoldierUnit extends BaseUnit {
 	protected void defendPosition(MapLocation defendPoint) throws GameActionException{
 		Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 25, otherTeam);
 		if (nearbyEnemies.length >= 1){
-			System.out.println("enemy detected");
 			if (rc.senseNearbyGameObjects(Robot.class,4,myTeam).length <2){
 				this.goToLocationBrute(defendPoint);
 			}
 			else if (curLoc.distanceSquaredTo(defendPoint)<=49) {
-				this.goToLocationBrute(((RobotController) nearbyEnemies[0]).getLocation());
+//				this.goToLocationBrute(((RobotController) nearbyEnemies[0]).getLocation());
 			}
 			else {
 				this.goToLocationBrute(defendPoint);
 			}
 		} else {
 			MapLocation nearbyMine= this.senseAdjacentMine();
-			if (!(rc.senseMine(nearbyMine) == myTeam || rc.senseMine(nearbyMine)==null)){
+			if (nearbyMine != null) {
+				// if nearby neutral or enemy mine is found
 				rc.setIndicatorString(0,"mine detected at " + nearbyMine.x +" "+ nearbyMine.y);
 				rc.defuseMine(nearbyMine);
 				rc.yield();
-			} else if (rc.senseMine(curLoc)==null && (curLoc.x*2 + curLoc.y)%5 ==1){
+			}
+			else if (rc.senseMine(curLoc)==null && (curLoc.x*2 + curLoc.y)%5 ==1) {
+				// standing on patterned empty sq
 				rc.setIndicatorString(0,"laying mine");
 				rc.layMine();
 				rc.yield();
-			} else if (curLoc.distanceSquaredTo(defendPoint)<=25){
+			}
+			else if (curLoc.distanceSquaredTo(defendPoint)<=25) {
+				// standing on own mine and within defense radius
 				rc.setIndicatorString(0,"moving randomly");
-				double randomIndex=Math.random()*8;
-				rc.move(Direction.values()[(int) randomIndex]);
+				Direction randomDir = Direction.values()[(int) (Math.random()*8)];
+				if (rc.canMove(randomDir)) {
+					rc.move(randomDir);
+				}
 				rc.yield();
-			} else {
+			}
+			else {
+				// outside defense radius, so move towards defend point
 				rc.setIndicatorString(0,"returning to defend point");
 				this.goToLocationBrute(defendPoint);
 			}
