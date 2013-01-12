@@ -1,6 +1,5 @@
 package team063;
 
-import team063.message.Message;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -10,11 +9,14 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 
+
 public class SoldierUnit extends BaseUnit {
 	private SoldierState state;
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
 	private MapLocation curLoc;
+	private int starting;
+	private int finish;
 	
 	public SoldierUnit(RobotController rc) {
 		super(rc);
@@ -52,6 +54,7 @@ public class SoldierUnit extends BaseUnit {
 			if (rc.isActive()) {
 				defendPosition(targetLoc);
 			}
+
 			break;
 		case BATTLE:
 			break;
@@ -116,16 +119,20 @@ public class SoldierUnit extends BaseUnit {
 
 	}
 	
-	protected void defendPosition(MapLocation defendPoint) throws GameActionException{
+	protected void defendPosition(MapLocation defendPoint) throws GameActionException{ //50 - 800 bytecode
 		Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 25, otherTeam);
 		if (nearbyEnemies.length >= 1){
 			if (rc.senseNearbyGameObjects(Robot.class,4,myTeam).length <2){
+				rc.setIndicatorString(0,"not enough neraby allies to fight!");
 				this.goToLocationBrute(defendPoint);
 			}
 			else if (curLoc.distanceSquaredTo(defendPoint)<=49) {
-//				this.goToLocationBrute(((RobotController) nearbyEnemies[0]).getLocation());
+
+				rc.setIndicatorString(0,"attacking nearby enemy!");
+				this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
 			}
 			else {
+				rc.setIndicatorString(0,"enemy is too far away to chase!");
 				this.goToLocationBrute(defendPoint);
 			}
 		} else {
