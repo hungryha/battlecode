@@ -8,6 +8,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
+import battlecode.engine.instrumenter.lang.System;
 
 public abstract class BaseUnit {
 	protected RobotController rc;
@@ -82,6 +83,22 @@ public abstract class BaseUnit {
 	 * @param whereToGo
 	 * @throws GameActionException
 	 */
+	
+	protected MapLocation senseAdjacentMine() {
+		MapLocation curLoc = rc.getLocation();
+		MapLocation[] nearbyLocations = {new MapLocation(curLoc.x-1,curLoc.y-1),new MapLocation(curLoc.x,curLoc.y-1), new MapLocation(curLoc.x+1,curLoc.y-1), new MapLocation(curLoc.x-1,curLoc.y),											
+				new MapLocation(curLoc.x+1,curLoc.y), new MapLocation(curLoc.x-1,curLoc.y+1), new MapLocation(curLoc.x,curLoc.y+1), new MapLocation(curLoc.x+1,curLoc.y+1)};
+		for (MapLocation lookingAt : nearbyLocations) {
+			if (rc.senseMine(lookingAt)!= null){
+				return lookingAt;
+			}
+		}
+		if (rc.senseMine(curLoc) != null){
+			return curLoc;
+		}
+		return null;
+	}
+	
 	protected void goToLocationBrute(MapLocation whereToGo) //340 bytecode
 			throws GameActionException {
 		MapLocation curLoc = rc.getLocation();

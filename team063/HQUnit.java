@@ -10,6 +10,7 @@ import battlecode.common.RobotController;
 
 //singleton
 public class HQUnit extends BaseUnit {
+	public int curSoldiers=0;
 	
 	public HQUnit(RobotController rc) {
 		super(rc);
@@ -25,8 +26,9 @@ public class HQUnit extends BaseUnit {
 			System.out.println("getSortedEncampments bytecode usage: " + (Clock.getBytecodeNum() - start));
 		}
 		if (this.rc.isActive()) {
-			if (this.rc.canMove(this.enemyBaseDir)) {
+			if (this.rc.canMove(this.enemyBaseDir) && curSoldiers <=5) {
 				this.rc.spawn(this.enemyBaseDir);
+				curSoldiers+=1;
 			}
 		}
 	}
