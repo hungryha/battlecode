@@ -1,5 +1,7 @@
 package team063;
 
+import java.util.Comparator;
+
 import team063.message.Message;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -15,6 +17,10 @@ public abstract class BaseUnit {
 	protected int squadId;
 	protected Direction enemyBaseDir;
 	protected MapLocation enemyBaseLoc;
+	protected MapLocation myBaseLoc;
+	protected int mapHeight;
+	protected int mapWidth;
+	
 	public BaseUnit(RobotController rc) {
 		this.rc = rc;
 		this.myTeam = rc.getTeam();
@@ -22,6 +28,9 @@ public abstract class BaseUnit {
 		this.id = rc.getRobot().getID();
 		this.enemyBaseDir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
 		this.enemyBaseLoc = rc.senseEnemyHQLocation();
+		this.myBaseLoc = rc.senseHQLocation();
+		this.mapHeight = rc.getMapHeight();
+		this.mapWidth = rc.getMapWidth();
 	}
 
 	public void loop() {
@@ -55,10 +64,11 @@ public abstract class BaseUnit {
 		return 0;
 	}
 	/**
-	 * bits 0-7: x coord
-	 * bits 8-14: y coord
-	 * bits 15-18: soldier state
-	 * bits 19-29: extra info??
+	 * bits 0-6: x coord
+	 * bits 7-13: y coord
+	 * bits 14-17: soldier state
+	 * bits 18-29: extra info??
+	 * 	ex) type of encampment for capturing
 	 * bits 30-32: checksum
 	 */
 	public int encodeMsg(MapLocation loc, SoldierState state, int squadId, int unitId) {
