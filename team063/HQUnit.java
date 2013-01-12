@@ -1,5 +1,6 @@
 package team063;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
 //singleton
@@ -10,10 +11,18 @@ public class HQUnit extends BaseUnit {
 	}
 
 	@Override
-	public void run() {
+	public void run() throws GameActionException {
+		if (this.rc.isActive()) {
+			if (this.rc.canMove(this.enemyBaseDir)) {
+				this.rc.spawn(this.enemyBaseDir);
+			}
+		}
+	}
+
+	@Override
+	public void decodeMsg(int encodedMsg) {
 		// TODO Auto-generated method stub
 		
 	}
 	
-
 }

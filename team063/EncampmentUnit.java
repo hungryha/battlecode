@@ -13,4 +13,10 @@ public class EncampmentUnit extends BaseUnit {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void decodeMsg(int encodedMsg) {
+		// TODO Auto-generated method stub
+		
+	}
 }
