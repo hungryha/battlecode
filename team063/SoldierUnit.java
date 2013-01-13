@@ -3,6 +3,7 @@ package team063;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
@@ -20,7 +21,7 @@ public class SoldierUnit extends BaseUnit {
 	
 	public SoldierUnit(RobotController rc) {
 		super(rc);
-		state = SoldierState.DEFEND_POSITION;
+		state = SoldierState.SECURE_ENCAMPMENT;
 	}
 
 	@Override
@@ -80,27 +81,49 @@ public class SoldierUnit extends BaseUnit {
 			 * 		else: 
 			 * 			go towards targetLoc
 			 */
-			if (rc.isActive()) {
-				RobotController encampController = (RobotController) rc.senseObjectAtLocation(targetLoc);
-				if (encampController.getTeam().equals(this.myTeam)) {
+			
+//			MapLocation[] encampments = rc.senseAllEncampmentSquares();
+			MapLocation[] encampments = rc.senseEncampmentSquares(new MapLocation(mapWidth/2, mapHeight/2), 10000, Team.NEUTRAL);
+			MapLocation nearestEncamp = encampments[0];
+			
+			int bestDistSquared = rc.getLocation().distanceSquaredTo(encampments[0]);
+			for (int i=1; i < encampments.length; i++) {
+				int curDist = rc.getLocation().distanceSquaredTo(encampments[i]);
+				if (curDist < bestDistSquared) {
+					nearestEncamp = encampments[i];
+					bestDistSquared = curDist;
+				}
+			}
+			targetLoc = nearestEncamp;
 
-				} else if (encampController.getTeam().equals(Team.NEUTRAL)) {
-					if (rc.senseCaptureCost() < rc.getTeamPower()) {
-						// defend, so do nothing
-					} else {
-						if (rc.getLocation().equals(targetLoc)) {
-							// TODO switch statement of hq instructions
-							rc.captureEncampment(RobotType.SUPPLIER);
-						} else {
-							this.goToLocationBrute(targetLoc);
-						}
+			if (rc.isActive()) {
+				if (rc.getLocation().equals(targetLoc)) {
+					rc.setIndicatorString(1, "capturing encampment");
+					rc.captureEncampment(RobotType.SUPPLIER);
+				}
+				else if (rc.canSenseSquare(targetLoc)) {
+					GameObject ec = rc.senseObjectAtLocation(targetLoc);
+					
+					if (ec == null) {
+						rc.setIndicatorString(1, "near neutral encampment, moving towards it");
+						this.goToLocationBrute(targetLoc);
 					}
-				} else {
-					// uh oh, opponent has encampment
-					// attack encampment?
+					else if (ec.getTeam().equals(myTeam)) {
+						rc.setIndicatorString(1, "encampment captured, defend it");
+						this.defendPosition(targetLoc);
+					}
+					else {
+						// uh oh
+						rc.setIndicatorString(1, "near enemy encampment");
+					}
+				}
+				else {
+					rc.setIndicatorString(1, "target out of range, move towards it");
+					this.goToLocationBrute(targetLoc);
 				}
 			}
 			else {
+				rc.setIndicatorString(0, "currently not active");
 				// do some computation and broadcast
 			}
 			break;
