@@ -7,10 +7,25 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.engine.instrumenter.lang.System;
 
 public abstract class BaseUnit {
+	//masks for encoding
+	public static final int X_COORD_MASK = 127; //0b1111111
+	public static final int Y_COORD_MASK = 127;
+	public static final int SOLDIER_STATE_MASK = 15;
+	public static final int ENCAMPMENT_TYPE_MASK = 7;
+	public static final int CHECK_SUM_MASK = 7;
+	
+	public static final int X_COORD_SHIFT = 0;
+	public static final int Y_COORD_SHIFT = 7;
+	public static final int SOLDIER_STATE_SHIFT = 14;
+	public static final int ENCAMPMENT_TYPE_SHIFT = 18;
+	public static final int CHECK_SUM_SHIFT = 29;
+	
+	
 	protected RobotController rc;
 	protected Team myTeam;
 	protected Team otherTeam;
@@ -48,12 +63,12 @@ public abstract class BaseUnit {
 	/**
 	 * Message/broadcast methods
 	 */
-	public int getUnitChannelNum() {
+	public int getUnitChannelNum(int unitId) {
 		//TODO make better
 		return id;
 	}
 	
-	public int getSquadChannelNum() {
+	public int getSquadChannelNum(int squadId) {
 		//TODO make better
 		return squadId;
 	}
@@ -66,31 +81,40 @@ public abstract class BaseUnit {
 	 * bits 0-6: x coord
 	 * bits 7-13: y coord
 	 * bits 14-17: soldier state
-	 * bits 18-29: extra info??
+	 * bits 18-28: extra info??
 	 * 	ex) type of encampment for capturing
-	 * bits 30-32: checksum
+	 * bits 29-31: checksum
 	 */
-	public int encodeMsg(MapLocation loc, SoldierState state, int squadId, int unitId) {
-		return 0;
+	public int encodeMsg(MapLocation loc, SoldierState state, RobotType encampmentType, int otherInfo) {
+
+		return (loc.x << X_COORD_SHIFT) | 
+				(loc.y << Y_COORD_SHIFT) | 
+				(state.ordinal() << SOLDIER_STATE_MASK) |
+				(encampmentType.ordinal() << ENCAMPMENT_TYPE_SHIFT);
 	}
 	
-	abstract public void decodeMsg(int encodedMsg);
-/*
-	protected MapLocation senseAdjacentMine() {
-		MapLocation curLoc = rc.getLocation();
-		MapLocation[] nearbyLocations = {new MapLocation(curLoc.x-1,curLoc.y-1),new MapLocation(curLoc.x,curLoc.y-1), new MapLocation(curLoc.x+1,curLoc.y-1), new MapLocation(curLoc.x-1,curLoc.y),											
-				new MapLocation(curLoc.x+1,curLoc.y), new MapLocation(curLoc.x-1,curLoc.y+1), new MapLocation(curLoc.x,curLoc.y+1), new MapLocation(curLoc.x+1,curLoc.y+1)};
-		for (MapLocation lookingAt : nearbyLocations) {
-			if (rc.senseMine(lookingAt)!= null){
-				return lookingAt;
-			}
-		}
-		if (rc.senseMine(curLoc) != null){
-			return curLoc;
-		}
-		return null;
+	public MapLocation getMapLocationFromMsg(int encodedMsg) {
+		int xcoord = (encodedMsg & (X_COORD_MASK << X_COORD_SHIFT)) >> X_COORD_SHIFT;
+		int ycoord = (encodedMsg & (Y_COORD_MASK << Y_COORD_SHIFT)) >> Y_COORD_SHIFT;
+		return new MapLocation(xcoord, ycoord);
 	}
-*/
+	
+	public SoldierState getSoldierStateFromMsg(int encodedMsg) {
+		int index = (encodedMsg & (SOLDIER_STATE_MASK << SOLDIER_STATE_SHIFT)) >> SOLDIER_STATE_SHIFT;
+		return SoldierState.values()[index];
+	}
+	
+	public RobotType getEncampmentTypeFromMsg(int encodedMsg) {
+		int index = (encodedMsg & (ENCAMPMENT_TYPE_MASK << ENCAMPMENT_TYPE_SHIFT)) >> ENCAMPMENT_TYPE_SHIFT;
+		return RobotType.values()[index];
+	}
+	
+	public int getOtherInfoFromMsg(int encodedMsg) {
+		//TODO implement
+		return 0;
+	}
+	abstract public void decodeMsg(int encodedMsg);
+
 	// returns location of adjacent mine, or null if no adjacentneutral or enemy mine nearby
 	protected MapLocation senseAdjacentMine() {
 		Direction dir = Direction.NORTH;
@@ -111,6 +135,7 @@ public abstract class BaseUnit {
 		}
 		return null;
 	}
+	
 	protected void goToLocationBrute(MapLocation whereToGo) //340 bytecode
 			throws GameActionException {
 		MapLocation curLoc = rc.getLocation();
