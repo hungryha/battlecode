@@ -15,13 +15,7 @@ public class SoldierUnit extends BaseUnit {
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
 	private MapLocation curLoc;
-<<<<<<< HEAD
-	
-=======
-	private int starting;
-	private int finish;
 
->>>>>>> b947414cc15f78b9baa55fd1bb413ebd026f4427
 	public SoldierUnit(RobotController rc) {
 		super(rc);
 		state = SoldierState.SECURE_ENCAMPMENT;
