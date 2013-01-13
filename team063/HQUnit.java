@@ -1,6 +1,5 @@
 package team063;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 import battlecode.common.Clock;
@@ -11,9 +10,11 @@ import battlecode.common.RobotController;
 //singleton
 public class HQUnit extends BaseUnit {
 	public int curSoldiers=0;
+	protected int[] unitsMap;
 	
 	public HQUnit(RobotController rc) {
 		super(rc);
+		unitsMap = new int[2000];
 	}
 
 	@Override
@@ -27,9 +28,13 @@ public class HQUnit extends BaseUnit {
 		}
 		if (this.rc.isActive()) {
 
-			if (this.rc.canMove(this.myBaseLoc.directionTo(enemyBaseLoc)) && curSoldiers <=10) {
+//			if (this.rc.canMove(this.myBaseLoc.directionTo(enemyBaseLoc)) && curSoldiers <=10) {
+//				this.rc.spawn(this.myBaseLoc.directionTo(enemyBaseLoc));
+//				curSoldiers+=1;
+//			}
+			
+			if (this.rc.canMove(this.myBaseLoc.directionTo(enemyBaseLoc))) {
 				this.rc.spawn(this.myBaseLoc.directionTo(enemyBaseLoc));
-				curSoldiers+=1;
 			}
 		}
 	}
