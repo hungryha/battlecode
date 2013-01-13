@@ -15,8 +15,6 @@ public class SoldierUnit extends BaseUnit {
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
 	private MapLocation curLoc;
-	private int starting;
-	private int finish;
 	
 	public SoldierUnit(RobotController rc) {
 		super(rc);
@@ -47,6 +45,29 @@ public class SoldierUnit extends BaseUnit {
 		case PATROL:
 			break;
 		case SCOUT:
+			/*robot will move towards a location
+			 * it will avoid enemies it encounters and send messages based on what it sees
+			 * 
+			 * basic implementation for sprint: seeing high numbers of enemy units near their HQ with mines assumes they are nuke rushing
+			 * seeing low numbers of enemies near their HQ -AND- high resistance at encampments assumes they are spread out
+			 * seeing low numbers of enemies near their HQ -AND- few encounters with enemies elsewhere assumes rush
+			 */
+			
+			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
+			if (nearbyEnemies.length>=2){
+				if ((rc.senseNearbyGameObjects(Robot.class,49,otherTeam)).length>=8){
+					if (curLoc.distanceSquaredTo(this.enemyBaseLoc)<=81){
+							//broadcast high enemy presence near their HQ
+						}
+					} else {
+						//broadcast high enemy presence near this robot's current location
+					}
+				this.goToLocationBrute(curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies[0]).location)));
+				rc.yield();
+				} else {
+				this.goToLocationBrute(targetLoc);
+				rc.yield();
+			}
 			break;
 		case CAPTURE_MOVE:
 			break;
@@ -54,7 +75,6 @@ public class SoldierUnit extends BaseUnit {
 			if (rc.isActive()) {
 				defendPosition(targetLoc);
 			}
-
 			break;
 		case BATTLE:
 			break;
