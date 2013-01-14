@@ -14,8 +14,20 @@ import battlecode.common.Upgrade;
 
 //singleton
 public class HQUnit extends BaseUnit {
-	public int curSoldiers = 0;
+	// squad consts
+	public static int SQUAD_ASSIGNMENT_CHANNEL = 7907;
+	
+	public static int NO_SQUAD = 0;
+	public static int SCOUT_SQUAD = 1;
+	public static int ENCAMPMENT_SQUAD_1 = 2;
+	public static int ENCAMPMENT_SQUAD_2 = 3;
+	public static int DEFEND_BASE_SQUAD = 4;
+	public static int ATTACK_SQUAD = 5;
+	
+	public int unitsCount = 0;
+	
 	protected int[] unitsMap;
+	protected int[] squads;
 	protected MapLocation[] initialTargetEncampments;
 	private int encampCounter;
 
@@ -31,26 +43,26 @@ public class HQUnit extends BaseUnit {
 
 	@Override
 	public void run() throws GameActionException {
-		if (mapHeight > 65 && mapWidth > 65) {
-			// big map, nuke strategy
-			int msg = this.encodeMsg(
-					myBaseLoc,
-					SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
-			rc.broadcast(this.getAllUnitChannelNum(), msg);
-			if (rc.isActive()) {
-				if (Clock.getRoundNum() < 200) {
-					// spawn robots
-					this.spawnInAvailable();
-				} else {
-					rc.researchUpgrade(Upgrade.NUKE);
-
-					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
-							myBaseLoc,
-							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
-				}
-			}
-		}
-		else if (mapHeight <= 30 && mapWidth <= 30) {
+//		if (mapHeight > 65 && mapWidth > 65) {
+//			// big map, nuke strategy
+//			int msg = this.encodeMsg(
+//					myBaseLoc,
+//					SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
+//			rc.broadcast(this.getAllUnitChannelNum(), msg);
+//			if (rc.isActive()) {
+//				if (Clock.getRoundNum() < 200) {
+//					// spawn robots
+//					this.spawnInAvailable();
+//				} else {
+//					rc.researchUpgrade(Upgrade.NUKE);
+//
+//					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
+//							myBaseLoc,
+//							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
+//				}
+//			}
+//		}
+		if (mapHeight <= 30 && mapWidth <= 30) {
 			// small map, rush strategy
 			// build a shield encamp, rally there until 130, then rush
 			if (Clock.getRoundNum() < 100) {

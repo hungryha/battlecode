@@ -25,9 +25,15 @@ public class SoldierUnit extends BaseUnit {
 		super(rc);
 		
 		//hardcoded test state
+		squadId = HQUnit.NO_SQUAD;
 		state = SoldierState.DEFAULT;
 	}
 
+	public SoldierUnit(RobotController rc, int squadAssignment) {
+		super(rc);
+		state = SoldierState.DEFAULT;
+		squadId = squadAssignment;
+	}
 	@Override
 	public void run() throws GameActionException {
 		/**
@@ -86,12 +92,18 @@ public class SoldierUnit extends BaseUnit {
 				} else if (nearbyAllies.length >= 3){
 					rc.setIndicatorString(0, "attacking!");
 					this.goToLocationBrute(targetLoc);
+//					this.goToLocationSmart(targetLoc);
+
 				} else if (farAllies.length >= 1){
 					rc.setIndicatorString(0, "regrouping");
+					
 					this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
+//					this.goToLocationSmart(rc.senseRobotInfo(farAllies[0]).location);
+
 				} else {
 					rc.setIndicatorString(0,"no one nearby! retreating home!");
 					this.goToLocationBrute(myBaseLoc);
+//					this.goToLocationSmart(myBaseLoc);
 				}
 			}
 			break;

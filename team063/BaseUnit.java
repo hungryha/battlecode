@@ -161,6 +161,30 @@ public abstract class BaseUnit {
 		}
 	}
 
+	// buggy
+	protected void goToLocationSmart(MapLocation dest) throws GameActionException {
+		MapLocation curLoc = rc.getLocation();
+		int dist = curLoc.distanceSquaredTo(dest);
+		if (dist > 0 && rc.isActive()) {
+			Direction dir = curLoc.directionTo(dest);
+			int[] directionOffsets = { 0, 1, -1, 2, -2 };
+			Direction lookingAtCurrently = dir;
+			for (int d : directionOffsets) {
+				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
+				if (rc.canMove(lookingAtCurrently) && (rc.senseMine(curLoc.add(lookingAtCurrently)) == null || rc
+						.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
+					if ((rc.senseMine(curLoc.add(lookingAtCurrently)) == null) || (rc
+								.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
+						rc.move(lookingAtCurrently);
+					}
+					else {
+						rc.defuseMine(curLoc.add(lookingAtCurrently));
+					}
+					break;
+				}
+			}
+		}
+	}
 	protected void followWaypointPath(MapLocation[] waypointArray,
 			int startIndex) throws GameActionException {
 		MapLocation currentLoc = rc.getLocation();
