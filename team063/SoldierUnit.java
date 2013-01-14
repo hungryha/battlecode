@@ -52,10 +52,10 @@ public class SoldierUnit extends BaseUnit {
 		this.curLoc = rc.getLocation();
 		
 		//hardcoded test strategy
-		if (Clock.getRoundNum() > 130){
-			targetLoc = enemyBaseLoc;
-			state=SoldierState.ATTACK_MOVE;
-		}
+//		if (Clock.getRoundNum() > 130){
+//			targetLoc = enemyBaseLoc;
+//			state=SoldierState.ATTACK_MOVE;
+//		}
 
 		switch (state) {
 
@@ -77,23 +77,20 @@ public class SoldierUnit extends BaseUnit {
 			if (rc.hasUpgrade(Upgrade.DEFUSION)){
 				farMines= rc.senseNonAlliedMineLocations(curLoc, 14);
 			}
-			
-			if (nearbyEnemies.length < 1 && farMines.length >0){
-				rc.setIndicatorString(0,"defusing mine");
-				rc.defuseMine(farMines[0]);
-				rc.yield();
-			} else if (nearbyAllies.length >= 3){
-				rc.setIndicatorString(0, "attacking!");
-				this.goToLocationBrute(targetLoc);
-				rc.yield();
-			} else if (farAllies.length >= 1){
-				rc.setIndicatorString(0, "regrouping");
-				this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
-				rc.yield();
-			} else {
-				rc.setIndicatorString(0,"no one nearby! retreating home!");
-				this.goToLocationBrute(myBaseLoc);
-				rc.yield();
+			if (rc.isActive()) {
+				if (nearbyEnemies.length < 1 && farMines.length >0){
+					rc.setIndicatorString(0,"defusing mine");
+					rc.defuseMine(farMines[0]);
+				} else if (nearbyAllies.length >= 3){
+					rc.setIndicatorString(0, "attacking!");
+					this.goToLocationBrute(targetLoc);
+				} else if (farAllies.length >= 1){
+					rc.setIndicatorString(0, "regrouping");
+					this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
+				} else {
+					rc.setIndicatorString(0,"no one nearby! retreating home!");
+					this.goToLocationBrute(myBaseLoc);
+				}
 			}
 			break;
 		case PATROL:
