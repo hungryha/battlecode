@@ -5,7 +5,9 @@ import java.util.Comparator;
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import battlecode.common.Upgrade;
 
 //singleton
 public class HQUnit extends BaseUnit {
@@ -34,7 +36,7 @@ public class HQUnit extends BaseUnit {
 //			}
 			
 			if (this.rc.canMove(this.myBaseLoc.directionTo(enemyBaseLoc))) {
-				this.rc.spawn(this.myBaseLoc.directionTo(enemyBaseLoc));
+				rc.spawn(this.myBaseLoc.directionTo(enemyBaseLoc));
 			}
 		}
 	}

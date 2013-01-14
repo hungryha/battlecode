@@ -9,16 +9,21 @@ import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
+import battlecode.common.Upgrade;
 
 public class SoldierUnit extends BaseUnit {
 	private SoldierState state;
+	
+	//hardcoded test targetLoc
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
 	private MapLocation curLoc;
 
 	public SoldierUnit(RobotController rc) {
 		super(rc);
-		state = SoldierState.SECURE_ENCAMPMENT;
+		
+		//hardcoded test state
+		state = SoldierState.DEFEND_POSITION;
 	}
 
 	@Override
@@ -31,11 +36,17 @@ public class SoldierUnit extends BaseUnit {
 		rc.broadcast(0, id);
 		// readbroadcast(channelNum)
 		if (rc.isActive()) {
-			int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
-			int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
+			//int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
+			//int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
 			int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
 		}
 		this.curLoc = rc.getLocation();
+		
+		//hardcoded test strategy
+		if (Clock.getRoundNum()>130){
+			targetLoc=enemyBaseLoc;
+			state=SoldierState.ATTACK_MOVE;
+		}
 
 		switch (state) {
 
@@ -45,6 +56,36 @@ public class SoldierUnit extends BaseUnit {
 		case SMART_MOVE:
 			break;
 		case ATTACK_MOVE:
+			/*robot will move to a location in loose formation attacking what it runs into and avoiding mines.
+			 * it should defuse mines if there are no enemies around
+			 */
+			
+			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
+			Robot[] nearbyAllies = rc.senseNearbyGameObjects(Robot.class,9,myTeam);
+			Robot[] farAllies = rc.senseNearbyGameObjects(Robot.class,36,myTeam);
+			curLoc=rc.getLocation();
+			MapLocation[] farMines= {};
+			if (rc.hasUpgrade(Upgrade.DEFUSION)){
+				farMines= rc.senseNonAlliedMineLocations(curLoc, 14);
+			}
+			
+			if (nearbyEnemies.length < 1 && farMines.length >0){
+				rc.setIndicatorString(0,"defusing mine");
+				rc.defuseMine(farMines[0]);
+				rc.yield();
+			} else if (nearbyAllies.length >= 3){
+				rc.setIndicatorString(0, "attacking!");
+				this.goToLocationBrute(targetLoc);
+				rc.yield();
+			} else if (farAllies.length >= 1){
+				rc.setIndicatorString(0, "regrouping");
+				this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
+				rc.yield();
+			} else {
+				rc.setIndicatorString(0,"no one nearby! retreating home!");
+				this.goToLocationBrute(myBaseLoc);
+				rc.yield();
+			}
 			break;
 		case PATROL:
 			break;
@@ -57,8 +98,8 @@ public class SoldierUnit extends BaseUnit {
 			 * seeing low numbers of enemies near their HQ -AND- few encounters with enemies elsewhere assumes rush
 			 */
 			
-			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
-			if (nearbyEnemies.length>=2){
+			Robot[] nearbyEnemies_scouting = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
+			if (nearbyEnemies_scouting.length>=2){
 				if ((rc.senseNearbyGameObjects(Robot.class,49,otherTeam)).length>=8){
 					if (curLoc.distanceSquaredTo(this.enemyBaseLoc)<=81){
 							//broadcast high enemy presence near their HQ
@@ -66,7 +107,7 @@ public class SoldierUnit extends BaseUnit {
 					} else {
 						//broadcast high enemy presence near this robot's current location
 					}
-				this.goToLocationBrute(curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies[0]).location)));
+				this.goToLocationBrute(curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies_scouting[0]).location)));
 				rc.yield();
 				} else {
 				this.goToLocationBrute(targetLoc);
