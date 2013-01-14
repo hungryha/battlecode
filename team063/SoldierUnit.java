@@ -52,6 +52,7 @@ public class SoldierUnit extends BaseUnit {
 		this.curLoc = rc.getLocation();
 		rc.setIndicatorString(2, "cur state: " + state + "cur target: " + targetLoc);
 
+
 		//hardcoded test strategy
 //		if (Clock.getRoundNum() > 130){
 //			targetLoc = enemyBaseLoc;
