@@ -76,13 +76,17 @@ public class HQUnit extends BaseUnit {
 			}
 		}
 		else {
+			if (rc.getTeamPower() >= .003) {
+				rc.broadcast(SQUAD_ASSIGNMENT_CHANNEL, getCurrentSquadAssignment());
+			}
+			
 			if (this.rc.isActive()) {
 //				if (Clock.getRoundNum() > 70
 //						&& !rc.hasUpgrade(Upgrade.DEFUSION)) {
 //					rc.setIndicatorString(0, "researching DEFUSION");
 //					rc.researchUpgrade(Upgrade.DEFUSION);
 //				} else 
-					
+
 				if (Clock.getRoundNum() > 70 && !rc.hasUpgrade(Upgrade.FUSION)) {
 					
 					rc.setIndicatorString(0, "researching FUSION");
@@ -144,6 +148,20 @@ public class HQUnit extends BaseUnit {
 
 	}
 
+	public int getCurrentSquadAssignment() {
+		if (unitsCount <= 1) {
+			return SCOUT_SQUAD;
+		}
+		else if (unitsCount <= 3) {
+			return ENCAMPMENT_SQUAD_1;
+		}
+		else if (unitsCount <= 5) {
+			return ENCAMPMENT_SQUAD_2;
+		}
+		else {
+			return DEFEND_BASE_SQUAD;
+		}
+	}
 	// checks all available spaces around hq for spawning
 	public boolean spawnInAvailable() throws GameActionException {
 		Direction dir = myBaseLoc.directionTo(enemyBaseLoc);
@@ -151,6 +169,7 @@ public class HQUnit extends BaseUnit {
 		if (rc.canMove(dir) && rc.senseMine(myBaseLoc.add(dir)) == null) {
 			rc.setIndicatorString(0, "spawning robot at: " + myBaseLoc.add(dir));
 			rc.spawn(dir);
+			unitsCount++;
 			return true;
 		}
 		else {
@@ -167,6 +186,7 @@ public class HQUnit extends BaseUnit {
 			else {
 				rc.setIndicatorString(0, "spawning robot at: " + myBaseLoc.add(dir));
 				rc.spawn(dir);
+				unitsCount++;
 				return true;
 			}
 		}

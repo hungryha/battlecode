@@ -14,7 +14,6 @@ import battlecode.common.Upgrade;
 public class SoldierUnit extends BaseUnit {
 	private SoldierState state;
 	
-	//hardcoded test targetLoc
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
 	private MapLocation curLoc;
@@ -28,12 +27,13 @@ public class SoldierUnit extends BaseUnit {
 		squadId = HQUnit.NO_SQUAD;
 		state = SoldierState.DEFAULT;
 	}
-
+/*
 	public SoldierUnit(RobotController rc, int squadAssignment) {
 		super(rc);
 		state = SoldierState.DEFAULT;
 		squadId = squadAssignment;
 	}
+*/	
 	@Override
 	public void run() throws GameActionException {
 		/**
@@ -45,6 +45,9 @@ public class SoldierUnit extends BaseUnit {
 //			int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
 //			int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
 //			int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
+			if (squadId == HQUnit.NO_SQUAD) {
+				squadId = rc.readBroadcast(HQUnit.SQUAD_ASSIGNMENT_CHANNEL);
+			}
 			int msg = rc.readBroadcast(this.getAllUnitChannelNum());
 			
 			targetLoc = this.getMapLocationFromMsg(msg);
@@ -56,7 +59,7 @@ public class SoldierUnit extends BaseUnit {
 		}
 
 		this.curLoc = rc.getLocation();
-		rc.setIndicatorString(2, "cur state: " + state + "cur target: " + targetLoc);
+		rc.setIndicatorString(2, "cur state: " + state + "cur target: " + targetLoc + " squad: " + squadId);
 
 
 		//hardcoded test strategy
