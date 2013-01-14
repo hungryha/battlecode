@@ -17,16 +17,16 @@ import battlecode.common.Upgrade;
 public class HQUnit extends BaseUnit {
 	// squad consts
 	public static int SQUAD_ASSIGNMENT_CHANNEL = 7907;
-	
+
 	public static int NO_SQUAD = 0;
 	public static int SCOUT_SQUAD = 1;
 	public static int ENCAMPMENT_SQUAD_1 = 2;
 	public static int ENCAMPMENT_SQUAD_2 = 3;
 	public static int DEFEND_BASE_SQUAD = 4;
 	public static int ATTACK_SQUAD = 5;
-	
+
 	public int unitsCount = 0;
-	
+
 	protected int[] unitsMap;
 	protected int[] squads;
 	protected MapLocation[] initialTargetEncampments;
@@ -44,130 +44,126 @@ public class HQUnit extends BaseUnit {
 
 	@Override
 	public void run() throws GameActionException {
-//		if (mapHeight > 65 && mapWidth > 65) {
-//			// big map, nuke strategy
-//			int msg = this.encodeMsg(
-//					myBaseLoc,
-//					SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
-//			rc.broadcast(this.getAllUnitChannelNum(), msg);
-//			if (rc.isActive()) {
-//				if (Clock.getRoundNum() < 200) {
-//					// spawn robots
-//					this.spawnInAvailable();
-//				} else {
-//					rc.researchUpgrade(Upgrade.NUKE);
-//
-//					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
-//							myBaseLoc,
-//							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
-//				}
-//			}
-//		}
-<<<<<<< HEAD
-//		if (mapHeight <= 30 && mapWidth <= 30) {
-//			// small map, rush strategy
-//			// build a shield encamp, rally there until 130, then rush
-//			if (Clock.getRoundNum() < 100) {
-//				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-//			}
-//			else {
-//				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
-//			}
-//			if (rc.isActive()) {
-//				this.spawnInAvailable();
-//			}
-//		}
-//		else {
+		// if (mapHeight > 65 && mapWidth > 65) {
+		// // big map, nuke strategy
+		// int msg = this.encodeMsg(
+		// myBaseLoc,
+		// SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
+		// rc.broadcast(this.getAllUnitChannelNum(), msg);
+		// if (rc.isActive()) {
+		// if (Clock.getRoundNum() < 200) {
+		// // spawn robots
+		// this.spawnInAvailable();
+		// } else {
+		// rc.researchUpgrade(Upgrade.NUKE);
+		//
+		// rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
+		// myBaseLoc,
+		// SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
+		// }
+		// }
+		// }
+		// if (mapHeight <= 30 && mapWidth <= 30) {
+		// // small map, rush strategy
+		// // build a shield encamp, rally there until 130, then rush
+		// if (Clock.getRoundNum() < 100) {
+		// rc.broadcast(Util.getAllUnitChannelNum(),
+		// Util.encodeMsg(initialTargetEncampments[0],
+		// SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+		// }
+		// else {
+		// rc.broadcast(Util.getAllUnitChannelNum(),
+		// Util.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ,
+		// 0));
+		// }
+		// if (rc.isActive()) {
+		// this.spawnInAvailable();
+		// }
+		// }
+		// else {
 		{
 			if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST) {
-				rc.broadcast(SQUAD_ASSIGNMENT_CHANNEL, getCurrentSquadAssignment());
-=======
-		if (mapHeight <= 30 && mapWidth <= 30) {
-			// small map, rush strategy
-			// build a shield encamp, rally there until 130, then rush
-			if (Clock.getRoundNum() < 100) {
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-			}
-			else {
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
-			}
-			if (rc.isActive()) {
-				this.spawnInAvailable();
-			}
-		}
-		else {
-			if (rc.getTeamPower() >= .003) {
-				rc.broadcast(Util.getInitialSquadNumChannelNum(), getCurrentSquadAssignment());
->>>>>>> 2c6ed6ab16f51efc48d76b665f019bb061aeb784
-			}
-			
-			if (this.rc.isActive()) {
-//				if (Clock.getRoundNum() > 70
-//						&& !rc.hasUpgrade(Upgrade.DEFUSION)) {
-//					rc.setIndicatorString(0, "researching DEFUSION");
-//					rc.researchUpgrade(Upgrade.DEFUSION);
-//				} else 
+				rc.broadcast(Util.getInitialSquadNumChannelNum(),
+						getCurrentSquadAssignment());
 
-				if (Clock.getRoundNum() > 70 && !rc.hasUpgrade(Upgrade.FUSION)) {
-					
-					rc.setIndicatorString(0, "researching FUSION");
-					rc.researchUpgrade(Upgrade.FUSION);
-					
-				} else if (Clock.getRoundNum() <= 200) {
-					rc.setIndicatorString(1, "rally at shields");
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(initialTargetEncampments[2], SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
-					this.spawnInAvailable();
-				}
-				
-				else if (Clock.getRoundNum() > 200 && Clock.getRoundNum() < 1000) {
-					
-					rc.setIndicatorString(0, "sending attack move msg and spawning");
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
-					this.spawnInAvailable();
-					
-				} else if (Clock.getRoundNum() > 1000) {
-					
-					rc.setIndicatorString(0, "researching nuke, sending defend base msg");
-					rc.researchUpgrade(Upgrade.NUKE);
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-							myBaseLoc,
-							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
-					
-				} else {
-					rc.setIndicatorString(0, "spawning in available space");
-					this.spawnInAvailable();
-				}
-			}
+				if (this.rc.isActive()) {
+					// if (Clock.getRoundNum() > 70
+					// && !rc.hasUpgrade(Upgrade.DEFUSION)) {
+					// rc.setIndicatorString(0, "researching DEFUSION");
+					// rc.researchUpgrade(Upgrade.DEFUSION);
+					// } else
 
-			if (Clock.getRoundNum() < 70) {
-				// broadcast
-				GameObject[] myUnits = rc.senseNearbyGameObjects(Robot.class,
-						1000, myTeam);
-				RobotType encamp = RobotType.SUPPLIER;
+					if (Clock.getRoundNum() > 70
+							&& !rc.hasUpgrade(Upgrade.FUSION)) {
 
-				if (rc.getTeamPower() > 5) {
-					if (myUnits.length <= 2) {
-						encampCounter = 0;
-						encamp = RobotType.SUPPLIER;
-					} else if (myUnits.length <= 4) {
-						encampCounter = 1;
-						encamp = RobotType.SUPPLIER;
-					} else {
-						encampCounter = 2;
-						encamp = RobotType.SHIELDS;
+						rc.setIndicatorString(0, "researching FUSION");
+						rc.researchUpgrade(Upgrade.FUSION);
+
+					} else if (Clock.getRoundNum() <= 200) {
+						rc.setIndicatorString(1, "rally at shields");
+						rc.broadcast(Util.getAllUnitChannelNum(), Util
+								.encodeMsg(initialTargetEncampments[2],
+										SoldierState.BRUTE_MOVE,
+										RobotType.SHIELDS, 0));
+						this.spawnInAvailable();
 					}
-					int msg = Util.encodeMsg(
-							initialTargetEncampments[encampCounter],
-							SoldierState.SECURE_ENCAMPMENT, encamp, 0);
 
-<<<<<<< HEAD
-					rc.broadcast(this.getAllUnitChannelNum(), msg);
-					rc.broadcast(this.getSquadChannelNum(SCOUT_SQUAD), this.encodeMsg(enemyBaseLoc, SoldierState.SCOUT, RobotType.HQ, 0));
-=======
-					rc.broadcast(Util.getAllUnitChannelNum(), msg);
->>>>>>> 2c6ed6ab16f51efc48d76b665f019bb061aeb784
-//					rc.broadcast(2, msg);
-//					rc.broadcast(3, msg);
+					else if (Clock.getRoundNum() > 200
+							&& Clock.getRoundNum() < 1000) {
+
+						rc.setIndicatorString(0,
+								"sending attack move msg and spawning");
+						rc.broadcast(Util.getAllUnitChannelNum(), Util
+								.encodeMsg(enemyBaseLoc,
+										SoldierState.ATTACK_MOVE, RobotType.HQ,
+										0));
+						this.spawnInAvailable();
+
+					} else if (Clock.getRoundNum() > 1000) {
+
+						rc.setIndicatorString(0,
+								"researching nuke, sending defend base msg");
+						rc.researchUpgrade(Upgrade.NUKE);
+						rc.broadcast(Util.getAllUnitChannelNum(), Util
+								.encodeMsg(myBaseLoc,
+										SoldierState.DEFEND_POSITION,
+										RobotType.HQ, 0));
+
+					} else {
+						rc.setIndicatorString(0, "spawning in available space");
+						this.spawnInAvailable();
+					}
+				}
+
+				if (Clock.getRoundNum() < 70) {
+					// broadcast
+					GameObject[] myUnits = rc.senseNearbyGameObjects(
+							Robot.class, 1000, myTeam);
+					RobotType encamp = RobotType.SUPPLIER;
+
+					if (rc.getTeamPower() > 5) {
+						if (myUnits.length <= 2) {
+							encampCounter = 0;
+							encamp = RobotType.SUPPLIER;
+						} else if (myUnits.length <= 4) {
+							encampCounter = 1;
+							encamp = RobotType.SUPPLIER;
+						} else {
+							encampCounter = 2;
+							encamp = RobotType.SHIELDS;
+						}
+						int msg = Util.encodeMsg(
+								initialTargetEncampments[encampCounter],
+								SoldierState.SECURE_ENCAMPMENT, encamp, 0);
+
+						rc.broadcast(Util.getAllUnitChannelNum(), msg);
+						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
+								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
+										RobotType.HQ, 0));
+
+						// rc.broadcast(2, msg);
+						// rc.broadcast(3, msg);
+					}
 				}
 			}
 		}
@@ -177,17 +173,15 @@ public class HQUnit extends BaseUnit {
 	public int getCurrentSquadAssignment() {
 		if (unitsCount < 1) {
 			return SCOUT_SQUAD;
-		}
-		else if (unitsCount <= 3) {
+		} else if (unitsCount <= 3) {
 			return ENCAMPMENT_SQUAD_1;
-		}
-		else if (unitsCount <= 5) {
+		} else if (unitsCount <= 5) {
 			return ENCAMPMENT_SQUAD_2;
-		}
-		else {
+		} else {
 			return DEFEND_BASE_SQUAD;
 		}
 	}
+
 	// checks all available spaces around hq for spawning
 	public boolean spawnInAvailable() throws GameActionException {
 		Direction dir = myBaseLoc.directionTo(enemyBaseLoc);
@@ -197,26 +191,27 @@ public class HQUnit extends BaseUnit {
 			rc.spawn(dir);
 			unitsCount++;
 			return true;
-		}
-		else {
+		} else {
 			dir = dir.rotateLeft();
-			while (!rc.canMove(dir) || rc.senseMine(myBaseLoc.add(dir)) != null || dir.equals(dirOrig)) {
+			while (!rc.canMove(dir) || rc.senseMine(myBaseLoc.add(dir)) != null
+					|| dir.equals(dirOrig)) {
 				dir = dir.rotateLeft();
 			}
-			
+
 			if (dir.equals(dirOrig)) {
 				// looped all the way around
 				rc.setIndicatorString(0, "all dirs occupied");
 				return false;
-			}
-			else {
-				rc.setIndicatorString(0, "spawning robot at: " + myBaseLoc.add(dir));
+			} else {
+				rc.setIndicatorString(0,
+						"spawning robot at: " + myBaseLoc.add(dir));
 				rc.spawn(dir);
 				unitsCount++;
 				return true;
 			}
 		}
 	}
+
 	@Override
 	public void decodeMsg(int encodedMsg) {
 		// TODO Auto-generated method stub

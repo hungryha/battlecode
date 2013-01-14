@@ -46,62 +46,6 @@ public abstract class BaseUnit {
 	abstract public void run() throws GameActionException;
 
 
-<<<<<<< HEAD
-	public int getUnitChannelNum(int unitId) {
-		return (191* Clock.getRoundNum()*151) % 65081;
-	}
-	
-	public int getSquadChannelNum(int sqdId) {
-		return (599 * sqdId * Clock.getRoundNum()) % 65291;
-	}
-	
-	public int getAllUnitChannelNum() {
-		return 3221;
-	}
-	
-	public int getSquadToHQChannel(int squad) {
-		return 2917;
-	}
-	
-	
-	/**
-	 * bits 0-6: x coord
-	 * bits 7-13: y coord
-	 * bits 14-17: soldier state
-	 * bits 18-28: extra info??
-	 * 	ex) type of encampment for capturing
-	 * bits 29-31: checksum
-	 */
-	public int encodeMsg(MapLocation loc, SoldierState state, RobotType encampmentType, int otherInfo) {
-		return (loc.x << X_COORD_SHIFT) | 
-				(loc.y << Y_COORD_SHIFT) | 
-				(state.ordinal() << SOLDIER_STATE_SHIFT) |
-				(encampmentType.ordinal() << ENCAMPMENT_TYPE_SHIFT);
-	}
-	
-	public MapLocation getMapLocationFromMsg(int encodedMsg) {
-		int xcoord = (encodedMsg & (X_COORD_MASK << X_COORD_SHIFT)) >> X_COORD_SHIFT;
-		int ycoord = (encodedMsg & (Y_COORD_MASK << Y_COORD_SHIFT)) >> Y_COORD_SHIFT;
-		MapLocation loc = new MapLocation(xcoord, ycoord);
-		return loc;
-	}
-	
-	public SoldierState getSoldierStateFromMsg(int encodedMsg) {
-		int index = (encodedMsg & (SOLDIER_STATE_MASK << SOLDIER_STATE_SHIFT)) >> SOLDIER_STATE_SHIFT;
-		return SoldierState.values()[index];
-	}
-	
-	public RobotType getEncampmentTypeFromMsg(int encodedMsg) {
-		int index = (encodedMsg & (ENCAMPMENT_TYPE_MASK << ENCAMPMENT_TYPE_SHIFT)) >> ENCAMPMENT_TYPE_SHIFT;
-		return RobotType.values()[index];
-	}
-	
-	public int getOtherInfoFromMsg(int encodedMsg) {
-		//TODO implement
-		return 0;
-	}
-=======
->>>>>>> 2c6ed6ab16f51efc48d76b665f019bb061aeb784
 	abstract public void decodeMsg(int encodedMsg);
 
 	// returns location of adjacent mine, or null if no adjacentneutral or enemy mine nearby

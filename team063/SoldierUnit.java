@@ -43,26 +43,19 @@ public class SoldierUnit extends BaseUnit {
 			if (squadId == HQUnit.NO_SQUAD) {
 				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
 			}
-<<<<<<< HEAD
 			
-			int msg = rc.readBroadcast(this.getAllUnitChannelNum());
-			targetLoc = this.getMapLocationFromMsg(msg);
-			state = this.getSoldierStateFromMsg(msg);
-			encampmentSecureType = this.getEncampmentTypeFromMsg(msg);
-			
-			int squadMsg = rc.readBroadcast(this.getSquadChannelNum(squadId));
-			if (squadMsg != lastSquadMsg) {
-				targetLoc = this.getMapLocationFromMsg(squadMsg);
-				state = this.getSoldierStateFromMsg(squadMsg);
-				encampmentSecureType = this.getEncampmentTypeFromMsg(squadMsg);
-			}
-=======
 			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
-			
 			targetLoc = Util.getMapLocationFromMsg(msg);
 			state = Util.getSoldierStateFromMsg(msg);
-			encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);	
->>>>>>> 2c6ed6ab16f51efc48d76b665f019bb061aeb784
+			encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);
+			
+			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
+			if (squadMsg != lastSquadMsg) {
+				targetLoc = Util.getMapLocationFromMsg(squadMsg);
+				state = Util.getSoldierStateFromMsg(squadMsg);
+				encampmentSecureType = Util.getEncampmentTypeFromMsg(squadMsg);
+			}
+
 		}
 		else {
 			state = SoldierState.DEFAULT;
