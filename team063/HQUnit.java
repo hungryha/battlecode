@@ -9,6 +9,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import battlecode.common.Upgrade;
 
 //singleton
 public class HQUnit extends BaseUnit {
@@ -29,7 +30,7 @@ public class HQUnit extends BaseUnit {
 	public void run() throws GameActionException {
 		if (this.rc.isActive()) {
 			if (this.rc.canMove(this.myBaseLoc.directionTo(enemyBaseLoc))) {
-				this.rc.spawn(this.myBaseLoc.directionTo(enemyBaseLoc));
+				rc.spawn(this.myBaseLoc.directionTo(enemyBaseLoc));
 			}
 		}
 		
@@ -79,7 +80,7 @@ public class HQUnit extends BaseUnit {
 		int targetRangeSquared = targetRange * targetRange;
 		MapLocation[] targetEncampments = new MapLocation[3];
 
-		
+/*		
 		int j = 0;
 		if (myBaseLoc.x <= rc.getMapWidth()/2 || myBaseLoc.y <= rc.getMapHeight()/2) {
 			for (int i=0; i < encampments.length; i++) {
@@ -103,18 +104,18 @@ public class HQUnit extends BaseUnit {
 				}
 			}
 		}
-		
-//		int[] targetDists = new int[3];
-//		for (int i=0; i < encampments.length; i++) {
-//			int dist = myBaseLoc.distanceSquaredTo(encampments[i]);
-//			for (int k=0; k < 3; k++) {
-//				if (targetEncampments[k] == null || targetDists[k] == 0 || dist < targetDists[k]) {
-//					targetDists[k] = dist;
-//					targetEncampments[k] = encampments[i];
-//					break;
-//				}
-//			}
-//		}
+*/		
+		int[] targetDists = new int[3];
+		for (int i=0; i < encampments.length; i++) {
+			int dist = myBaseLoc.distanceSquaredTo(encampments[i]);
+			for (int k=0; k < 3; k++) {
+				if (targetEncampments[k] == null || targetDists[k] == 0 || dist < targetDists[k]) {
+					targetDists[k] = dist;
+					targetEncampments[k] = encampments[i];
+					break;
+				}
+			}
+		}
 			
 		System.out.println("start sorted encampments");
 		System.out.println("myBaseLoc x: " + myBaseLoc.x + " y: " + myBaseLoc.y);
