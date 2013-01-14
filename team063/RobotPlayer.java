@@ -1,8 +1,6 @@
 package team063;
 
-import battlecode.common.Direction;
 import battlecode.common.RobotController;
-import battlecode.engine.instrumenter.lang.System;
 
 
 public class RobotPlayer {

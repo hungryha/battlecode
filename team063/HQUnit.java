@@ -14,8 +14,20 @@ import battlecode.common.Upgrade;
 
 //singleton
 public class HQUnit extends BaseUnit {
-	public int curSoldiers = 0;
+	// squad consts
+	public static int SQUAD_ASSIGNMENT_CHANNEL = 7907;
+	
+	public static int NO_SQUAD = 0;
+	public static int SCOUT_SQUAD = 1;
+	public static int ENCAMPMENT_SQUAD_1 = 2;
+	public static int ENCAMPMENT_SQUAD_2 = 3;
+	public static int DEFEND_BASE_SQUAD = 4;
+	public static int ATTACK_SQUAD = 5;
+	
+	public int unitsCount = 0;
+	
 	protected int[] unitsMap;
+	protected int[] squads;
 	protected MapLocation[] initialTargetEncampments;
 	private int encampCounter;
 
