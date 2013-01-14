@@ -35,7 +35,7 @@ public class HQUnit extends BaseUnit {
 			int msg = this.encodeMsg(
 					myBaseLoc,
 					SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
-			rc.broadcast(1, msg);
+			rc.broadcast(this.getAllUnitChannelNum(), msg);
 			if (rc.isActive()) {
 				if (Clock.getRoundNum() < 200) {
 					// spawn robots
@@ -43,7 +43,7 @@ public class HQUnit extends BaseUnit {
 				} else {
 					rc.researchUpgrade(Upgrade.NUKE);
 
-					rc.broadcast(1, this.encodeMsg(
+					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
 							myBaseLoc,
 							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
 				}
@@ -56,19 +56,30 @@ public class HQUnit extends BaseUnit {
 					rc.setIndicatorString(0, "researching DEFUSION");
 					rc.researchUpgrade(Upgrade.DEFUSION);
 				} else if (Clock.getRoundNum() > 100 && !rc.hasUpgrade(Upgrade.FUSION)) {
+					
 					rc.setIndicatorString(0, "researching FUSION");
 					rc.researchUpgrade(Upgrade.FUSION);
-				} else if (Clock.getRoundNum() > 130 && Clock.getRoundNum() < 1000) {
-					rc.setIndicatorString(0, "sending attack move msg and spawning");
-					rc.broadcast(1, this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+					
+				} else if (Clock.getRoundNum() <= 200) {
+					rc.setIndicatorString(0, "rally at shields");
+					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[2], SoldierState.BRUTE_MOVE, RobotType.HQ, 0));
 					this.spawnInAvailable();
+				}
+				
+				else if (Clock.getRoundNum() > 200 && Clock.getRoundNum() < 1000) {
+					
+					rc.setIndicatorString(0, "sending attack move msg and spawning");
+					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+					this.spawnInAvailable();
+					
 				} else if (Clock.getRoundNum() > 1000) {
+					
 					rc.setIndicatorString(0, "researching nuke, sending defend base msg");
 					rc.researchUpgrade(Upgrade.NUKE);
-					
-					rc.broadcast(1, this.encodeMsg(
+					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
 							myBaseLoc,
 							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
+					
 				} else {
 					rc.setIndicatorString(0, "spawning in available space");
 					this.spawnInAvailable();
@@ -90,15 +101,15 @@ public class HQUnit extends BaseUnit {
 						encamp = RobotType.SUPPLIER;
 					} else {
 						encampCounter = 2;
-						encamp = RobotType.SUPPLIER;
+						encamp = RobotType.SHIELDS;
 					}
 					int msg = this.encodeMsg(
 							initialTargetEncampments[encampCounter],
 							SoldierState.SECURE_ENCAMPMENT, encamp, 0);
 
-					rc.broadcast(1, msg);
-					rc.broadcast(2, msg);
-					rc.broadcast(3, msg);
+					rc.broadcast(this.getAllUnitChannelNum(), msg);
+//					rc.broadcast(2, msg);
+//					rc.broadcast(3, msg);
 				}
 			}
 		}
@@ -109,20 +120,24 @@ public class HQUnit extends BaseUnit {
 	public boolean spawnInAvailable() throws GameActionException {
 		Direction dir = myBaseLoc.directionTo(enemyBaseLoc);
 		Direction dirOrig = Direction.values()[dir.ordinal()];
-		if (rc.canMove(dir)) {
+		if (rc.canMove(dir) && rc.senseMine(myBaseLoc.add(dir)) == null) {
+			rc.setIndicatorString(0, "spawning robot at: " + myBaseLoc.add(dir));
 			rc.spawn(dir);
 			return true;
 		}
 		else {
-			dir.rotateLeft();
-			while (!rc.canMove(dir) || dir.equals(dirOrig)) {
-				dir.rotateLeft();
+			dir = dir.rotateLeft();
+			while (!rc.canMove(dir) || rc.senseMine(myBaseLoc.add(dir)) != null || dir.equals(dirOrig)) {
+				dir = dir.rotateLeft();
 			}
+			
 			if (dir.equals(dirOrig)) {
 				// looped all the way around
+				rc.setIndicatorString(0, "all dirs occupied");
 				return false;
 			}
 			else {
+				rc.setIndicatorString(0, "spawning robot at: " + myBaseLoc.add(dir));
 				rc.spawn(dir);
 				return true;
 			}

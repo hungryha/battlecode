@@ -6,6 +6,7 @@ import team063.message.Message;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -75,7 +76,7 @@ public abstract class BaseUnit {
 	}
 	
 	public int getAllUnitChannelNum() {
-		return 53401;
+		return 3221;
 	}
 	/**
 	 * bits 0-6: x coord

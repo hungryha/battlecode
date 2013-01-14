@@ -39,7 +39,7 @@ public class SoldierUnit extends BaseUnit {
 //			int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
 //			int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
 //			int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
-			int msg = rc.readBroadcast(1);
+			int msg = rc.readBroadcast(this.getAllUnitChannelNum());
 			
 			targetLoc = this.getMapLocationFromMsg(msg);
 			state = this.getSoldierStateFromMsg(msg);
@@ -48,9 +48,10 @@ public class SoldierUnit extends BaseUnit {
 		else {
 			state = SoldierState.DEFAULT;
 		}
-		
+
 		this.curLoc = rc.getLocation();
-		
+		rc.setIndicatorString(2, "cur state: " + state + "cur target: " + curLoc);
+
 		//hardcoded test strategy
 //		if (Clock.getRoundNum() > 130){
 //			targetLoc = enemyBaseLoc;
@@ -159,12 +160,17 @@ public class SoldierUnit extends BaseUnit {
 					}
 				} else if (rc.canSenseSquare(targetLoc)) {
 					GameObject ec = rc.senseObjectAtLocation(targetLoc);
-
+					Robot[] objs = rc.senseNearbyGameObjects(Robot.class, targetLoc, 1, myTeam);
 					if (ec == null) {
 						rc.setIndicatorString(1,
 								"near neutral encampment, moving towards it");
 						this.goToLocationBrute(targetLoc);
-					} else if (ec.getTeam().equals(myTeam)) {
+					}
+					else if (ec.getTeam().equals(myTeam) && (rc.senseRobotInfo(objs[0]).type.equals(RobotType.SOLDIER))) {
+						rc.setIndicatorString(1, "encampment currently being captured, move towards it");
+						this.goToLocationBrute(targetLoc);
+					}
+					else if (ec.getTeam().equals(myTeam)) {
 						rc.setIndicatorString(1,
 								"encampment captured, defend it");
 						this.defendPosition(targetLoc);
