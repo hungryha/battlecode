@@ -50,7 +50,7 @@ public class SoldierUnit extends BaseUnit {
 		}
 
 		this.curLoc = rc.getLocation();
-		rc.setIndicatorString(2, "cur state: " + state + "cur target: " + curLoc);
+		rc.setIndicatorString(2, "cur state: " + state + "cur target: " + targetLoc);
 
 		//hardcoded test strategy
 //		if (Clock.getRoundNum() > 130){
@@ -61,7 +61,7 @@ public class SoldierUnit extends BaseUnit {
 		switch (state) {
 
 		case BRUTE_MOVE:
-			this.goToLocationBrute(this.enemyBaseLoc);
+			this.goToLocationBrute(this.targetLoc);
 			break;
 		case SMART_MOVE:
 			break;
