@@ -32,6 +32,7 @@ public class HQUnit extends BaseUnit {
 	@Override
 	public void run() throws GameActionException {
 		if (mapHeight > 65 && mapWidth > 65) {
+			// big map, nuke strategy
 			int msg = this.encodeMsg(
 					myBaseLoc,
 					SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
@@ -49,20 +50,35 @@ public class HQUnit extends BaseUnit {
 				}
 			}
 		}
+		else if (mapHeight <= 30 && mapWidth <= 30) {
+			// small map, rush strategy
+			// build a shield encamp, rally there until 130, then rush
+			if (Clock.getRoundNum() < 50) {
+				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.SHIELDS, 0));
+			}
+			else {
+				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+			}
+			if (rc.isActive()) {
+				this.spawnInAvailable();
+			}
+		}
 		else {
 			if (this.rc.isActive()) {
-				if (Clock.getRoundNum() > 70
-						&& !rc.hasUpgrade(Upgrade.DEFUSION)) {
-					rc.setIndicatorString(0, "researching DEFUSION");
-					rc.researchUpgrade(Upgrade.DEFUSION);
-				} else if (Clock.getRoundNum() > 100 && !rc.hasUpgrade(Upgrade.FUSION)) {
+//				if (Clock.getRoundNum() > 70
+//						&& !rc.hasUpgrade(Upgrade.DEFUSION)) {
+//					rc.setIndicatorString(0, "researching DEFUSION");
+//					rc.researchUpgrade(Upgrade.DEFUSION);
+//				} else 
+					
+				if (Clock.getRoundNum() > 70 && !rc.hasUpgrade(Upgrade.FUSION)) {
 					
 					rc.setIndicatorString(0, "researching FUSION");
 					rc.researchUpgrade(Upgrade.FUSION);
 					
 				} else if (Clock.getRoundNum() <= 200) {
-					rc.setIndicatorString(0, "rally at shields");
-					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[2], SoldierState.BRUTE_MOVE, RobotType.HQ, 0));
+					rc.setIndicatorString(1, "rally at shields");
+					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[2], SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
 					this.spawnInAvailable();
 				}
 				
