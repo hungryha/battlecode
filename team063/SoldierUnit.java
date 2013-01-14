@@ -46,13 +46,13 @@ public class SoldierUnit extends BaseUnit {
 //			int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
 //			int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
 			if (squadId == HQUnit.NO_SQUAD) {
-				squadId = rc.readBroadcast(HQUnit.SQUAD_ASSIGNMENT_CHANNEL);
+				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
 			}
-			int msg = rc.readBroadcast(this.getAllUnitChannelNum());
+			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
 			
-			targetLoc = this.getMapLocationFromMsg(msg);
-			state = this.getSoldierStateFromMsg(msg);
-			encampmentSecureType = this.getEncampmentTypeFromMsg(msg);	
+			targetLoc = Util.getMapLocationFromMsg(msg);
+			state = Util.getSoldierStateFromMsg(msg);
+			encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);	
 		}
 		else {
 			state = SoldierState.DEFAULT;

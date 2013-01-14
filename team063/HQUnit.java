@@ -66,10 +66,10 @@ public class HQUnit extends BaseUnit {
 			// small map, rush strategy
 			// build a shield encamp, rally there until 130, then rush
 			if (Clock.getRoundNum() < 100) {
-				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
 			}
 			else {
-				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
 			}
 			if (rc.isActive()) {
 				this.spawnInAvailable();
@@ -77,7 +77,7 @@ public class HQUnit extends BaseUnit {
 		}
 		else {
 			if (rc.getTeamPower() >= .003) {
-				rc.broadcast(SQUAD_ASSIGNMENT_CHANNEL, getCurrentSquadAssignment());
+				rc.broadcast(Util.getInitialSquadNumChannelNum(), getCurrentSquadAssignment());
 			}
 			
 			if (this.rc.isActive()) {
@@ -94,21 +94,21 @@ public class HQUnit extends BaseUnit {
 					
 				} else if (Clock.getRoundNum() <= 200) {
 					rc.setIndicatorString(1, "rally at shields");
-					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[2], SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(initialTargetEncampments[2], SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
 					this.spawnInAvailable();
 				}
 				
 				else if (Clock.getRoundNum() > 200 && Clock.getRoundNum() < 1000) {
 					
 					rc.setIndicatorString(0, "sending attack move msg and spawning");
-					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
 					this.spawnInAvailable();
 					
 				} else if (Clock.getRoundNum() > 1000) {
 					
 					rc.setIndicatorString(0, "researching nuke, sending defend base msg");
 					rc.researchUpgrade(Upgrade.NUKE);
-					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							myBaseLoc,
 							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
 					
@@ -135,11 +135,11 @@ public class HQUnit extends BaseUnit {
 						encampCounter = 2;
 						encamp = RobotType.SHIELDS;
 					}
-					int msg = this.encodeMsg(
+					int msg = Util.encodeMsg(
 							initialTargetEncampments[encampCounter],
 							SoldierState.SECURE_ENCAMPMENT, encamp, 0);
 
-					rc.broadcast(this.getAllUnitChannelNum(), msg);
+					rc.broadcast(Util.getAllUnitChannelNum(), msg);
 //					rc.broadcast(2, msg);
 //					rc.broadcast(3, msg);
 				}

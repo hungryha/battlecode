@@ -12,20 +12,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 
-public abstract class BaseUnit {
-	//masks for encoding
-	public static final int X_COORD_MASK = 127; //0b1111111
-	public static final int Y_COORD_MASK = 127;
-	public static final int SOLDIER_STATE_MASK = 15;
-	public static final int ENCAMPMENT_TYPE_MASK = 7;
-	public static final int CHECK_SUM_MASK = 7;
-	
-	public static final int X_COORD_SHIFT = 0;
-	public static final int Y_COORD_SHIFT = 7;
-	public static final int SOLDIER_STATE_SHIFT = 14;
-	public static final int ENCAMPMENT_TYPE_SHIFT = 18;
-	public static final int CHECK_SUM_SHIFT = 29;
-	
+public abstract class BaseUnit {	
 	
 	protected RobotController rc;
 	protected Team myTeam;
@@ -61,59 +48,7 @@ public abstract class BaseUnit {
 
 	abstract public void run() throws GameActionException;
 
-	/**
-	 * Message/broadcast methods
-	 */
 
-	public int getUnitChannelNum() {
-		int id = Clock.getRoundNum()*151 % 65081;
-		return id;
-	}
-	
-	public int getSquadChannelNum() {
-		int squadId=Clock.getRoundNum()*599 % 65291;
-		return squadId;
-	}
-	
-	public int getAllUnitChannelNum() {
-		return 3221;
-	}
-	/**
-	 * bits 0-6: x coord
-	 * bits 7-13: y coord
-	 * bits 14-17: soldier state
-	 * bits 18-28: extra info??
-	 * 	ex) type of encampment for capturing
-	 * bits 29-31: checksum
-	 */
-	public int encodeMsg(MapLocation loc, SoldierState state, RobotType encampmentType, int otherInfo) {
-		return (loc.x << X_COORD_SHIFT) | 
-				(loc.y << Y_COORD_SHIFT) | 
-				(state.ordinal() << SOLDIER_STATE_SHIFT) |
-				(encampmentType.ordinal() << ENCAMPMENT_TYPE_SHIFT);
-	}
-	
-	public MapLocation getMapLocationFromMsg(int encodedMsg) {
-		int xcoord = (encodedMsg & (X_COORD_MASK << X_COORD_SHIFT)) >> X_COORD_SHIFT;
-		int ycoord = (encodedMsg & (Y_COORD_MASK << Y_COORD_SHIFT)) >> Y_COORD_SHIFT;
-		MapLocation loc = new MapLocation(xcoord, ycoord);
-		return loc;
-	}
-	
-	public SoldierState getSoldierStateFromMsg(int encodedMsg) {
-		int index = (encodedMsg & (SOLDIER_STATE_MASK << SOLDIER_STATE_SHIFT)) >> SOLDIER_STATE_SHIFT;
-		return SoldierState.values()[index];
-	}
-	
-	public RobotType getEncampmentTypeFromMsg(int encodedMsg) {
-		int index = (encodedMsg & (ENCAMPMENT_TYPE_MASK << ENCAMPMENT_TYPE_SHIFT)) >> ENCAMPMENT_TYPE_SHIFT;
-		return RobotType.values()[index];
-	}
-	
-	public int getOtherInfoFromMsg(int encodedMsg) {
-		//TODO implement
-		return 0;
-	}
 	abstract public void decodeMsg(int encodedMsg);
 
 	// returns location of adjacent mine, or null if no adjacentneutral or enemy mine nearby
@@ -148,8 +83,8 @@ public abstract class BaseUnit {
 			for (int d : directionOffsets) {
 				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
 				if (rc.canMove(lookingAtCurrently)) {
-					if ((rc.senseMine(curLoc.add(lookingAtCurrently)) == null) || (rc
-								.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
+					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
+					if ((teamOfMine == null) || (teamOfMine == myTeam)) {
 						rc.move(lookingAtCurrently);
 					}
 					else {
