@@ -41,8 +41,9 @@ public class SoldierUnit extends BaseUnit {
 		if (rc.getTeamPower() >= 3 * GameConstants.BROADCAST_READ_COST) {
 
 			if (squadId == HQUnit.NO_SQUAD) {
-				squadId = rc.readBroadcast(HQUnit.SQUAD_ASSIGNMENT_CHANNEL);
+				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
 			}
+<<<<<<< HEAD
 			
 			int msg = rc.readBroadcast(this.getAllUnitChannelNum());
 			targetLoc = this.getMapLocationFromMsg(msg);
@@ -55,6 +56,13 @@ public class SoldierUnit extends BaseUnit {
 				state = this.getSoldierStateFromMsg(squadMsg);
 				encampmentSecureType = this.getEncampmentTypeFromMsg(squadMsg);
 			}
+=======
+			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
+			
+			targetLoc = Util.getMapLocationFromMsg(msg);
+			state = Util.getSoldierStateFromMsg(msg);
+			encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);	
+>>>>>>> 2c6ed6ab16f51efc48d76b665f019bb061aeb784
 		}
 		else {
 			state = SoldierState.DEFAULT;

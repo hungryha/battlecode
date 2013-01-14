@@ -9,20 +9,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 
-public abstract class BaseUnit {
-	//masks for encoding
-	public static final int X_COORD_MASK = 127; //0b1111111
-	public static final int Y_COORD_MASK = 127;
-	public static final int SOLDIER_STATE_MASK = 15;
-	public static final int ENCAMPMENT_TYPE_MASK = 7;
-	public static final int CHECK_SUM_MASK = 7;
-	
-	public static final int X_COORD_SHIFT = 0;
-	public static final int Y_COORD_SHIFT = 7;
-	public static final int SOLDIER_STATE_SHIFT = 14;
-	public static final int ENCAMPMENT_TYPE_SHIFT = 18;
-	public static final int CHECK_SUM_SHIFT = 29;
-	
+public abstract class BaseUnit {	
 	
 	protected RobotController rc;
 	protected Team myTeam;
@@ -58,10 +45,8 @@ public abstract class BaseUnit {
 
 	abstract public void run() throws GameActionException;
 
-	/**
-	 * Message/broadcast methods
-	 */
 
+<<<<<<< HEAD
 	public int getUnitChannelNum(int unitId) {
 		return (191* Clock.getRoundNum()*151) % 65081;
 	}
@@ -115,6 +100,8 @@ public abstract class BaseUnit {
 		//TODO implement
 		return 0;
 	}
+=======
+>>>>>>> 2c6ed6ab16f51efc48d76b665f019bb061aeb784
 	abstract public void decodeMsg(int encodedMsg);
 
 	// returns location of adjacent mine, or null if no adjacentneutral or enemy mine nearby
@@ -149,8 +136,8 @@ public abstract class BaseUnit {
 			for (int d : directionOffsets) {
 				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
 				if (rc.canMove(lookingAtCurrently)) {
-					if ((rc.senseMine(curLoc.add(lookingAtCurrently)) == null) || (rc
-								.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
+					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
+					if ((teamOfMine == null) || (teamOfMine == myTeam)) {
 						rc.move(lookingAtCurrently);
 					}
 					else {
