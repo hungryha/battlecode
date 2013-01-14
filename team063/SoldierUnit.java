@@ -73,7 +73,12 @@ public class SoldierUnit extends BaseUnit {
 			
 			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
 			Robot[] nearbyAllies = rc.senseNearbyGameObjects(Robot.class,9,myTeam);
-			Robot[] farAllies = rc.senseNearbyGameObjects(Robot.class,36,myTeam);
+			Robot[] farAllies;
+			if (mapHeight <=30 && mapWidth<=30){
+				farAllies = rc.senseNearbyGameObjects(Robot.class,20,myTeam);
+			} else {
+				farAllies = rc.senseNearbyGameObjects(Robot.class,36,myTeam);
+			}
 			curLoc=rc.getLocation();
 			MapLocation[] farMines= {};
 			if (rc.hasUpgrade(Upgrade.DEFUSION)){

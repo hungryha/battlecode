@@ -38,10 +38,14 @@ public class HQUnit extends BaseUnit {
 					SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
 			rc.broadcast(this.getAllUnitChannelNum(), msg);
 			if (rc.isActive()) {
-				if (Clock.getRoundNum() < 200) {
+				if (Clock.getRoundNum() <= 26) {
+					rc.researchUpgrade(Upgrade.PICKAXE);
+
+				} else if (Clock.getRoundNum() <=200){
 					// spawn robots
 					this.spawnInAvailable();
-				} else {
+				}
+				else {
 					rc.researchUpgrade(Upgrade.NUKE);
 
 					rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
