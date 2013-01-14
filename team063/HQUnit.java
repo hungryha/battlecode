@@ -53,8 +53,8 @@ public class HQUnit extends BaseUnit {
 		else if (mapHeight <= 30 && mapWidth <= 30) {
 			// small map, rush strategy
 			// build a shield encamp, rally there until 130, then rush
-			if (Clock.getRoundNum() < 50) {
-				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.SHIELDS, 0));
+			if (Clock.getRoundNum() < 100) {
+				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
 			}
 			else {
 				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
