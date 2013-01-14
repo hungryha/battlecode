@@ -5,6 +5,7 @@ import java.util.Comparator;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
@@ -62,21 +63,22 @@ public class HQUnit extends BaseUnit {
 //				}
 //			}
 //		}
-		if (mapHeight <= 30 && mapWidth <= 30) {
-			// small map, rush strategy
-			// build a shield encamp, rally there until 130, then rush
-			if (Clock.getRoundNum() < 100) {
-				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-			}
-			else {
-				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
-			}
-			if (rc.isActive()) {
-				this.spawnInAvailable();
-			}
-		}
-		else {
-			if (rc.getTeamPower() >= .003) {
+//		if (mapHeight <= 30 && mapWidth <= 30) {
+//			// small map, rush strategy
+//			// build a shield encamp, rally there until 130, then rush
+//			if (Clock.getRoundNum() < 100) {
+//				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+//			}
+//			else {
+//				rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+//			}
+//			if (rc.isActive()) {
+//				this.spawnInAvailable();
+//			}
+//		}
+//		else {
+		{
+			if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST) {
 				rc.broadcast(SQUAD_ASSIGNMENT_CHANNEL, getCurrentSquadAssignment());
 			}
 			
@@ -140,6 +142,7 @@ public class HQUnit extends BaseUnit {
 							SoldierState.SECURE_ENCAMPMENT, encamp, 0);
 
 					rc.broadcast(this.getAllUnitChannelNum(), msg);
+					rc.broadcast(this.getSquadChannelNum(SCOUT_SQUAD), this.encodeMsg(enemyBaseLoc, SoldierState.SCOUT, RobotType.HQ, 0));
 //					rc.broadcast(2, msg);
 //					rc.broadcast(3, msg);
 				}
@@ -149,7 +152,7 @@ public class HQUnit extends BaseUnit {
 	}
 
 	public int getCurrentSquadAssignment() {
-		if (unitsCount <= 1) {
+		if (unitsCount < 1) {
 			return SCOUT_SQUAD;
 		}
 		else if (unitsCount <= 3) {

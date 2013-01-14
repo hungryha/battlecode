@@ -1,8 +1,5 @@
 package team063;
 
-import java.util.Comparator;
-
-import team063.message.Message;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -65,19 +62,23 @@ public abstract class BaseUnit {
 	 * Message/broadcast methods
 	 */
 
-	public int getUnitChannelNum() {
-		int id = Clock.getRoundNum()*151 % 65081;
-		return id;
+	public int getUnitChannelNum(int unitId) {
+		return (191* Clock.getRoundNum()*151) % 65081;
 	}
 	
-	public int getSquadChannelNum() {
-		int squadId=Clock.getRoundNum()*599 % 65291;
-		return squadId;
+	public int getSquadChannelNum(int sqdId) {
+		return (599 * sqdId * Clock.getRoundNum()) % 65291;
 	}
 	
 	public int getAllUnitChannelNum() {
 		return 3221;
 	}
+	
+	public int getSquadToHQChannel(int squad) {
+		return 2917;
+	}
+	
+	
 	/**
 	 * bits 0-6: x coord
 	 * bits 7-13: y coord

@@ -3,6 +3,7 @@ package team063;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
@@ -18,48 +19,49 @@ public class SoldierUnit extends BaseUnit {
 	private int squadId;
 	private MapLocation curLoc;
 	private RobotType encampmentSecureType;
-
+	private int lastSquadMsg;
+	private int lastUnitMsg;
+	private int lastAllMsg;
 
 	public SoldierUnit(RobotController rc) {
 		super(rc);
-		
-		//hardcoded test state
 		squadId = HQUnit.NO_SQUAD;
 		state = SoldierState.DEFAULT;
+		lastSquadMsg = 0;
+		lastUnitMsg = 0;
+		lastAllMsg = 0;
 	}
-/*
-	public SoldierUnit(RobotController rc, int squadAssignment) {
-		super(rc);
-		state = SoldierState.DEFAULT;
-		squadId = squadAssignment;
-	}
-*/	
+	
 	@Override
 	public void run() throws GameActionException {
 		/**
-		 * 1. read broadcast 2. switch state or squad if necessary 3. act upon
+		 * 1. read broadcasts 2. switch state or squad if necessary 3. act upon
 		 * state
 		 */
-		if (rc.getTeamPower() > .1) {
-		// readbroadcast(channelNum)
-//			int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
-//			int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
-//			int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
+		if (rc.getTeamPower() >= 3 * GameConstants.BROADCAST_READ_COST) {
+
 			if (squadId == HQUnit.NO_SQUAD) {
 				squadId = rc.readBroadcast(HQUnit.SQUAD_ASSIGNMENT_CHANNEL);
 			}
-			int msg = rc.readBroadcast(this.getAllUnitChannelNum());
 			
+			int msg = rc.readBroadcast(this.getAllUnitChannelNum());
 			targetLoc = this.getMapLocationFromMsg(msg);
 			state = this.getSoldierStateFromMsg(msg);
-			encampmentSecureType = this.getEncampmentTypeFromMsg(msg);	
+			encampmentSecureType = this.getEncampmentTypeFromMsg(msg);
+			
+			int squadMsg = rc.readBroadcast(this.getSquadChannelNum(squadId));
+			if (squadMsg != lastSquadMsg) {
+				targetLoc = this.getMapLocationFromMsg(squadMsg);
+				state = this.getSoldierStateFromMsg(squadMsg);
+				encampmentSecureType = this.getEncampmentTypeFromMsg(squadMsg);
+			}
 		}
 		else {
 			state = SoldierState.DEFAULT;
 		}
 
 		this.curLoc = rc.getLocation();
-		rc.setIndicatorString(2, "cur state: " + state + "cur target: " + targetLoc + " squad: " + squadId);
+		rc.setIndicatorString(2, "cur state: " + state + " cur target: " + targetLoc + " squad: " + squadId);
 
 
 		//hardcoded test strategy
@@ -121,19 +123,26 @@ public class SoldierUnit extends BaseUnit {
 			 * seeing low numbers of enemies near their HQ -AND- few encounters with enemies elsewhere assumes rush
 			 */
 			
-			Robot[] nearbyEnemies_scouting = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
-			if (nearbyEnemies_scouting.length>=2){
-				if ((rc.senseNearbyGameObjects(Robot.class,49,otherTeam)).length>=8){
-					if (curLoc.distanceSquaredTo(this.enemyBaseLoc)<=81){
-							//broadcast high enemy presence near their HQ
-						}
-					} else {
-						//broadcast high enemy presence near this robot's current location
+			Robot[] nearbyEnemies_scouting = rc.senseNearbyGameObjects(
+					Robot.class, 16, otherTeam);
+			if (nearbyEnemies_scouting.length >= 2) {
+				if ((rc.senseNearbyGameObjects(Robot.class, 49, otherTeam)).length >= 8) {
+					if (curLoc.distanceSquaredTo(this.enemyBaseLoc) <= 81) {
+						// broadcast high enemy presence near their HQ
 					}
-				this.goToLocationBrute(curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies_scouting[0]).location)));
-				rc.yield();
 				} else {
-				this.goToLocationBrute(targetLoc);
+					// broadcast high enemy presence near this robot's current
+					// location
+				}
+				if (rc.isActive()) {
+					this.goToLocationBrute(curLoc.subtract(curLoc.directionTo(rc
+						.senseRobotInfo(nearbyEnemies_scouting[0]).location)));
+				}
+				rc.yield();
+			} else {
+				if (rc.isActive()) {
+					this.goToLocationBrute(targetLoc);
+				}
 				rc.yield();
 			}
 			break;
