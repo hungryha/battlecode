@@ -9,7 +9,6 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
-import battlecode.engine.instrumenter.lang.System;
 
 public abstract class BaseUnit {
 	//masks for encoding
@@ -65,7 +64,7 @@ public abstract class BaseUnit {
 	 */
 	public int getUnitChannelNum(int unitId) {
 		//TODO make better
-		return id;
+		return unitId;
 	}
 	
 	public int getSquadChannelNum(int squadId) {
@@ -86,17 +85,17 @@ public abstract class BaseUnit {
 	 * bits 29-31: checksum
 	 */
 	public int encodeMsg(MapLocation loc, SoldierState state, RobotType encampmentType, int otherInfo) {
-
 		return (loc.x << X_COORD_SHIFT) | 
 				(loc.y << Y_COORD_SHIFT) | 
-				(state.ordinal() << SOLDIER_STATE_MASK) |
+				(state.ordinal() << SOLDIER_STATE_SHIFT) |
 				(encampmentType.ordinal() << ENCAMPMENT_TYPE_SHIFT);
 	}
 	
 	public MapLocation getMapLocationFromMsg(int encodedMsg) {
 		int xcoord = (encodedMsg & (X_COORD_MASK << X_COORD_SHIFT)) >> X_COORD_SHIFT;
 		int ycoord = (encodedMsg & (Y_COORD_MASK << Y_COORD_SHIFT)) >> Y_COORD_SHIFT;
-		return new MapLocation(xcoord, ycoord);
+		MapLocation loc = new MapLocation(xcoord, ycoord);
+		return loc;
 	}
 	
 	public SoldierState getSoldierStateFromMsg(int encodedMsg) {

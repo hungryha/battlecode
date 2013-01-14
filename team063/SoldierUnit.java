@@ -15,12 +15,11 @@ public class SoldierUnit extends BaseUnit {
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
 	private MapLocation curLoc;
-	private int starting;
-	private int finish;
-
+	private RobotType encampmentSecureType;
 	public SoldierUnit(RobotController rc) {
 		super(rc);
-		state = SoldierState.SECURE_ENCAMPMENT;
+		state = SoldierState.DEFAULT;
+		encampmentSecureType = null;
 	}
 
 	@Override
@@ -30,13 +29,21 @@ public class SoldierUnit extends BaseUnit {
 		 * state
 		 */
 		rc.setIndicatorString(0, "id: " + rc.getRobot().getID());
-		rc.broadcast(0, id);
+		if (rc.getTeamPower() > .1) {
 		// readbroadcast(channelNum)
-		if (rc.isActive()) {
-			int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
-			int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
-			int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
+//			int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
+//			int squadMsg = rc.readBroadcast(getSquadChannelNum(squadId));
+//			int allUnitMsg = rc.readBroadcast(getAllUnitChannelNum());
+			int msg = rc.readBroadcast(1);
+			
+			targetLoc = this.getMapLocationFromMsg(msg);
+			state = this.getSoldierStateFromMsg(msg);
+			encampmentSecureType = this.getEncampmentTypeFromMsg(msg);	
 		}
+		else {
+			state = SoldierState.DEFAULT;
+		}
+		
 		this.curLoc = rc.getLocation();
 
 		switch (state) {
@@ -80,6 +87,7 @@ public class SoldierUnit extends BaseUnit {
 			 */
 
 			// MapLocation[] encampments = rc.senseAllEncampmentSquares();
+			/*
 			MapLocation[] encampments = rc.senseEncampmentSquares(
 					new MapLocation(mapWidth / 2, mapHeight / 2), 10000,
 					Team.NEUTRAL);
@@ -96,13 +104,14 @@ public class SoldierUnit extends BaseUnit {
 				}
 			}
 			targetLoc = nearestEncamp;
-
+			*/
+			
 			if (rc.isActive()) {
 				if (rc.getLocation().equals(targetLoc)) {
 					if (rc.senseCaptureCost() < rc.getTeamPower()) {
 						rc.setIndicatorString(1, "capturing encampment");
 
-						rc.captureEncampment(RobotType.SUPPLIER);
+						rc.captureEncampment(encampmentSecureType);
 					} else {
 						rc.setIndicatorString(1,
 								"not enough power, waiting till next turn to capture");
@@ -133,6 +142,8 @@ public class SoldierUnit extends BaseUnit {
 				// do some computation and broadcast
 			}
 
+			break;
+		case DEFAULT:
 			break;
 		default:
 			// do nothing if no instructions from hq
