@@ -34,23 +34,25 @@ public class HQUnit extends BaseUnit {
 			}
 		}
 		
-		if (Clock.getRoundNum() < 60) {
+		if (Clock.getRoundNum() < 70) {
 			// broadcast
 			GameObject[] myUnits = rc.senseNearbyGameObjects(Robot.class, 1000, myTeam);
-			if (rc.getTeamPower() > 10) {
+			RobotType encamp = RobotType.SUPPLIER;
+
+			if (rc.getTeamPower() > 5) {
 				if (myUnits.length <= 2) {
 					encampCounter = 0;
-					RobotType encamp = RobotType.SUPPLIER;
+					encamp = RobotType.SUPPLIER;
 				}
 				else if (myUnits.length <= 4) {
 					encampCounter = 1;
-					RobotType encamp = RobotType.SUPPLIER;
+					encamp = RobotType.SUPPLIER;
 				}
 				else {
 					encampCounter = 2;
-					RobotType encamp = RobotType.GENERATOR;
+					encamp = RobotType.GENERATOR;
 				}
-				int msg = this.encodeMsg(initialTargetEncampments[encampCounter], SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0);
+				int msg = this.encodeMsg(initialTargetEncampments[encampCounter], SoldierState.SECURE_ENCAMPMENT, encamp, 0);
 
 				rc.broadcast(1, msg);
 				rc.broadcast(2, msg);
@@ -76,8 +78,8 @@ public class HQUnit extends BaseUnit {
 		// TODO use median of medians?
 //		Arrays.sort(encampments, new MapLocationComparator()); // 6300 bytecodes
 	
-		int targetRange = Math.max(rc.getMapHeight(), rc.getMapWidth())/2;
-		int targetRangeSquared = targetRange * targetRange;
+//		int targetRange = Math.max(rc.getMapHeight(), rc.getMapWidth())/2;
+//		int targetRangeSquared = targetRange * targetRange;
 		MapLocation[] targetEncampments = new MapLocation[3];
 
 /*		
@@ -105,24 +107,27 @@ public class HQUnit extends BaseUnit {
 			}
 		}
 */		
-		int[] targetDists = new int[3];
+		int[] targetDists = {1000, 1000, 1000};
 		for (int i=0; i < encampments.length; i++) {
 			int dist = myBaseLoc.distanceSquaredTo(encampments[i]);
-			for (int k=0; k < 3; k++) {
-				if (targetEncampments[k] == null || targetDists[k] == 0 || dist < targetDists[k]) {
-					targetDists[k] = dist;
-					targetEncampments[k] = encampments[i];
-					break;
+			int largestIndex = 0;
+			for (int k = 1; k < 3; k++) {
+				if (targetDists[k] > targetDists[largestIndex]) {
+					largestIndex = k;
 				}
 			}
+			if (targetEncampments[largestIndex] == null || targetDists[largestIndex] == 0 || dist < targetDists[largestIndex]) {
+				targetDists[largestIndex] = dist;
+				targetEncampments[largestIndex] = encampments[i];
+			}
 		}
-			
+/*
 		System.out.println("start sorted encampments");
 		System.out.println("myBaseLoc x: " + myBaseLoc.x + " y: " + myBaseLoc.y);
 		for (int i=0; i < targetEncampments.length; i++) {
 			System.out.println("x: " + targetEncampments[i].x + " y: " + targetEncampments[i].y);
 		}
-			
+*/
 		return targetEncampments;
 	}
 	

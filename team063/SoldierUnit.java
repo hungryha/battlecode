@@ -34,7 +34,6 @@ public class SoldierUnit extends BaseUnit {
 		 * 1. read broadcast 2. switch state or squad if necessary 3. act upon
 		 * state
 		 */
-		rc.setIndicatorString(0, "id: " + rc.getRobot().getID());
 		if (rc.getTeamPower() > .1) {
 		// readbroadcast(channelNum)
 //			int unitMsg = rc.readBroadcast(getUnitChannelNum(id));
@@ -48,14 +47,13 @@ public class SoldierUnit extends BaseUnit {
 		}
 		else {
 			state = SoldierState.DEFAULT;
-
 		}
 		
 		this.curLoc = rc.getLocation();
 		
 		//hardcoded test strategy
-		if (Clock.getRoundNum()>130){
-			targetLoc=enemyBaseLoc;
+		if (Clock.getRoundNum() > 130){
+			targetLoc = enemyBaseLoc;
 			state=SoldierState.ATTACK_MOVE;
 		}
 
@@ -150,26 +148,6 @@ public class SoldierUnit extends BaseUnit {
 			 * on encampment: capture it else: if mine in the way: defuse it
 			 * else: go towards targetLoc
 			 */
-
-			// MapLocation[] encampments = rc.senseAllEncampmentSquares();
-			/*
-			MapLocation[] encampments = rc.senseEncampmentSquares(
-					new MapLocation(mapWidth / 2, mapHeight / 2), 10000,
-					Team.NEUTRAL);
-			MapLocation nearestEncamp = encampments[0];
-
-			int bestDistSquared = rc.getLocation().distanceSquaredTo(
-					encampments[0]);
-			for (int i = 1; i < encampments.length; i++) {
-				int curDist = rc.getLocation()
-						.distanceSquaredTo(encampments[i]);
-				if (curDist < bestDistSquared) {
-					nearestEncamp = encampments[i];
-					bestDistSquared = curDist;
-				}
-			}
-			targetLoc = nearestEncamp;
-			*/
 			
 			if (rc.isActive()) {
 				if (rc.getLocation().equals(targetLoc)) {
