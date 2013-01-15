@@ -84,6 +84,16 @@ public class HQUnit extends BaseUnit {
 		// }
 		// else {
 		{
+			// check enemy nuke progress
+			if (Clock.getRoundNum() >= 200) {
+				if (rc.getTeamPower() >= 50) {
+					if (rc.senseEnemyNukeHalfDone()) {
+						// enemy half done with nuke, broadcast attack enemy base to all units
+						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+					}
+				}
+			}
+			
 			if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST) {
 				rc.broadcast(Util.getInitialSquadNumChannelNum(),
 						getCurrentSquadAssignment());
@@ -179,7 +189,7 @@ public class HQUnit extends BaseUnit {
 							"sending attack move msg and spawning");
 //					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 //							enemyBaseLoc, SoldierState.ATTACK_MOVE,
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 							myBaseLoc, SoldierState.DEFEND_POSITION,
 							RobotType.HQ, 0));
 					if (rc.isActive()) {
@@ -207,6 +217,8 @@ public class HQUnit extends BaseUnit {
 
 
 		}
+		
+
 	}
 
 	public int getCurrentSquadAssignment() {

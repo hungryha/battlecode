@@ -70,7 +70,7 @@ public class SoldierUnit extends BaseUnit {
 			// read message sent to everyone
 			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
 			if (msg != lastAllMsg && msg != 0) {
-				rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
+				rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "all unit channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
 				targetLoc = Util.getMapLocationFromMsg(msg);
 				state = Util.getSoldierStateFromMsg(msg);
 				encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);
