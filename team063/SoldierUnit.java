@@ -22,6 +22,7 @@ public class SoldierUnit extends BaseUnit {
 	private int lastSquadMsg;
 	private int lastUnitMsg;
 	private int lastAllMsg;
+	private int lastAllExceptScoutMsg;
 
 	public SoldierUnit(RobotController rc) {
 		super(rc);
@@ -30,6 +31,7 @@ public class SoldierUnit extends BaseUnit {
 		lastSquadMsg = 0;
 		lastUnitMsg = 0;
 		lastAllMsg = 0;
+		lastAllExceptScoutMsg = 0;
 	}
 	
 	@Override
@@ -38,7 +40,7 @@ public class SoldierUnit extends BaseUnit {
 		 * 1. read broadcasts 2. switch state or squad if necessary 3. act upon
 		 * state
 		 */
-		if (rc.getTeamPower() >= 3 * GameConstants.BROADCAST_READ_COST) {
+		if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_READ_COST) {
 
 			if (squadId == HQUnit.NO_SQUAD) {
 				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
@@ -54,7 +56,18 @@ public class SoldierUnit extends BaseUnit {
 				encampmentSecureType = Util.getEncampmentTypeFromMsg(squadMsg);
 				lastSquadMsg = squadMsg;
 			}
-			
+		
+			// read message sent to all squads except scout
+			if (squadId != HQUnit.SCOUT_SQUAD) {
+				int curMsg = rc.readBroadcast(Util.getAllUnitExceptScoutChannelNum());
+				if (curMsg != lastAllExceptScoutMsg && curMsg != 0) {
+					targetLoc = Util.getMapLocationFromMsg(curMsg);
+					state = Util.getSoldierStateFromMsg(curMsg);
+					encampmentSecureType = Util.getEncampmentTypeFromMsg(curMsg);
+					lastAllExceptScoutMsg = curMsg;
+				}
+			}
+			// read message sent to everyone
 			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
 			if (msg != lastAllMsg && msg != 0) {
 				rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
@@ -71,13 +84,6 @@ public class SoldierUnit extends BaseUnit {
 
 		this.curLoc = rc.getLocation();
 		rc.setIndicatorString(2, "cur state: " + state + " cur target: " + targetLoc + " squad: " + squadId);
-
-
-		//hardcoded test strategy
-//		if (Clock.getRoundNum() > 130){
-//			targetLoc = enemyBaseLoc;
-//			state=SoldierState.ATTACK_MOVE;
-//		}
 
 		switch (state) {
 
@@ -224,6 +230,7 @@ public class SoldierUnit extends BaseUnit {
 
 			break;
 		case DEFAULT:
+			
 			break;
 		default:
 			// do nothing if no instructions from hq
