@@ -167,16 +167,39 @@ public class HQUnit extends BaseUnit {
 											initialTargetEncampments[2],
 											SoldierState.BRUTE_MOVE,
 											RobotType.SHIELDS, 0));
-					if (initialTargetEncampments[2].distanceSquaredTo(enemyBaseLoc) < myBaseLoc.distanceSquaredTo(enemyBaseLoc)) {
-						rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
-							initialTargetEncampments[2],
-							SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+					// if encampments done
+					// TODO, fix this to use broadcasting later
+					MapLocation[] encamp0 = rc.senseEncampmentSquares(initialTargetEncampments[0], 0, myTeam);
+					MapLocation[] encamp1 = rc.senseEncampmentSquares(initialTargetEncampments[1], 0, myTeam);
+					MapLocation[] encamp2 = rc.senseEncampmentSquares(initialTargetEncampments[2], 0, myTeam);
+
+					if (encamp0.length != 0 && encamp1.length != 0 && encamp2.length != 0) {
+						if (initialTargetEncampments[2].distanceSquaredTo(enemyBaseLoc) < myBaseLoc.distanceSquaredTo(enemyBaseLoc)) {
+							rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
+								initialTargetEncampments[2],
+								SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+						}
+						else {
+							rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
+									myBaseLoc,
+									SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+						}
 					}
 					else {
-						rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
-								myBaseLoc,
-								SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+						// keep on capturing
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(
+								initialTargetEncampments[0],
+								SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_2), Util.encodeMsg(
+								initialTargetEncampments[1],
+								SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(
+								initialTargetEncampments[encampCounter],
+								SoldierState.SECURE_ENCAMPMENT, RobotType.SHIELDS, 0));
+						rc.broadcast(Util.getSquadChannelNum(DEFEND_BASE_SQUAD), 
+								Util.encodeMsg(myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
 					}
+
 					if (!rc.hasUpgrade(Upgrade.FUSION)) {
 
 						rc.setIndicatorString(0,
