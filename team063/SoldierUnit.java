@@ -106,12 +106,12 @@ public class SoldierUnit extends BaseUnit {
 				if (nearbyEnemies.length < 1 && farMines.length >0){
 					rc.setIndicatorString(0,"defusing mine");
 					rc.defuseMine(farMines[0]);
-				} else if (nearbyAllies.length >= 3){
+				} else if (nearbyAllies.length >= 4){
 					rc.setIndicatorString(0, "attacking!");
 					this.goToLocationBrute(targetLoc);
 //					this.goToLocationSmart(targetLoc);
 
-				} else if (farAllies.length >= 3){
+				} else if (farAllies.length >= 4){
 					rc.setIndicatorString(0, "regrouping to " + rc.senseRobotInfo(farAllies[0]).location);
 
 					
@@ -269,18 +269,38 @@ public class SoldierUnit extends BaseUnit {
 				rc.defuseMine(nearbyMine);
 				rc.yield();
 			} else if (rc.senseMine(curLoc) == null
-					&& (curLoc.x * 2 + curLoc.y) % 5 == 1) {
+					&& (curLoc.x * 2 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
 				// standing on patterned empty sq
 				rc.setIndicatorString(0, "laying mine");
 				rc.layMine();
 				rc.yield();
-			} else if (curLoc.distanceSquaredTo(defendPoint) <= 25) {
+			} else if (rc.senseMine(curLoc) == null
+					&& (curLoc.x + curLoc.y) % 2 == 1){
+				rc.setIndicatorString(0,"laying mine");
+				rc.layMine();
+				rc.yield();
+			} else if (curLoc.distanceSquaredTo(defendPoint) <= 20) {
 				// standing on own mine and within defense radius
-				rc.setIndicatorString(0, "moving randomly");
+				rc.setIndicatorString(0, "moving to defensive formation");
+				MapLocation topLeft=new MapLocation(defendPoint.x-2, defendPoint.y-2);
+				MapLocation topRight=new MapLocation(defendPoint.x+2,defendPoint.y-2);
+				MapLocation bottomLeft=new MapLocation(defendPoint.x-2,defendPoint.y+2);
+				MapLocation bottomRight = new MapLocation(defendPoint.x+2,defendPoint.y+2);
+				MapLocation[] locationArray={topLeft,topRight,bottomLeft,bottomRight, new MapLocation(defendPoint.x,defendPoint.y+1), new MapLocation(defendPoint.x,defendPoint.y-1), new MapLocation(defendPoint.x-1,defendPoint.y), new MapLocation(defendPoint.x+1,defendPoint.y)};
 				Direction randomDir = Direction.values()[(int) (Math.random() * 8)];
-				if (rc.canMove(randomDir)) {
-					rc.move(randomDir);
+				
+				for (int index=0;index<=3;index++){
+					if (rc.senseObjectAtLocation(locationArray[index])==null && rc.senseMine(locationArray[index])==null){
+						this.goToLocationBrute(locationArray[index]);
+					} else if (curLoc == locationArray[index]){
+						rc.yield();
+					} else {
+						if (rc.canMove(randomDir)){
+							rc.move(randomDir);
+						}
+					}
 				}
+				
 				rc.yield();
 			} else {
 				// outside defense radius, so move towards defend point
