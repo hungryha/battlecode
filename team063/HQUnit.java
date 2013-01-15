@@ -93,29 +93,40 @@ public class HQUnit extends BaseUnit {
 					// rc.researchUpgrade(Upgrade.DEFUSION);
 					// } else
 
-					if (Clock.getRoundNum() > 70
-							&& !rc.hasUpgrade(Upgrade.FUSION)) {
+					if (Clock.getRoundNum() > 70 && Clock.getRoundNum() < 200) {
+						
+						if (!rc.hasUpgrade(Upgrade.FUSION)) {
 
-						rc.setIndicatorString(0, "researching FUSION");
-						rc.researchUpgrade(Upgrade.FUSION);
-
+							rc.setIndicatorString(0, "researching FUSION, telling units to rally at shields");
+							rc.researchUpgrade(Upgrade.FUSION);
+						}
+						else {
+							if (rc.isActive()) {
+								this.spawnInAvailable();
+							}
+						}
+						rc.setIndicatorString(1, "rally at shields");
+						rc.broadcast(Util.getAllUnitChannelNum(), Util
+								.encodeMsg(initialTargetEncampments[2],
+										SoldierState.BRUTE_MOVE,
+										RobotType.SHIELDS, 0));
+						
 					} else if (Clock.getRoundNum() <= 200) {
 						rc.setIndicatorString(1, "rally at shields");
 						rc.broadcast(Util.getAllUnitChannelNum(), Util
 								.encodeMsg(initialTargetEncampments[2],
 										SoldierState.BRUTE_MOVE,
 										RobotType.SHIELDS, 0));
-						this.spawnInAvailable();
+						if (rc.isActive()) {
+							this.spawnInAvailable();
+						}
 					}
 
 					else if (Clock.getRoundNum() > 200
 							&& Clock.getRoundNum() < 1000) {
 
-						rc.setIndicatorString(0,
-								"sending attack move msg and spawning");
-						rc.broadcast(Util.getAllUnitChannelNum(), Util
-								.encodeMsg(enemyBaseLoc,
-										SoldierState.ATTACK_MOVE, RobotType.HQ,
+						rc.setIndicatorString(0, "sending attack move msg and spawning");
+						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc,SoldierState.ATTACK_MOVE, RobotType.HQ,
 										0));
 						this.spawnInAvailable();
 
