@@ -45,15 +45,17 @@ public class SoldierUnit extends BaseUnit {
 			}
 			
 			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
+
 			targetLoc = Util.getMapLocationFromMsg(msg);
 			state = Util.getSoldierStateFromMsg(msg);
 			encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);
 			
 			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
-			if (squadMsg != lastSquadMsg) {
+			if (squadMsg != lastSquadMsg && squadMsg != 0) {
 				targetLoc = Util.getMapLocationFromMsg(squadMsg);
 				state = Util.getSoldierStateFromMsg(squadMsg);
 				encampmentSecureType = Util.getEncampmentTypeFromMsg(squadMsg);
+				lastSquadMsg = squadMsg;
 			}
 
 		}
@@ -108,7 +110,8 @@ public class SoldierUnit extends BaseUnit {
 //					this.goToLocationSmart(targetLoc);
 
 				} else if (farAllies.length >= 3){
-					rc.setIndicatorString(0, "regrouping");
+					rc.setIndicatorString(0, "regrouping to " + rc.senseRobotInfo(farAllies[0]).location);
+
 					
 					this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
 //					this.goToLocationSmart(rc.senseRobotInfo(farAllies[0]).location);
