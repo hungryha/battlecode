@@ -44,20 +44,24 @@ public class SoldierUnit extends BaseUnit {
 				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
 			}
 			
-			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
-			rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
-			targetLoc = Util.getMapLocationFromMsg(msg);
-			state = Util.getSoldierStateFromMsg(msg);
-			encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);
+
 			
 			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
-			System.out.println("squadId: " + squadId);
-			System.out.println("squadMsg: " + squadMsg);
+
 			if (squadMsg != lastSquadMsg && squadMsg != 0) {
 				targetLoc = Util.getMapLocationFromMsg(squadMsg);
 				state = Util.getSoldierStateFromMsg(squadMsg);
 				encampmentSecureType = Util.getEncampmentTypeFromMsg(squadMsg);
 				lastSquadMsg = squadMsg;
+			}
+			
+			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
+			if (msg != lastAllMsg && msg != 0) {
+				rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
+				targetLoc = Util.getMapLocationFromMsg(msg);
+				state = Util.getSoldierStateFromMsg(msg);
+				encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);
+				lastAllMsg = msg;
 			}
 
 		}
