@@ -63,10 +63,31 @@ public class Util {
 	 * bits 29-31: checksum
 	 */
 	public static int encodeMsg(MapLocation loc, SoldierState state, RobotType encampmentType, int otherInfo) {
+		int checksum = (loc.x * 13 + loc.y * 41 + state.ordinal() * 3 + encampmentType.ordinal() * 31 + 511) % 8;
 		return (loc.x << X_COORD_SHIFT) | 
 				(loc.y << Y_COORD_SHIFT) | 
 				(state.ordinal() << SOLDIER_STATE_SHIFT) |
-				(encampmentType.ordinal() << ENCAMPMENT_TYPE_SHIFT);
+				(encampmentType.ordinal() << ENCAMPMENT_TYPE_SHIFT) |
+				(checksum << CHECK_SUM_SHIFT);
+	}
+	
+	
+	public static int[] decode(int msg) {
+		
+		int xcoord = (msg & (X_COORD_MASK << X_COORD_SHIFT)) >> X_COORD_SHIFT;
+		int ycoord = (msg & (Y_COORD_MASK << Y_COORD_SHIFT)) >> Y_COORD_SHIFT;
+		
+		int soldierStateIndex = (msg & (SOLDIER_STATE_MASK << SOLDIER_STATE_SHIFT)) >>> SOLDIER_STATE_SHIFT;
+		
+		int encampmentTypeIndex = (msg & (ENCAMPMENT_TYPE_MASK << ENCAMPMENT_TYPE_SHIFT)) >>> ENCAMPMENT_TYPE_SHIFT;
+		
+		int checksum = (msg & (CHECK_SUM_MASK << CHECK_SUM_SHIFT)) >>> CHECK_SUM_SHIFT;
+		
+		if ((xcoord * 13 + ycoord * 41 + soldierStateIndex * 3 + encampmentTypeIndex * 31 + 511) % 8 == checksum) {
+			return new int[] {xcoord, ycoord, soldierStateIndex, encampmentTypeIndex};
+		} else {
+			return null;
+		}
 	}
 	
 	public static MapLocation getMapLocationFromMsg(int encodedMsg) {
