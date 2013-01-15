@@ -22,8 +22,9 @@ public class HQUnit extends BaseUnit {
 	public static int SCOUT_SQUAD = 1;
 	public static int ENCAMPMENT_SQUAD_1 = 2;
 	public static int ENCAMPMENT_SQUAD_2 = 3;
-	public static int DEFEND_BASE_SQUAD = 4;
-	public static int ATTACK_SQUAD = 5;
+	public static int ENCAMPMENT_SQUAD_3 = 4;
+	public static int DEFEND_BASE_SQUAD = 5;
+	public static int ATTACK_SQUAD = 6;
 
 	public int unitsCount = 0;
 
@@ -94,25 +95,39 @@ public class HQUnit extends BaseUnit {
 					RobotType encamp = RobotType.SUPPLIER;
 
 					if (rc.getTeamPower() > 5) {
-						if (myUnits.length <= 2) {
+						if (myUnits.length <= 3) {
 							encampCounter = 0;
 							encamp = RobotType.SUPPLIER;
-						} else if (myUnits.length <= 4) {
+							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(
+									initialTargetEncampments[encampCounter],
+									SoldierState.SECURE_ENCAMPMENT, encamp, 0));
+
+						} else if (myUnits.length <= 5) {
 							encampCounter = 1;
 							encamp = RobotType.SUPPLIER;
-						} else {
+							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_2), Util.encodeMsg(
+									initialTargetEncampments[encampCounter],
+									SoldierState.SECURE_ENCAMPMENT, encamp, 0));
+						} else if (myUnits.length <= 7){
 							encampCounter = 2;
 							encamp = RobotType.SHIELDS;
+							encamp = RobotType.SUPPLIER;
+							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(
+									initialTargetEncampments[encampCounter],
+									SoldierState.SECURE_ENCAMPMENT, encamp, 0));
 						}
-						int msg = Util.encodeMsg(
-								initialTargetEncampments[encampCounter],
-								SoldierState.SECURE_ENCAMPMENT, encamp, 0);
+						else {
+							rc.broadcast(Util.getSquadChannelNum(DEFEND_BASE_SQUAD), 
+										Util.encodeMsg(myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
+						}
+//						int msg = Util.encodeMsg(
+//								initialTargetEncampments[encampCounter],
+//								SoldierState.SECURE_ENCAMPMENT, encamp, 0);
 
-						rc.broadcast(Util.getAllUnitChannelNum(), msg);
+//						rc.broadcast(Util.getAllUnitChannelNum(), msg);
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
 								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));
-
 						if (rc.isActive()) {
 							this.spawnInAvailable();
 						}
@@ -201,7 +216,11 @@ public class HQUnit extends BaseUnit {
 			return ENCAMPMENT_SQUAD_1;
 		} else if (unitsCount <= 5) {
 			return ENCAMPMENT_SQUAD_2;
-		} else {
+		} else if (unitsCount <= 7) {
+			return ENCAMPMENT_SQUAD_3;
+		}
+		
+		else {
 			return DEFEND_BASE_SQUAD;
 		}
 	}
