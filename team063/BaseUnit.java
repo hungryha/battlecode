@@ -10,6 +10,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
+import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
@@ -26,6 +27,9 @@ public abstract class BaseUnit {
 	protected int mapHeight;
 	protected int mapWidth;
 	protected int patienceCounter=0;
+	protected MapLocation[] prevLocs = new MapLocation[5];
+	protected int prevLocsCounter = 0;
+	protected boolean haveSeenEnemy = false;
 	
 	public BaseUnit(RobotController rc) {
 		this.rc = rc;
@@ -102,6 +106,22 @@ public abstract class BaseUnit {
 	// buggy
 	protected void goToLocationCareful(MapLocation dest) throws GameActionException {
 		MapLocation curLoc = rc.getLocation();
+		
+		if (!haveSeenEnemy && rc.senseNearbyGameObjects(
+					Robot.class, 16, otherTeam).length > 0) {
+			haveSeenEnemy = true;
+		}
+		
+		if (!haveSeenEnemy) {
+			for (int i = 0; i < prevLocs.length; i++) {
+				if (prevLocs[i] != null && curLoc.equals(prevLocs[i])) {
+					goToLocationBrute(curLoc.add(curLoc.directionTo(dest)));
+					break;
+				}
+			}
+			prevLocs[prevLocsCounter] = curLoc;
+			prevLocsCounter = (prevLocsCounter + 1) % prevLocs.length;
+		}
 		int dist = curLoc.distanceSquaredTo(dest);
 		if (dist > 0 && rc.isActive()) {
 			Direction dir = curLoc.directionTo(dest);
