@@ -107,42 +107,46 @@ public abstract class BaseUnit {
 			Direction dir = curLoc.directionTo(dest);
 			int[] directionOffsets = { 0, 1, -1, 2, -2 };
 			Direction lookingAtCurrently = dir;
-			MapLocation[] possibleMovementLocs=new MapLocation[8];
-			int index=0;
-			int minHuer=-1;
+			//MapLocation[] possibleMovementLocs=new MapLocation[8];
+			//int index=0;
+			//int minHuer=-1;
 			if (patienceCounter<=2){
 				for (int d : directionOffsets) {
 					lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
 					if (rc.canMove(lookingAtCurrently) && (rc.senseMine(curLoc.add(lookingAtCurrently)) == null || rc
 							.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
-						possibleMovementLocs[index]=curLoc.add(lookingAtCurrently);
+						//possibleMovementLocs[index]=curLoc.add(lookingAtCurrently);
 						//rc.move(lookingAtCurrently);
 						patienceCounter-=1;
-						index+=1;
-					}
-				}
-				for (int ind=0; ind<8; ind++){
-					if (possibleMovementLocs[ind]!=null){
-						if (minHuer>=0){
-							minHuer=Math.min(possibleMovementLocs[ind].distanceSquaredTo(dest), minHuer);
-						} else {
-							minHuer=ind;
+						if (rc.isActive()) {
+							rc.move(lookingAtCurrently);
 						}
 					}
 				}
-				if (minHuer>=0){
-					rc.setIndicatorString(1, "possibleMovementLocs: "+ Arrays.toString(possibleMovementLocs) +"best location: ("+possibleMovementLocs[minHuer].x+","+possibleMovementLocs[minHuer].y+")");
-					rc.move(curLoc.directionTo(possibleMovementLocs[minHuer]));
-				}
+//				for (int ind=0; ind<8; ind++){
+//					if (possibleMovementLocs[ind]!=null){
+//						if (minHuer>=0){
+//							minHuer=Math.min(possibleMovementLocs[ind].distanceSquaredTo(dest), minHuer);
+//						} else {
+//							minHuer=ind;
+//						}
+//					}
+//				}
+//				if (minHuer>=0){
+//					rc.setIndicatorString(1, "possibleMovementLocs: "+ Arrays.toString(possibleMovementLocs) +"best location: ("+possibleMovementLocs[minHuer].x+","+possibleMovementLocs[minHuer].y+")");
+//					rc.move(curLoc.directionTo(possibleMovementLocs[minHuer]));
+//				}
 				patienceCounter+=1;
 			} else {
 				for (int j: directionOffsets){
 					lookingAtCurrently = Direction.values()[(dir.ordinal() + j + 8) % 8];
 					if (rc.canMove(lookingAtCurrently) && (rc.senseMine(curLoc.add(lookingAtCurrently)) == null || rc
 							.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
-						rc.move(lookingAtCurrently);
+						if (rc.isActive()) {
+							rc.move(lookingAtCurrently);
+						}
 						break;
-				 	} else if (rc.canMove(lookingAtCurrently)){
+				 	} else if (rc.canMove(lookingAtCurrently) && rc.isActive()){
 				 		rc.defuseMine(curLoc.add(lookingAtCurrently));
 				 	}	
 				}
