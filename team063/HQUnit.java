@@ -44,6 +44,7 @@ public class HQUnit extends BaseUnit {
 
 	@Override
 	public void run() throws GameActionException {
+
 		// if (mapHeight > 65 && mapWidth > 65) {
 		// // big map, nuke strategy
 		// int msg = this.encodeMsg(
@@ -86,70 +87,10 @@ public class HQUnit extends BaseUnit {
 				rc.broadcast(Util.getInitialSquadNumChannelNum(),
 						getCurrentSquadAssignment());
 
-				if (this.rc.isActive()) {
-					// if (Clock.getRoundNum() > 70
-					// && !rc.hasUpgrade(Upgrade.DEFUSION)) {
-					// rc.setIndicatorString(0, "researching DEFUSION");
-					// rc.researchUpgrade(Upgrade.DEFUSION);
-					// } else
-
-					if (Clock.getRoundNum() > 70 && Clock.getRoundNum() < 200) {
-						
-						if (!rc.hasUpgrade(Upgrade.FUSION)) {
-
-							rc.setIndicatorString(0, "researching FUSION, telling units to rally at shields");
-							rc.researchUpgrade(Upgrade.FUSION);
-						}
-						else {
-							if (rc.isActive()) {
-								this.spawnInAvailable();
-							}
-						}
-						rc.setIndicatorString(1, "rally at shields");
-						rc.broadcast(Util.getAllUnitChannelNum(), Util
-								.encodeMsg(initialTargetEncampments[2],
-										SoldierState.BRUTE_MOVE,
-										RobotType.SHIELDS, 0));
-						
-					} else if (Clock.getRoundNum() <= 200) {
-						rc.setIndicatorString(1, "rally at shields");
-						rc.broadcast(Util.getAllUnitChannelNum(), Util
-								.encodeMsg(initialTargetEncampments[2],
-										SoldierState.BRUTE_MOVE,
-										RobotType.SHIELDS, 0));
-						if (rc.isActive()) {
-							this.spawnInAvailable();
-						}
-					}
-
-					else if (Clock.getRoundNum() > 200
-							&& Clock.getRoundNum() < 1000) {
-
-						rc.setIndicatorString(0, "sending attack move msg and spawning");
-						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc,SoldierState.ATTACK_MOVE, RobotType.HQ,
-										0));
-						this.spawnInAvailable();
-
-					} else if (Clock.getRoundNum() > 1000) {
-
-						rc.setIndicatorString(0,
-								"researching nuke, sending defend base msg");
-						rc.researchUpgrade(Upgrade.NUKE);
-						rc.broadcast(Util.getAllUnitChannelNum(), Util
-								.encodeMsg(myBaseLoc,
-										SoldierState.DEFEND_POSITION,
-										RobotType.HQ, 0));
-
-					} else {
-						rc.setIndicatorString(0, "spawning in available space");
-						this.spawnInAvailable();
-					}
-				}
-
 				if (Clock.getRoundNum() < 70) {
 					// broadcast
-					GameObject[] myUnits = rc.senseNearbyGameObjects(
-							Robot.class, 1000, myTeam);
+					GameObject[] myUnits = rc.senseNearbyGameObjects(Robot.class,
+							1000, myTeam);
 					RobotType encamp = RobotType.SUPPLIER;
 
 					if (rc.getTeamPower() > 5) {
@@ -172,13 +113,85 @@ public class HQUnit extends BaseUnit {
 								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));
 
-						// rc.broadcast(2, msg);
-						// rc.broadcast(3, msg);
+						if (rc.isActive()) {
+							this.spawnInAvailable();
+						}
+					}
+				}
+				
+				// if (Clock.getRoundNum() > 70
+				// && !rc.hasUpgrade(Upgrade.DEFUSION)) {
+				// rc.setIndicatorString(0, "researching DEFUSION");
+				// rc.researchUpgrade(Upgrade.DEFUSION);
+				// } else
+
+				else if (Clock.getRoundNum() >= 70 && Clock.getRoundNum() <= 200) {
+					rc.setIndicatorString(
+							1,
+							"round: "
+									+ Clock.getRoundNum()
+									+ " rally at shields, writing to channel: "
+									+ Util.getAllUnitChannelNum()
+									+ " msg: "
+									+ Util.encodeMsg(
+											initialTargetEncampments[2],
+											SoldierState.BRUTE_MOVE,
+											RobotType.SHIELDS, 0));
+
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+							initialTargetEncampments[2],
+							SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+					if (!rc.hasUpgrade(Upgrade.FUSION)) {
+
+						rc.setIndicatorString(0,
+								"researching FUSION, telling units to rally at shields");
+						rc.researchUpgrade(Upgrade.FUSION);
+					} else {
+						if (rc.isActive()) {
+							this.spawnInAvailable();
+						}
+					}
+
+				}
+				/*
+				 * else if (Clock.getRoundNum() <= 200) {
+				 * rc.setIndicatorString(1, "rally at shields");
+				 * rc.broadcast(Util.getAllUnitChannelNum(), Util
+				 * .encodeMsg(initialTargetEncampments[2],
+				 * SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0)); if
+				 * (rc.isActive()) { this.spawnInAvailable(); } }
+				 */
+				else if (Clock.getRoundNum() > 200
+						&& Clock.getRoundNum() <= 1000) {
+
+					rc.setIndicatorString(0,
+							"sending attack move msg and spawning");
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+							enemyBaseLoc, SoldierState.ATTACK_MOVE,
+							RobotType.HQ, 0));
+					if (rc.isActive()) {
+						this.spawnInAvailable();
+					}
+
+				} else if (Clock.getRoundNum() > 1000) {
+
+					rc.setIndicatorString(0,
+							"researching nuke, sending defend base msg");
+					rc.researchUpgrade(Upgrade.NUKE);
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+							myBaseLoc, SoldierState.DEFEND_POSITION,
+							RobotType.HQ, 0));
+
+				} else {
+					rc.setIndicatorString(0, "spawning in available space");
+					if (rc.isActive()) {
+						this.spawnInAvailable();
 					}
 				}
 			}
-		}
 
+
+		}
 	}
 
 	public int getCurrentSquadAssignment() {

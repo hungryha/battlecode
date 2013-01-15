@@ -46,7 +46,7 @@ public class Util {
 	}
 	
 	public static int encodeChannelNum(int channelNum) {
-		return (channelNum * 151 + 983 * Clock.getRoundNum() + Util.SEED) % 65521;
+		return (channelNum * 151 + 983*Clock.getRoundNum() + Util.SEED) % 65521;
 	}
 	
 	
