@@ -49,9 +49,8 @@ public class SoldierUnit extends BaseUnit {
 
 			
 			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
-			Util.decode(squadMsg);
 
-			if (squadMsg != lastSquadMsg && squadMsg != 0) {
+			if (squadMsg != lastSquadMsg && squadMsg != 0 && Util.decode(squadMsg) != null) {
 				targetLoc = Util.getMapLocationFromMsg(squadMsg);
 				state = Util.getSoldierStateFromMsg(squadMsg);
 				encampmentSecureType = Util.getEncampmentTypeFromMsg(squadMsg);
@@ -61,7 +60,7 @@ public class SoldierUnit extends BaseUnit {
 			// read message sent to all squads except scout
 			if (squadId != HQUnit.SCOUT_SQUAD) {
 				int curMsg = rc.readBroadcast(Util.getAllUnitExceptScoutChannelNum());
-				if (curMsg != lastAllExceptScoutMsg && curMsg != 0) {
+				if (curMsg != lastAllExceptScoutMsg && curMsg != 0 && Util.decode(curMsg) != null) {
 					targetLoc = Util.getMapLocationFromMsg(curMsg);
 					state = Util.getSoldierStateFromMsg(curMsg);
 					encampmentSecureType = Util.getEncampmentTypeFromMsg(curMsg);
@@ -70,7 +69,7 @@ public class SoldierUnit extends BaseUnit {
 			}
 			// read message sent to everyone
 			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
-			if (msg != lastAllMsg && msg != 0) {
+			if (msg != lastAllMsg && msg != 0 && Util.decode(msg) != null) {
 				rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "all unit channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
 				targetLoc = Util.getMapLocationFromMsg(msg);
 				state = Util.getSoldierStateFromMsg(msg);

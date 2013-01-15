@@ -46,44 +46,53 @@ public class HQUnit extends BaseUnit {
 	@Override
 	public void run() throws GameActionException {
 
-		// if (mapHeight > 65 && mapWidth > 65) {
-		// // big map, nuke strategy
-		// int msg = this.encodeMsg(
-		// myBaseLoc,
-		// SoldierState.DEFEND_POSITION, RobotType.HQ, 0);
-		// rc.broadcast(this.getAllUnitChannelNum(), msg);
-		// if (rc.isActive()) {
-		// if (Clock.getRoundNum() < 200) {
-		// // spawn robots
-		// this.spawnInAvailable();
-		// } else {
-		// rc.researchUpgrade(Upgrade.NUKE);
-		//
-		// rc.broadcast(this.getAllUnitChannelNum(), this.encodeMsg(
-		// myBaseLoc,
-		// SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
-		// }
-		// }
-		// }
-		// if (mapHeight <= 30 && mapWidth <= 30) {
-		// // small map, rush strategy
-		// // build a shield encamp, rally there until 130, then rush
-		// if (Clock.getRoundNum() < 100) {
-		// rc.broadcast(Util.getAllUnitChannelNum(),
-		// Util.encodeMsg(initialTargetEncampments[0],
-		// SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-		// }
-		// else {
-		// rc.broadcast(Util.getAllUnitChannelNum(),
-		// Util.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ,
-		// 0));
-		// }
-		// if (rc.isActive()) {
-		// this.spawnInAvailable();
-		// }
-		// }
-		// else {
-		{
+		if (mapHeight > 65 && mapWidth > 65) {
+			// big map, nuke strategy
+
+			if (Clock.getRoundNum() < 100) {
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						initialTargetEncampments[0],
+						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+				if (rc.isActive()) {
+					this.spawnInAvailable();
+				}
+			} else if (Clock.getRoundNum() < 200) {
+				// spawn robots
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
+						0));
+
+				if (rc.isActive()) {
+					this.spawnInAvailable();
+				}
+			} else {
+				if (rc.isActive()) {
+					rc.researchUpgrade(Upgrade.NUKE);
+				}
+
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
+						0));
+			}
+
+		}
+		else if (mapHeight <= 30 && mapWidth <= 30) {
+			// small map, rush strategy
+			// build a shield encamp, rally there until 130, then rush
+			if (Clock.getRoundNum() < 100) {
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						initialTargetEncampments[0],
+						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+			} else {
+				rc.broadcast(Util.getAllUnitChannelNum(), Util
+						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
+								RobotType.HQ, 0));
+			}
+			if (rc.isActive()) {
+				this.spawnInAvailable();
+			}
+		} else {
+		
 			// check enemy nuke progress
 			if (Clock.getRoundNum() >= 200) {
 				if (rc.getTeamPower() >= 50) {
@@ -158,10 +167,16 @@ public class HQUnit extends BaseUnit {
 											initialTargetEncampments[2],
 											SoldierState.BRUTE_MOVE,
 											RobotType.SHIELDS, 0));
-
-					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
+					if (initialTargetEncampments[2].distanceSquaredTo(enemyBaseLoc) < myBaseLoc.distanceSquaredTo(enemyBaseLoc)) {
+						rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 							initialTargetEncampments[2],
 							SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+					}
+					else {
+						rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
+								myBaseLoc,
+								SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+					}
 					if (!rc.hasUpgrade(Upgrade.FUSION)) {
 
 						rc.setIndicatorString(0,
@@ -187,11 +202,11 @@ public class HQUnit extends BaseUnit {
 
 					rc.setIndicatorString(0,
 							"sending attack move msg and spawning");
-//					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
-//							enemyBaseLoc, SoldierState.ATTACK_MOVE,
 					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
-							myBaseLoc, SoldierState.DEFEND_POSITION,
-							RobotType.HQ, 0));
+							enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+//					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
+//							myBaseLoc, SoldierState.DEFEND_POSITION,
+//							RobotType.HQ, 0));
 					if (rc.isActive()) {
 						this.spawnInAvailable();
 					}
