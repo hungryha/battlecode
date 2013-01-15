@@ -182,7 +182,7 @@ public class HQUnit extends BaseUnit {
 					rc.setIndicatorString(0,
 							"sending attack move msg and spawning");
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-							myBaseLoc, SoldierState.DEFEND_POSITION,
+							enemyBaseLoc, SoldierState.ATTACK_MOVE,
 							RobotType.HQ, 0));
 					if (rc.isActive()) {
 						this.spawnInAvailable();
