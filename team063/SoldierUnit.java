@@ -22,6 +22,7 @@ public class SoldierUnit extends BaseUnit {
 	private int lastSquadMsg;
 	private int lastUnitMsg;
 	private int lastAllMsg;
+	private int lastAllExceptScoutMsg;
 
 	public SoldierUnit(RobotController rc) {
 		super(rc);
@@ -30,6 +31,7 @@ public class SoldierUnit extends BaseUnit {
 		lastSquadMsg = 0;
 		lastUnitMsg = 0;
 		lastAllMsg = 0;
+		lastAllExceptScoutMsg = 0;
 	}
 	
 	@Override
@@ -38,7 +40,7 @@ public class SoldierUnit extends BaseUnit {
 		 * 1. read broadcasts 2. switch state or squad if necessary 3. act upon
 		 * state
 		 */
-		if (rc.getTeamPower() >= 3 * GameConstants.BROADCAST_READ_COST) {
+		if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_READ_COST) {
 
 			if (squadId == HQUnit.NO_SQUAD) {
 				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
@@ -54,7 +56,18 @@ public class SoldierUnit extends BaseUnit {
 				encampmentSecureType = Util.getEncampmentTypeFromMsg(squadMsg);
 				lastSquadMsg = squadMsg;
 			}
-			
+		
+			// read message sent to all squads except scout
+			if (squadId != HQUnit.SCOUT_SQUAD) {
+				int curMsg = rc.readBroadcast(Util.getAllUnitExceptScoutChannelNum());
+				if (curMsg != lastAllExceptScoutMsg && curMsg != 0) {
+					targetLoc = Util.getMapLocationFromMsg(curMsg);
+					state = Util.getSoldierStateFromMsg(curMsg);
+					encampmentSecureType = Util.getEncampmentTypeFromMsg(curMsg);
+					lastAllExceptScoutMsg = curMsg;
+				}
+			}
+			// read message sent to everyone
 			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
 			if (msg != lastAllMsg && msg != 0) {
 				rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
@@ -71,13 +84,6 @@ public class SoldierUnit extends BaseUnit {
 
 		this.curLoc = rc.getLocation();
 		rc.setIndicatorString(2, "cur state: " + state + " cur target: " + targetLoc + " squad: " + squadId);
-
-
-		//hardcoded test strategy
-//		if (Clock.getRoundNum() > 130){
-//			targetLoc = enemyBaseLoc;
-//			state=SoldierState.ATTACK_MOVE;
-//		}
 
 		switch (state) {
 
@@ -232,6 +238,7 @@ public class SoldierUnit extends BaseUnit {
 
 			break;
 		case DEFAULT:
+			
 			break;
 		default:
 			// do nothing if no instructions from hq
@@ -249,67 +256,69 @@ public class SoldierUnit extends BaseUnit {
 	}
 
 	protected void defendPosition(MapLocation defendPoint)
-			throws GameActionException {
-		Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 20,
-				otherTeam);
-		if (nearbyEnemies.length >= 1) {
-			if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
-				rc.setIndicatorString(0, "not enough neraby allies to fight!");
-				this.goToLocationBrute(defendPoint);
-			} else if (curLoc.distanceSquaredTo(defendPoint) <= 49) {
-
-				rc.setIndicatorString(0, "attacking nearby enemy!");
-				this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
+			throws GameActionException { // 50 - 800 bytecode
+		if (rc.isActive()) {
+			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 20,
+					otherTeam);
+			if (nearbyEnemies.length >= 1) {
+				if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
+					rc.setIndicatorString(0, "not enough neraby allies to fight!");
+					this.goToLocationBrute(defendPoint);
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= 49) {
+	
+					rc.setIndicatorString(0, "attacking nearby enemy!");
+					this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
+				} else {
+					rc.setIndicatorString(0, "enemy is too far away to chase!");
+					this.goToLocationBrute(defendPoint);
+				}
 			} else {
-				rc.setIndicatorString(0, "enemy is too far away to chase!");
-				this.goToLocationBrute(defendPoint);
-			}
-		} else {
-			MapLocation nearbyMine = this.senseAdjacentMine();
-			if (nearbyMine != null) {
-				// if nearby neutral or enemy mine is found
-				rc.setIndicatorString(0, "mine detected at " + nearbyMine.x
-						+ " " + nearbyMine.y);
-				rc.defuseMine(nearbyMine);
-				rc.yield();
-			} else if (rc.senseMine(curLoc) == null
-					&& (curLoc.x * 2 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
-				// standing on patterned empty sq
-				rc.setIndicatorString(0, "laying mine");
-				rc.layMine();
-				rc.yield();
-			} else if (rc.senseMine(curLoc) == null
-					&& (curLoc.x + curLoc.y) % 2 == 1){
-				rc.setIndicatorString(0,"laying mine");
-				rc.layMine();
-				rc.yield();
-			} else if (curLoc.distanceSquaredTo(defendPoint) <= 20) {
-				// standing on own mine and within defense radius
-				rc.setIndicatorString(0, "moving to defensive formation");
-				MapLocation topLeft=new MapLocation(defendPoint.x-2, defendPoint.y-2);
-				MapLocation topRight=new MapLocation(defendPoint.x+2,defendPoint.y-2);
-				MapLocation bottomLeft=new MapLocation(defendPoint.x-2,defendPoint.y+2);
-				MapLocation bottomRight = new MapLocation(defendPoint.x+2,defendPoint.y+2);
-				MapLocation[] locationArray={topLeft,topRight,bottomLeft,bottomRight, new MapLocation(defendPoint.x,defendPoint.y+1), new MapLocation(defendPoint.x,defendPoint.y-1), new MapLocation(defendPoint.x-1,defendPoint.y), new MapLocation(defendPoint.x+1,defendPoint.y)};
-				Direction randomDir = Direction.values()[(int) (Math.random() * 8)];
-				
-				for (int index=0;index<=3;index++){
-					if (rc.senseObjectAtLocation(locationArray[index])==null && rc.senseMine(locationArray[index])==null){
-						this.goToLocationBrute(locationArray[index]);
-					} else if (curLoc == locationArray[index]){
-						rc.yield();
-					} else {
-						if (rc.canMove(randomDir)){
-							rc.move(randomDir);
+				MapLocation nearbyMine = this.senseAdjacentMine();
+				if (nearbyMine != null) {
+					// if nearby neutral or enemy mine is found
+					rc.setIndicatorString(0, "mine detected at " + nearbyMine.x
+							+ " " + nearbyMine.y);
+					rc.defuseMine(nearbyMine);
+					rc.yield();
+				} else if (rc.senseMine(curLoc) == null
+						&& (curLoc.x * 2 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
+					// standing on patterned empty sq
+					rc.setIndicatorString(0, "laying mine");
+					rc.layMine();
+					rc.yield();
+				} else if (rc.senseMine(curLoc) == null
+						&& (curLoc.x + curLoc.y) % 2 == 1){
+					rc.setIndicatorString(0,"laying mine");
+					rc.layMine();
+					rc.yield();
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= 20) {
+					// standing on own mine and within defense radius
+					rc.setIndicatorString(0, "moving to defensive formation");
+					MapLocation topLeft=new MapLocation(defendPoint.x-2, defendPoint.y-2);
+					MapLocation topRight=new MapLocation(defendPoint.x+2,defendPoint.y-2);
+					MapLocation bottomLeft=new MapLocation(defendPoint.x-2,defendPoint.y+2);
+					MapLocation bottomRight = new MapLocation(defendPoint.x+2,defendPoint.y+2);
+					MapLocation[] locationArray={topLeft,topRight,bottomLeft,bottomRight, new MapLocation(defendPoint.x,defendPoint.y+1), new MapLocation(defendPoint.x,defendPoint.y-1), new MapLocation(defendPoint.x-1,defendPoint.y), new MapLocation(defendPoint.x+1,defendPoint.y)};
+					Direction randomDir = Direction.values()[(int) (Math.random() * 8)];
+					
+					for (int index=0;index<=3;index++){
+						if (rc.senseObjectAtLocation(locationArray[index])==null && rc.senseMine(locationArray[index])==null){
+							this.goToLocationBrute(locationArray[index]);
+						} else if (curLoc == locationArray[index]){
+							rc.yield();
+						} else {
+							if (rc.canMove(randomDir) && rc.isActive()){
+								rc.move(randomDir);
+							}
 						}
 					}
+					
+					rc.yield();
+				} else {
+					// outside defense radius, so move towards defend point
+					rc.setIndicatorString(0, "returning to defend point");
+					this.goToLocationBrute(defendPoint);
 				}
-				
-				rc.yield();
-			} else {
-				// outside defense radius, so move towards defend point
-				rc.setIndicatorString(0, "returning to defend point");
-				this.goToLocationBrute(defendPoint);
 			}
 		}
 	}

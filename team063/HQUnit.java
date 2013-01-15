@@ -120,11 +120,7 @@ public class HQUnit extends BaseUnit {
 							rc.broadcast(Util.getSquadChannelNum(DEFEND_BASE_SQUAD), 
 										Util.encodeMsg(myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
 						}
-//						int msg = Util.encodeMsg(
-//								initialTargetEncampments[encampCounter],
-//								SoldierState.SECURE_ENCAMPMENT, encamp, 0);
 
-//						rc.broadcast(Util.getAllUnitChannelNum(), msg);
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
 								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));
@@ -146,14 +142,14 @@ public class HQUnit extends BaseUnit {
 							"round: "
 									+ Clock.getRoundNum()
 									+ " rally at shields, writing to channel: "
-									+ Util.getAllUnitChannelNum()
+									+ Util.getAllUnitExceptScoutChannelNum()
 									+ " msg: "
 									+ Util.encodeMsg(
 											initialTargetEncampments[2],
 											SoldierState.BRUTE_MOVE,
 											RobotType.SHIELDS, 0));
 
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 							initialTargetEncampments[2],
 							SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
 					if (!rc.hasUpgrade(Upgrade.FUSION)) {
@@ -181,6 +177,8 @@ public class HQUnit extends BaseUnit {
 
 					rc.setIndicatorString(0,
 							"sending attack move msg and spawning");
+//					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
+//							enemyBaseLoc, SoldierState.ATTACK_MOVE,
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							enemyBaseLoc, SoldierState.ATTACK_MOVE,
 							RobotType.HQ, 0));
@@ -192,8 +190,10 @@ public class HQUnit extends BaseUnit {
 
 					rc.setIndicatorString(0,
 							"researching nuke, sending defend base msg");
-					rc.researchUpgrade(Upgrade.NUKE);
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+					if (rc.isActive()) {
+						rc.researchUpgrade(Upgrade.NUKE);
+					}
+					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 							myBaseLoc, SoldierState.DEFEND_POSITION,
 							RobotType.HQ, 0));
 

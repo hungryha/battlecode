@@ -45,6 +45,10 @@ public class Util {
 		return encodeChannelNum(1);
 	}
 	
+	public static int getAllUnitExceptScoutChannelNum() {
+		return encodeChannelNum(2);
+	}
+	
 	public static int encodeChannelNum(int channelNum) {
 		return (channelNum * 151 + 983*Clock.getRoundNum() + Util.SEED) % 65521;
 	}
