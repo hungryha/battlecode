@@ -49,6 +49,7 @@ public class SoldierUnit extends BaseUnit {
 
 			
 			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
+			Util.decode(squadMsg);
 
 			if (squadMsg != lastSquadMsg && squadMsg != 0) {
 				targetLoc = Util.getMapLocationFromMsg(squadMsg);
