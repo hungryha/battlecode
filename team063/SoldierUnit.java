@@ -173,15 +173,13 @@ public class SoldierUnit extends BaseUnit {
 					// location
 				}
 				if (rc.isActive()) {
-					this.goToLocationBrute(curLoc.subtract(curLoc.directionTo(rc
+					this.goToLocationCareful(curLoc.subtract(curLoc.directionTo(rc
 						.senseRobotInfo(nearbyEnemies_scouting[0]).location)));
 				}
-				rc.yield();
 			} else {
 				if (rc.isActive()) {
-					this.goToLocationBrute(targetLoc);
+					this.goToLocationCareful(targetLoc);
 				}
-				rc.yield();
 			}
 			break;
 		case CAPTURE_MOVE:
