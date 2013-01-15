@@ -177,8 +177,10 @@ public class HQUnit extends BaseUnit {
 
 					rc.setIndicatorString(0,
 							"sending attack move msg and spawning");
-					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
-							enemyBaseLoc, SoldierState.ATTACK_MOVE,
+//					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
+//							enemyBaseLoc, SoldierState.ATTACK_MOVE,
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+							myBaseLoc, SoldierState.DEFEND_POSITION,
 							RobotType.HQ, 0));
 					if (rc.isActive()) {
 						this.spawnInAvailable();
@@ -188,7 +190,9 @@ public class HQUnit extends BaseUnit {
 
 					rc.setIndicatorString(0,
 							"researching nuke, sending defend base msg");
-					rc.researchUpgrade(Upgrade.NUKE);
+					if (rc.isActive()) {
+						rc.researchUpgrade(Upgrade.NUKE);
+					}
 					rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 							myBaseLoc, SoldierState.DEFEND_POSITION,
 							RobotType.HQ, 0));

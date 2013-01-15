@@ -20,7 +20,7 @@ public class EncampmentUnit extends BaseUnit {
 		case SHIELDS:
 			break;
 		case ARTILLERY:
-			Robot[] nearbyEnemies=rc.senseNearbyGameObjects(Robot.class, 49, otherTeam);
+			Robot[] nearbyEnemies=rc.senseNearbyGameObjects(Robot.class, 63, otherTeam);
 			if (nearbyEnemies.length >= 1){
 				for (int i=0; i<nearbyEnemies.length; i++){
 					enemyLoc=rc.senseRobotInfo(nearbyEnemies[i]).location;

@@ -99,7 +99,14 @@ public class SoldierUnit extends BaseUnit {
 			
 			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
 			Robot[] nearbyAllies = rc.senseNearbyGameObjects(Robot.class,9,myTeam);
-			Robot[] farAllies = rc.senseNearbyGameObjects(Robot.class,36,myTeam);
+			Robot[] farAllies;
+			if (mapHeight <=30 && mapWidth<=30){
+				farAllies = rc.senseNearbyGameObjects(Robot.class,20,myTeam);
+			} else if (!(mapHeight >=60) && !(mapWidth>=60)){
+				farAllies = rc.senseNearbyGameObjects(Robot.class,36,myTeam);
+			} else {
+				farAllies = rc.senseNearbyGameObjects(Robot.class,49,myTeam);
+			}
 			curLoc=rc.getLocation();
 			MapLocation[] farMines= {};
 			if (rc.hasUpgrade(Upgrade.DEFUSION)){
@@ -109,13 +116,14 @@ public class SoldierUnit extends BaseUnit {
 				if (nearbyEnemies.length < 1 && farMines.length >0){
 					rc.setIndicatorString(0,"defusing mine");
 					rc.defuseMine(farMines[0]);
-				} else if (nearbyAllies.length >= 3){
+				} else if (nearbyAllies.length >= 4){
 					rc.setIndicatorString(0, "attacking!");
 					this.goToLocationBrute(targetLoc);
 //					this.goToLocationSmart(targetLoc);
 
-				} else if (farAllies.length >= 1){
+				} else if (farAllies.length >= 4){
 					rc.setIndicatorString(0, "regrouping to " + rc.senseRobotInfo(farAllies[0]).location);
+
 					
 					this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
 //					this.goToLocationSmart(rc.senseRobotInfo(farAllies[0]).location);
@@ -249,46 +257,68 @@ public class SoldierUnit extends BaseUnit {
 
 	protected void defendPosition(MapLocation defendPoint)
 			throws GameActionException { // 50 - 800 bytecode
-		Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 25,
-				otherTeam);
-		if (nearbyEnemies.length >= 1) {
-			if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
-				rc.setIndicatorString(0, "not enough neraby allies to fight!");
-				this.goToLocationBrute(defendPoint);
-			} else if (curLoc.distanceSquaredTo(defendPoint) <= 49) {
-
-				rc.setIndicatorString(0, "attacking nearby enemy!");
-				this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
-			} else {
-				rc.setIndicatorString(0, "enemy is too far away to chase!");
-				this.goToLocationBrute(defendPoint);
-			}
-		} else {
-			MapLocation nearbyMine = this.senseAdjacentMine();
-			if (nearbyMine != null) {
-				// if nearby neutral or enemy mine is found
-				rc.setIndicatorString(0, "mine detected at " + nearbyMine.x
-						+ " " + nearbyMine.y);
-				rc.defuseMine(nearbyMine);
-				rc.yield();
-			} else if (rc.senseMine(curLoc) == null
-					&& (curLoc.x * 2 + curLoc.y) % 5 == 1) {
-				// standing on patterned empty sq
-				rc.setIndicatorString(0, "laying mine");
-				rc.layMine();
-				rc.yield();
-			} else if (curLoc.distanceSquaredTo(defendPoint) <= 25) {
-				// standing on own mine and within defense radius
-				rc.setIndicatorString(0, "moving randomly");
-				Direction randomDir = Direction.values()[(int) (Math.random() * 8)];
-				if (rc.canMove(randomDir)) {
-					rc.move(randomDir);
+		if (rc.isActive()) {
+			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 20,
+					otherTeam);
+			if (nearbyEnemies.length >= 1) {
+				if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
+					rc.setIndicatorString(0, "not enough neraby allies to fight!");
+					this.goToLocationBrute(defendPoint);
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= 49) {
+	
+					rc.setIndicatorString(0, "attacking nearby enemy!");
+					this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
+				} else {
+					rc.setIndicatorString(0, "enemy is too far away to chase!");
+					this.goToLocationBrute(defendPoint);
 				}
-				rc.yield();
 			} else {
-				// outside defense radius, so move towards defend point
-				rc.setIndicatorString(0, "returning to defend point");
-				this.goToLocationBrute(defendPoint);
+				MapLocation nearbyMine = this.senseAdjacentMine();
+				if (nearbyMine != null) {
+					// if nearby neutral or enemy mine is found
+					rc.setIndicatorString(0, "mine detected at " + nearbyMine.x
+							+ " " + nearbyMine.y);
+					rc.defuseMine(nearbyMine);
+					rc.yield();
+				} else if (rc.senseMine(curLoc) == null
+						&& (curLoc.x * 2 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
+					// standing on patterned empty sq
+					rc.setIndicatorString(0, "laying mine");
+					rc.layMine();
+					rc.yield();
+				} else if (rc.senseMine(curLoc) == null
+						&& (curLoc.x + curLoc.y) % 2 == 1){
+					rc.setIndicatorString(0,"laying mine");
+					rc.layMine();
+					rc.yield();
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= 20) {
+					// standing on own mine and within defense radius
+					rc.setIndicatorString(0, "moving to defensive formation");
+					MapLocation topLeft=new MapLocation(defendPoint.x-2, defendPoint.y-2);
+					MapLocation topRight=new MapLocation(defendPoint.x+2,defendPoint.y-2);
+					MapLocation bottomLeft=new MapLocation(defendPoint.x-2,defendPoint.y+2);
+					MapLocation bottomRight = new MapLocation(defendPoint.x+2,defendPoint.y+2);
+					MapLocation[] locationArray={topLeft,topRight,bottomLeft,bottomRight, new MapLocation(defendPoint.x,defendPoint.y+1), new MapLocation(defendPoint.x,defendPoint.y-1), new MapLocation(defendPoint.x-1,defendPoint.y), new MapLocation(defendPoint.x+1,defendPoint.y)};
+					Direction randomDir = Direction.values()[(int) (Math.random() * 8)];
+					
+					for (int index=0;index<=3;index++){
+						if (rc.senseObjectAtLocation(locationArray[index])==null && rc.senseMine(locationArray[index])==null){
+							this.goToLocationBrute(locationArray[index]);
+						} else if (curLoc == locationArray[index]){
+							rc.yield();
+						} else {
+							if (rc.canMove(randomDir) && rc.isActive()){
+								rc.move(randomDir);
+							}
+						}
+					}
+					
+					rc.yield();
+				} else {
+					// outside defense radius, so move towards defend point
+					rc.setIndicatorString(0, "returning to defend point");
+					this.goToLocationBrute(defendPoint);
+				}
 			}
 		}
 	}

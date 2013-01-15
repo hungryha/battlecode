@@ -1,5 +1,10 @@
 package team063;
 
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+import team063.message.Message;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -20,6 +25,7 @@ public abstract class BaseUnit {
 	protected MapLocation myBaseLoc;
 	protected int mapHeight;
 	protected int mapWidth;
+	protected int patienceCounter=0;
 	
 	public BaseUnit(RobotController rc) {
 		this.rc = rc;
@@ -94,27 +100,55 @@ public abstract class BaseUnit {
 	}
 
 	// buggy
-	protected void goToLocationSmart(MapLocation dest) throws GameActionException {
+	protected void goToLocationCareful(MapLocation dest) throws GameActionException {
 		MapLocation curLoc = rc.getLocation();
 		int dist = curLoc.distanceSquaredTo(dest);
 		if (dist > 0 && rc.isActive()) {
 			Direction dir = curLoc.directionTo(dest);
 			int[] directionOffsets = { 0, 1, -1, 2, -2 };
 			Direction lookingAtCurrently = dir;
-			for (int d : directionOffsets) {
-				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
-				if (rc.canMove(lookingAtCurrently) && (rc.senseMine(curLoc.add(lookingAtCurrently)) == null || rc
-						.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
-					if ((rc.senseMine(curLoc.add(lookingAtCurrently)) == null) || (rc
-								.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
-						rc.move(lookingAtCurrently);
+			MapLocation[] possibleMovementLocs=new MapLocation[8];
+			int index=0;
+			int minHuer=-1;
+			if (patienceCounter<=2){
+				for (int d : directionOffsets) {
+					lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
+					if (rc.canMove(lookingAtCurrently) && (rc.senseMine(curLoc.add(lookingAtCurrently)) == null || rc
+							.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
+						possibleMovementLocs[index]=curLoc.add(lookingAtCurrently);
+						//rc.move(lookingAtCurrently);
+						patienceCounter-=1;
+						index+=1;
 					}
-					else {
-						rc.defuseMine(curLoc.add(lookingAtCurrently));
-					}
-					break;
 				}
+				for (int ind=0; ind<8; ind++){
+					if (possibleMovementLocs[ind]!=null){
+						if (minHuer>=0){
+							minHuer=Math.min(possibleMovementLocs[ind].distanceSquaredTo(dest), minHuer);
+						} else {
+							minHuer=ind;
+						}
+					}
+				}
+				if (minHuer>=0){
+					rc.setIndicatorString(1, "possibleMovementLocs: "+ Arrays.toString(possibleMovementLocs) +"best location: ("+possibleMovementLocs[minHuer].x+","+possibleMovementLocs[minHuer].y+")");
+					rc.move(curLoc.directionTo(possibleMovementLocs[minHuer]));
+				}
+				patienceCounter+=1;
+			} else {
+				for (int j: directionOffsets){
+					lookingAtCurrently = Direction.values()[(dir.ordinal() + j + 8) % 8];
+					if (rc.canMove(lookingAtCurrently) && (rc.senseMine(curLoc.add(lookingAtCurrently)) == null || rc
+							.senseMine(curLoc.add(lookingAtCurrently)) == myTeam)) {
+						rc.move(lookingAtCurrently);
+						break;
+				 	} else if (rc.canMove(lookingAtCurrently)){
+				 		rc.defuseMine(curLoc.add(lookingAtCurrently));
+				 	}	
+				}
+				patienceCounter=0;
 			}
+			
 		}
 	}
 	protected void followWaypointPath(MapLocation[] waypointArray,
