@@ -23,8 +23,10 @@ public class HQUnit extends BaseUnit {
 	public static int ENCAMPMENT_SQUAD_1 = 2;
 	public static int ENCAMPMENT_SQUAD_2 = 3;
 	public static int ENCAMPMENT_SQUAD_3 = 4;
-	public static int DEFEND_BASE_SQUAD = 5;
-	public static int ATTACK_SQUAD = 6;
+	public static int ENCAMPMENT_SQUAD_4 = 5;
+	public static int ENCAMPMENT_SQUAD_5 = 6;
+	public static int DEFEND_BASE_SQUAD = 7;
+	public static int ATTACK_SQUAD = 8;
 
 	public int unitsCount = 0;
 
@@ -78,7 +80,9 @@ public class HQUnit extends BaseUnit {
 		}
 		else if (this.distEnemyBase<=800) {
 			// small map, rush strategy
-			if (Clock.getRoundNum()<=100 && myBaseLoc.distanceSquaredTo(initialTargetEncampments[0])<=150){
+			if (Clock.getRoundNum()<=100 && myBaseLoc.distanceSquaredTo(initialTargetEncampments[0])<=150 && 
+								(myBaseLoc.directionTo(initialTargetEncampments[0])==myBaseLoc.directionTo(enemyBaseLoc)||myBaseLoc.directionTo(initialTargetEncampments[0])==myBaseLoc.directionTo(enemyBaseLoc).rotateLeft()
+								||myBaseLoc.directionTo(initialTargetEncampments[0])==myBaseLoc.directionTo(enemyBaseLoc).rotateRight())){
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 						initialTargetEncampments[0],
 						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
@@ -114,28 +118,34 @@ public class HQUnit extends BaseUnit {
 					// broadcast
 					GameObject[] myUnits = rc.senseNearbyGameObjects(Robot.class,
 							1000, myTeam);
-					RobotType encamp = RobotType.SUPPLIER;
+					RobotType encampSup = RobotType.SUPPLIER;
+					RobotType encampGen = RobotType.GENERATOR;
 
 					if (rc.getTeamPower() > 5) {
 						if (myUnits.length <= 3) {
 							encampCounter = 0;
-							encamp = RobotType.SUPPLIER;
 							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(
 									initialTargetEncampments[encampCounter],
-									SoldierState.SECURE_ENCAMPMENT, encamp, 0));
+									SoldierState.SECURE_ENCAMPMENT, encampSup, 0));
 
 						} else if (myUnits.length <= 5) {
 							encampCounter = 1;
-							encamp = RobotType.SUPPLIER;
 							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_2), Util.encodeMsg(
 									initialTargetEncampments[encampCounter],
-									SoldierState.SECURE_ENCAMPMENT, encamp, 0));
+									SoldierState.SECURE_ENCAMPMENT, encampSup, 0));
 						} else if (myUnits.length <= 7){
 							encampCounter = 2;
-							encamp = RobotType.SUPPLIER;
 							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(
 									initialTargetEncampments[encampCounter],
-									SoldierState.SECURE_ENCAMPMENT, encamp, 0));
+									SoldierState.SECURE_ENCAMPMENT, encampSup, 0));
+						} else if (myUnits.length <=9){
+							encampCounter=3;
+							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_4),Util.encodeMsg(initialTargetEncampments[encampCounter],SoldierState.SECURE_ENCAMPMENT,encampSup,0));
+						} else if (myUnits.length <=11){
+							encampCounter=4;
+							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_5), Util.encodeMsg(
+									initialTargetEncampments[encampCounter],
+									SoldierState.SECURE_ENCAMPMENT, encampGen, 0));
 						}
 						else {
 							rc.broadcast(Util.getSquadChannelNum(DEFEND_BASE_SQUAD), 
@@ -148,8 +158,8 @@ public class HQUnit extends BaseUnit {
 						if (rc.isActive()) {
 							this.spawnInAvailable();
 						}
+						}
 					}
-				}
 				
 				// if (Clock.getRoundNum() > 70
 				// && !rc.hasUpgrade(Upgrade.DEFUSION)) {
@@ -157,7 +167,7 @@ public class HQUnit extends BaseUnit {
 				// rc.researchUpgrade(Upgrade.DEFUSION);
 				// } else
 
-				else if (Clock.getRoundNum() >= 70 && Clock.getRoundNum() <= 200) {
+				else if (Clock.getRoundNum() >= 70 && Clock.getRoundNum() <= 300) {
 					rc.setIndicatorString(
 							1,
 							"round: "
@@ -168,23 +178,25 @@ public class HQUnit extends BaseUnit {
 									+ Util.encodeMsg(
 											initialTargetEncampments[2],
 											SoldierState.BRUTE_MOVE,
-											RobotType.SHIELDS, 0));
+											RobotType.SUPPLIER, 0));
 					// if encampments done
 					// TODO, fix this to use broadcasting later
 					MapLocation[] encamp0 = rc.senseEncampmentSquares(initialTargetEncampments[0], 0, myTeam);
 					MapLocation[] encamp1 = rc.senseEncampmentSquares(initialTargetEncampments[1], 0, myTeam);
 					MapLocation[] encamp2 = rc.senseEncampmentSquares(initialTargetEncampments[2], 0, myTeam);
+					MapLocation[] encamp3 = rc.senseEncampmentSquares(initialTargetEncampments[3], 0, myTeam);
+					MapLocation[] encamp4 = rc.senseEncampmentSquares(initialTargetEncampments[4], 0, myTeam);
 
-					if (encamp0.length != 0 && encamp1.length != 0 && encamp2.length != 0) {
+					if (encamp0.length != 0 && encamp1.length != 0 && encamp2.length != 0 && encamp3.length!=0 && encamp4.length!=0) {
 						if (initialTargetEncampments[2].distanceSquaredTo(enemyBaseLoc) < myBaseLoc.distanceSquaredTo(enemyBaseLoc)) {
 							rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 								initialTargetEncampments[2],
-								SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+								SoldierState.BRUTE_MOVE, RobotType.SUPPLIER, 0));
 						}
 						else {
 							rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(
 									myBaseLoc,
-									SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0));
+									SoldierState.BRUTE_MOVE, RobotType.SUPPLIER, 0));
 						}
 					}
 					else {
@@ -196,8 +208,14 @@ public class HQUnit extends BaseUnit {
 								initialTargetEncampments[1],
 								SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
 						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(
-								initialTargetEncampments[encampCounter],
-								SoldierState.SECURE_ENCAMPMENT, RobotType.SHIELDS, 0));
+								initialTargetEncampments[2],
+								SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(
+								initialTargetEncampments[3],
+								SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(
+								initialTargetEncampments[4],
+								SoldierState.SECURE_ENCAMPMENT, RobotType.GENERATOR, 0));
 						rc.broadcast(Util.getSquadChannelNum(DEFEND_BASE_SQUAD), 
 								Util.encodeMsg(myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
 					}
@@ -205,7 +223,7 @@ public class HQUnit extends BaseUnit {
 					if (!rc.hasUpgrade(Upgrade.FUSION)) {
 
 						rc.setIndicatorString(0,
-								"researching FUSION, telling units to rally at shields");
+								"researching FUSION");
 						rc.researchUpgrade(Upgrade.FUSION);
 					} else {
 						if (rc.isActive()) {
@@ -222,7 +240,7 @@ public class HQUnit extends BaseUnit {
 				 * SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0)); if
 				 * (rc.isActive()) { this.spawnInAvailable(); } }
 				 */
-				else if (Clock.getRoundNum() > 200
+				else if (Clock.getRoundNum() > 300
 						&& Clock.getRoundNum() <= 1000) {
 
 					rc.setIndicatorString(0,
@@ -324,7 +342,7 @@ public class HQUnit extends BaseUnit {
 
 		// int targetRange = Math.max(rc.getMapHeight(), rc.getMapWidth())/2;
 		// int targetRangeSquared = targetRange * targetRange;
-		MapLocation[] targetEncampments = new MapLocation[3];
+		MapLocation[] targetEncampments = new MapLocation[10];
 
 		/*
 		 * int j = 0; if (myBaseLoc.x <= rc.getMapWidth()/2 || myBaseLoc.y <=
@@ -337,11 +355,11 @@ public class HQUnit extends BaseUnit {
 		 * targetEncampments[j] = encampments[i]; j++; if (j ==
 		 * targetEncampments.length) { break; } } } }
 		 */
-		int[] targetDists = { 1000, 1000, 1000 };
+		int[] targetDists = { 1000, 1000, 1000, 1000, 1000};
 		for (int i = 0; i < encampments.length; i++) {
 			int dist = myBaseLoc.distanceSquaredTo(encampments[i]);
 			int largestIndex = 0;
-			for (int k = 1; k < 3; k++) {
+			for (int k = 1; k < 5; k++) {
 				if (targetDists[k] > targetDists[largestIndex]) {
 					largestIndex = k;
 				}
