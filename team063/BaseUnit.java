@@ -30,6 +30,7 @@ public abstract class BaseUnit {
 	protected MapLocation[] prevLocs = new MapLocation[5];
 	protected int prevLocsCounter = 0;
 	protected boolean haveSeenEnemy = false;
+	protected int distEnemyBase;
 	
 	public BaseUnit(RobotController rc) {
 		this.rc = rc;
@@ -40,6 +41,7 @@ public abstract class BaseUnit {
 		this.myBaseLoc = rc.senseHQLocation();
 		this.mapHeight = rc.getMapHeight();
 		this.mapWidth = rc.getMapWidth();
+		this.distEnemyBase=myBaseLoc.distanceSquaredTo(enemyBaseLoc);
 	}
 
 	public void loop() {

@@ -76,18 +76,21 @@ public class HQUnit extends BaseUnit {
 			}
 
 		}
-		else if (mapHeight <= 30 && mapWidth <= 30) {
+		else if (this.distEnemyBase<=800) {
 			// small map, rush strategy
-			// build a shield encamp, rally there until 130, then rush
-			if (Clock.getRoundNum() < 100) {
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+			if (Clock.getRoundNum()<=100 && myBaseLoc.distanceSquaredTo(initialTargetEncampments[0])<=150){
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 						initialTargetEncampments[0],
 						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-			} else {
+				
+			} else if (Clock.getRoundNum()<=100) {
 				rc.broadcast(Util.getAllUnitChannelNum(), Util
-						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
+						.encodeMsg(myBaseLoc, SoldierState.DEFEND_POSITION,
 								RobotType.HQ, 0));
+			} else {
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc,SoldierState.ATTACK_MOVE,RobotType.HQ,0));
 			}
+			
 			if (rc.isActive()) {
 				this.spawnInAvailable();
 			}
@@ -129,7 +132,6 @@ public class HQUnit extends BaseUnit {
 									SoldierState.SECURE_ENCAMPMENT, encamp, 0));
 						} else if (myUnits.length <= 7){
 							encampCounter = 2;
-							encamp = RobotType.SHIELDS;
 							encamp = RobotType.SUPPLIER;
 							rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(
 									initialTargetEncampments[encampCounter],
