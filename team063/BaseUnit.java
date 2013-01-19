@@ -102,6 +102,7 @@ public abstract class BaseUnit {
 			}
 		}
 	}
+	
 
 	// buggy
 	protected void goToLocationCareful(MapLocation dest) throws GameActionException {
@@ -175,6 +176,15 @@ public abstract class BaseUnit {
 			
 		}
 	}
+	
+//	protected void updateMineMap() {
+//		int start = Clock.getBytecodeNum();
+//		MapLocation[] mines = rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2, mapHeight/2), 2500);
+//		for (int i=0; i < mines.length; i++) {
+//			mineMap[mines[i].x][mines[i].y] = 1;
+//		}
+//		System.out.println("mine map used: " + (Clock.getBytecodeNum() - start));
+//	}
 	protected void followWaypointPath(MapLocation[] waypointArray,
 			int startIndex) throws GameActionException {
 		MapLocation currentLoc = rc.getLocation();

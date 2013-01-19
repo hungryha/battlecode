@@ -23,7 +23,14 @@ public class SoldierUnit extends BaseUnit {
 	private int lastUnitMsg;
 	private int lastAllMsg;
 	private int lastAllExceptScoutMsg;
-
+	
+	// bug crawl algo states
+	private boolean followingWall;
+	private Direction prevDir = null;
+	private MapLocation prevLoc = null;
+	private MapLocation initialWallLoc = null;
+	private Direction wallDir = null; // direction of wall relative to unit
+	
 	public SoldierUnit(RobotController rc) {
 		super(rc);
 		squadId = HQUnit.NO_SQUAD;
@@ -179,7 +186,8 @@ public class SoldierUnit extends BaseUnit {
 				}
 			} else {
 				if (rc.isActive()) {
-					this.goToLocationCareful(targetLoc);
+//					this.goToLocationCareful(targetLoc);
+					this.goToLocationBugCrawl(targetLoc);
 				}
 			}
 			break;
@@ -337,4 +345,245 @@ public class SoldierUnit extends BaseUnit {
 		}
 	}
 
+	// pick direction closest to line between curloc and dest
+	public void goToLocationBugCrawl(MapLocation dest) throws GameActionException {
+		int dist = curLoc.distanceSquaredTo(dest);
+		Direction dir = curLoc.directionTo(dest);
+		
+		if (followingWall) {
+			// following wall state
+			Direction initialDir = initialWallLoc.directionTo(dest);
+			if (initialDir.equals(dir) && dist < initialWallLoc.distanceSquaredTo(dest)) {
+				followingWall = false;
+			}
+			else {
+				int[] turnDirOffsets = {-1, 1}; // offsets from wallDir, 
+												//only one or none should be movable in this case, always try to turn towards goal
+				boolean canTurn = false;
+				Direction curDir = wallDir;
+				int offset = 0;
+				for (int d: turnDirOffsets) {
+					curDir= Direction.values()[(wallDir.ordinal() + d + 8) % 8];
+					MapLocation candidateLoc = curLoc.add(curDir);
+					Team potentialMineLoc = rc.senseMine(candidateLoc);
+					if (!candidateLoc.equals(prevLoc) && rc.canMove(curDir) && (potentialMineLoc == null || potentialMineLoc.equals(myTeam))) {
+						canTurn = true;
+						offset = d;
+						break;
+					}
+				}
+				Direction moveDir = curDir;
+				if (canTurn) {
+					rc.setIndicatorString(0, "followingWall, wallDir: " + wallDir + " turning to: " + curDir);
+					rc.move(moveDir);
+					prevLoc = curLoc;
+					if (offset == -1) {
+						wallDir = wallDir.rotateRight();
+						wallDir = wallDir.rotateRight();
+						prevDir = prevDir.rotateRight();
+						prevDir = prevDir.rotateRight();
+					}
+					else {
+						wallDir = wallDir.rotateLeft();
+						wallDir = wallDir.rotateLeft();
+						prevDir = prevDir.rotateLeft();
+						prevDir = prevDir.rotateLeft();
+					}
+				}
+				else {
+					MapLocation candidateLoc = curLoc.add(prevDir);
+					Team potentialMineLoc = rc.senseMine(candidateLoc);
+					if (!candidateLoc.equals(prevLoc) && rc.canMove(curDir) && (potentialMineLoc == null || potentialMineLoc.equals(myTeam))) {
+						rc.setIndicatorString(0, "followingWall, wallDir: " + wallDir + " move dir: " + prevDir);
+						rc.move(prevDir);
+						prevLoc = curLoc;
+					}
+					else {
+						followingWall = false;
+						rc.setIndicatorString(0, "deadend, defusing mine: " + curLoc.add(dir));
+						rc.defuseMine(curLoc.add(dir));
+					}
+
+				}
+			}
+		}
+		
+		if (!followingWall) {
+			// moving towards dest state
+			int[] directionOffsets = { 0, 1, -1, 2, -2 };
+//			curLoc = rc.getLocation();
+
+			if (dist > 0 && rc.isActive()) {
+//				Direction dir = curLoc.directionTo(dest);
+				rc.setIndicatorString(1, "dir to dest: " + dir);
+				Direction lookingAtCurrently = dir;
+				Direction bestDir = dir;
+				int bestDist = 10000000; // should use max_int
+				MapLocation candidateLoc = curLoc.add(lookingAtCurrently);
+				boolean canMoveForward = false;
+				for (int d : directionOffsets) {
+					lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
+					candidateLoc = curLoc.add(lookingAtCurrently);
+					Team potentialMineLoc = rc.senseMine(candidateLoc);
+					if (rc.canMove(lookingAtCurrently)
+							&& (potentialMineLoc == null || potentialMineLoc
+									.equals(myTeam))) {
+						int curDist = candidateLoc.distanceSquaredTo(dest);
+						if (curDist < bestDist) {
+							canMoveForward = true;
+							bestDist = curDist;
+							bestDir = lookingAtCurrently;
+						}
+					}
+				}
+				if (canMoveForward) {
+					if (!curLoc.add(bestDir).equals(prevLoc)) {
+						rc.setIndicatorString(0, "can move forward: " + bestDir);
+						rc.move(bestDir);
+						prevLoc = curLoc;
+					}
+					else {
+						rc.setIndicatorString(0, "defusing mine b/c going to prevLoc: " + dir);
+						rc.defuseMine(curLoc.add(dir));
+					}
+				} else {
+					// decide to move sideways or defuse mine ahead
+					// rotate +2
+					Direction dir1 = Direction.values()[(dir.ordinal() + 3 + 8) % 8];
+					// rotate -2
+					Direction dir2 = Direction.values()[(dir.ordinal() - 3 + 8) % 8];
+
+					// count mines
+					MapLocation[] localMines = rc.senseNonAlliedMineLocations(
+							curLoc, 36);
+
+					int[][] mineMap = new int[70][70];
+					for (int i = 0; i < localMines.length; i++) {
+						mineMap[localMines[i].x][localMines[i].y] = 1;
+					}
+
+					int mapUpperLeftX = Math.max(curLoc.x - 6, 0);
+					int mapUpperLeftY = Math.max(curLoc.y - 6, 0);
+
+					int mapLowerRightX = Math.min(curLoc.x + 6, mapWidth);
+					int mapLowerRightY = Math.min(curLoc.y + 6, mapHeight);
+
+					MapLocation loc1 = curLoc.add(dir1);
+					MapLocation loc2 = curLoc.add(dir2);
+
+					// heuristics for deciding which way to go
+					// look at freeSpaces in a dir and mineNumAlongWall in a dir
+
+					int freeSpacesDir1 = 0;
+					int freeSpacesDir2 = 0;
+					for (int i = 0; i < 6; i++) {
+						if (loc1.x > 0 && loc1.x < mapWidth && loc1.y > 0
+								&& loc1.y < mapHeight) {
+							if (mineMap[loc1.x][loc1.y] == 1) {
+								break;
+							} else {
+								freeSpacesDir1++;
+							}
+						}
+						loc1 = loc1.add(dir1);
+					}
+
+					for (int i = 0; i < 6; i++) {
+						if (loc2.x > 0 && loc2.x < mapWidth && loc2.y > 0
+								&& loc2.y < mapHeight) {
+							if (mineMap[loc2.x][loc2.y] == 1) {
+								break;
+							} else {
+								freeSpacesDir2++;
+							}
+						}
+						loc2 = loc2.add(dir2);
+					}
+
+					int minesAlongWallDir1 = 0;
+					int minesAlongWallDir2 = 0;
+					Direction oppo = dir2.opposite();
+					loc1 = curLoc.add(oppo); // reused
+
+					for (int i = 0; i < 6; i++) {
+						if (loc1.x > 0 && loc1.x < mapWidth && loc1.y > 0
+								&& loc1.y < mapHeight) {
+							if (mineMap[loc1.x][loc1.y] == 0) {
+								break;
+							} else {
+								minesAlongWallDir1++;
+							}
+						}
+						loc1 = loc1.add(dir1);
+					}
+					oppo = dir1.opposite();
+					loc2 = curLoc.add(oppo);
+
+					for (int i = 0; i < 6; i++) {
+						if (loc2.x > 0 && loc2.x < mapWidth && loc2.y > 0
+								&& loc2.y < mapHeight) {
+							if (mineMap[loc2.x][loc2.y] == 0) {
+								break;
+							} else {
+								minesAlongWallDir2++;
+							}
+						}
+						loc2 = loc2.add(dir2);
+					}
+					if (minesAlongWallDir1 >= 6 && minesAlongWallDir2 >= 6) {
+						rc.setIndicatorString(0, "best option to defuse mine "
+								+ curLoc.add(dir) + " mineNum1: "
+								+ minesAlongWallDir1 + " mineNum2: "
+								+ minesAlongWallDir2);
+						rc.defuseMine(curLoc.add(dir));
+					} else {
+						if (minesAlongWallDir1 > minesAlongWallDir2) {
+							if (freeSpacesDir2 >= minesAlongWallDir2) {
+								rc.setIndicatorString(0, "wall moving dir2: "
+										+ dir2 + " mineNum1: "
+										+ minesAlongWallDir1 + " mineNum2: "
+										+ minesAlongWallDir2);
+								rc.move(dir2);
+								prevDir = dir2;
+								prevLoc = curLoc;
+								initialWallLoc = curLoc;
+								followingWall = true;
+								wallDir = dir1.opposite();
+							} else {
+								rc.setIndicatorString(0,
+										"DEFUSING MINE, mineNum2: "
+												+ minesAlongWallDir2
+												+ " freespacesDir2: "
+												+ freeSpacesDir2);
+								rc.defuseMine(curLoc.add(dir));
+							}
+						} else {
+							if (freeSpacesDir1 >= minesAlongWallDir1) {
+								rc.setIndicatorString(0, "moving dir1: " + dir1
+										+ " mineNum1: " + minesAlongWallDir1
+										+ " mineNum2: " + minesAlongWallDir2);
+								rc.move(dir1);
+								prevDir = dir1;
+								prevLoc = curLoc;
+								initialWallLoc = curLoc;
+								followingWall = true;
+								wallDir = dir2.opposite();
+							} else {
+								rc.setIndicatorString(0,
+										"DEFUSING MINE, mineNum1: "
+												+ minesAlongWallDir1
+												+ " freespacesDir1: "
+												+ freeSpacesDir1);
+								rc.defuseMine(curLoc.add(dir));
+
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+		
+	
 }

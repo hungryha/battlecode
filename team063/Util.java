@@ -111,4 +111,8 @@ public class Util {
 		//TODO implement
 		return 0;
 	}
+	
+	public enum ScoutMessages {
+		
+	}
 }

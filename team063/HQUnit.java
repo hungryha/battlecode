@@ -46,37 +46,39 @@ public class HQUnit extends BaseUnit {
 	@Override
 	public void run() throws GameActionException {
 
-		if (mapHeight > 65 && mapWidth > 65) {
-			// big map, nuke strategy
-
-			if (Clock.getRoundNum() < 100) {
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-						initialTargetEncampments[0],
-						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-				if (rc.isActive()) {
-					this.spawnInAvailable();
-				}
-			} else if (Clock.getRoundNum() < 200) {
-				// spawn robots
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
-						0));
-
-				if (rc.isActive()) {
-					this.spawnInAvailable();
-				}
-			} else {
-				if (rc.isActive()) {
-					rc.researchUpgrade(Upgrade.NUKE);
-				}
-
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
-						0));
-			}
-
-		}
-		else if (mapHeight <= 30 && mapWidth <= 30) {
+//		if (mapHeight > 65 && mapWidth > 65) {
+//			// big map, nuke strategy
+//
+//			if (Clock.getRoundNum() < 100) {
+//				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+//						initialTargetEncampments[0],
+//						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+//				if (rc.isActive()) {
+//					this.spawnInAvailable();
+//				}
+//			} else if (Clock.getRoundNum() < 200) {
+//				// spawn robots
+//				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+//						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
+//						0));
+//
+//				if (rc.isActive()) {
+//					this.spawnInAvailable();
+//				}
+//			} else {
+//				if (rc.isActive()) {
+//					rc.researchUpgrade(Upgrade.NUKE);
+//				}
+//
+//				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+//						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
+//						0));
+//			}
+//
+//		}
+//		else 
+			
+		if (mapHeight <= 30 && mapWidth <= 30) {
 			// small map, rush strategy
 			// build a shield encamp, rally there until 130, then rush
 			if (Clock.getRoundNum() < 100) {
@@ -204,7 +206,9 @@ public class HQUnit extends BaseUnit {
 
 						rc.setIndicatorString(0,
 								"researching FUSION, telling units to rally at shields");
-						rc.researchUpgrade(Upgrade.FUSION);
+						if (rc.isActive()) {
+							rc.researchUpgrade(Upgrade.FUSION);
+						}
 					} else {
 						if (rc.isActive()) {
 							this.spawnInAvailable();
@@ -362,6 +366,40 @@ public class HQUnit extends BaseUnit {
 		return targetEncampments;
 	}
 
+	public void initialAnalysis() {
+		int numEncampmentsBetweenHQs = 0;
+		int numNeutralMinesBetweenHQs = 0;
+		int numTotalMines = 0;
+		int numTotalEncampments = 0;
+	}
+	
+	public void findPath(MapLocation start, MapLocation goal) {
+		MapLocation[] path = new MapLocation[200];
+		int[][] costs = new int[mapHeight][mapWidth];
+		MapLocation[] mines = rc.senseNonAlliedMineLocations(new MapLocation(mapHeight/2, mapWidth/2), 2500);
+		int total = mapHeight * mapWidth;
+		int[] mineMap = new int[total];
+		for(int i=0; i < mines.length; i++) {
+			int index = mines[i].x + mines[i].y * mapWidth;
+			mineMap[index] = 1;
+		}
+		
+		for(int i=0; i < mapHeight; i++) {
+			for(int j=0; j < mapWidth; j++) {
+				int index = i + j * mapWidth;
+				if (mineMap[index] == 0) {
+					costs[i][j] = 1;
+				}
+				else {
+					costs[i][j] = 12;
+				}
+			}
+		}
+		
+		int[] alreadyEvaluated = new int[total];
+		
+		
+	}
 	public class MapLocationComparator implements Comparator {
 
 		@Override
