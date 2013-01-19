@@ -105,7 +105,7 @@ public class SoldierUnit extends BaseUnit {
 			 */
 			
 			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
-			Robot[] nearbyAllies = rc.senseNearbyGameObjects(Robot.class,9,myTeam);
+			Robot[] nearbyAllies = rc.senseNearbyGameObjects(Robot.class,25,myTeam);
 			Robot[] farAllies;
 			double lowHealth=200;
 			int lowHealthIndex=0;
@@ -126,25 +126,36 @@ public class SoldierUnit extends BaseUnit {
 				if (nearbyEnemies.length < 1 && farMines.length >0){
 					rc.setIndicatorString(0,"defusing mine");
 					rc.defuseMine(farMines[0]);
-				} else if (nearbyAllies.length >= 4 && nearbyEnemies.length <= 2){
+				} else if (nearbyAllies.length >= 7 && nearbyEnemies.length <= 2){
 					rc.setIndicatorString(0, "attacking!");
 					this.goToLocationBrute(targetLoc);
 //					this.goToLocationSmart(targetLoc);
 				
-				} else if (nearbyAllies.length>=4){
-					for (int index=0;index<nearbyEnemies.length-3;index+=3){
-						if (rc.senseRobotInfo(nearbyEnemies[index]).energon<lowHealth){
-							lowHealth=rc.senseRobotInfo(nearbyEnemies[index]).energon;
-							lowHealthIndex=index;
+				} else if (nearbyAllies.length>=7){
+					if (rc.getEnergon()<=20){
+						MapLocation stepAwayLoc=rc.senseRobotInfo(nearbyAllies[0]).location.subtract(curLoc.directionTo(targetLoc));
+						rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
+						this.goToLocationBrute(stepAwayLoc);
+					} else {
+						for (int index = 0; index < nearbyEnemies.length - 3; index += 3) {
+							if (rc.senseRobotInfo(nearbyEnemies[index]).energon < lowHealth) {
+								lowHealth = rc
+										.senseRobotInfo(nearbyEnemies[index]).energon;
+								lowHealthIndex = index;
+							}
+						}
+						MapLocation weakEnemyLoc = rc
+								.senseRobotInfo(nearbyEnemies[lowHealthIndex]).location;
+						rc.setIndicatorString(0,
+								"attacking weak enemy robot at: ("
+										+ weakEnemyLoc.x + "," + weakEnemyLoc.y
+										+ ")");
+						if (rc.isActive()) {
+							this.goToLocationCareful(weakEnemyLoc);
 						}
 					}
-					MapLocation weakEnemyLoc = rc.senseRobotInfo(nearbyEnemies[lowHealthIndex]).location;
-					rc.setIndicatorString(0, "attacking weak enemy robot at: ("+weakEnemyLoc.x+","+weakEnemyLoc.y+")");
-					if (rc.isActive()) {
-						this.goToLocationCareful(weakEnemyLoc);
-					}
 
-				} else if (farAllies.length >= 4){
+				} else if (farAllies.length >= 7){
 					rc.setIndicatorString(0, "regrouping to " + rc.senseRobotInfo(farAllies[0]).location);
 
 					
@@ -287,9 +298,15 @@ public class SoldierUnit extends BaseUnit {
 					rc.setIndicatorString(0, "not enough neraby allies to fight!");
 					this.goToLocationBrute(defendPoint);
 				} else if (curLoc.distanceSquaredTo(defendPoint) <= 49) {
-	
-					rc.setIndicatorString(0, "attacking nearby enemy!");
-					this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
+					if (rc.getEnergon()>=20){
+						rc.setIndicatorString(0, "attacking nearby enemy!");
+						this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
+					} else {
+						MapLocation stepAwayLoc=curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies[0]).location));
+						rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
+						this.goToLocationBrute(stepAwayLoc);
+					}
+					
 				} else {
 					rc.setIndicatorString(0, "enemy is too far away to chase!");
 					this.goToLocationBrute(defendPoint);
