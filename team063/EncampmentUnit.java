@@ -44,4 +44,10 @@ public class EncampmentUnit extends BaseUnit {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void runTest() throws GameActionException {
+		// TODO Auto-generated method stub
+		
+	}
 }

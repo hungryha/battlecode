@@ -12,13 +12,16 @@ public class Util {
 	public static final int SOLDIER_STATE_MASK = 15;
 	public static final int ENCAMPMENT_TYPE_MASK = 7;
 	public static final int CHECK_SUM_MASK = 7;
+	public static final int UNIT_SQUAD_ASSIGNMENT_MASK = 1;
+	public static final int SQUAD_ASSIGNMENT_MASK = 4;
 	
 	public static final int X_COORD_SHIFT = 0;
 	public static final int Y_COORD_SHIFT = 7;
 	public static final int SOLDIER_STATE_SHIFT = 14;
 	public static final int ENCAMPMENT_TYPE_SHIFT = 18;
 	public static final int CHECK_SUM_SHIFT = 29;
-	
+	public static final int UNIT_SQUAD_ASSIGNMENT_SHIFT = 28;
+	public static final int SQUAD_ASSIGNMENT_SHIFT = 24;
 	
 	
 	public static final int UNIT_CHANNEL_INDEX = 16;
@@ -49,6 +52,10 @@ public class Util {
 		return encodeChannelNum(2);
 	}
 	
+	public static int getInitialUnitNumChannelNum() {
+		return encodeChannelNum(HQUnit.UNIT_ASSIGNMENT_CHANNEL);
+	}
+	
 	public static int encodeChannelNum(int channelNum) {
 		return (channelNum * 151 + 983*Clock.getRoundNum() + Util.SEED) % 65521;
 	}
@@ -59,7 +66,10 @@ public class Util {
 	 * bits 7-13: y coord
 	 * bits 14-17: soldier state
 	 * bits 18-28: extra info??
-	 * 	ex) type of encampment for capturing
+	 * 	ex) type of encampment for capturing (18-20)
+	 *  bits 24-27: which squad to switch to
+	 *  bit 28: switch/assign squad
+	 *  
 	 * bits 29-31: checksum
 	 */
 	public static int encodeMsg(MapLocation loc, SoldierState state, RobotType encampmentType, int otherInfo) {
@@ -71,6 +81,9 @@ public class Util {
 				(checksum << CHECK_SUM_SHIFT);
 	}
 	
+	public static int encodeUnitSquadAssignmentChangeMsg(int squadNum) {
+		return (1 << UNIT_SQUAD_ASSIGNMENT_SHIFT) | (squadNum << SQUAD_ASSIGNMENT_SHIFT);
+	}
 	
 	public static int[] decode(int msg) {
 		
@@ -90,6 +103,14 @@ public class Util {
 		}
 	}
 	
+	public static boolean getChangeSquadBool(int unitMsg) {
+		int change = (unitMsg & (UNIT_SQUAD_ASSIGNMENT_MASK << UNIT_SQUAD_ASSIGNMENT_SHIFT)) >> UNIT_SQUAD_ASSIGNMENT_SHIFT;
+		return (change == 1);
+	}
+	
+	public static int getSquadAssignment(int unitMsg) {
+		return (unitMsg & (SQUAD_ASSIGNMENT_MASK << SQUAD_ASSIGNMENT_SHIFT)) >> SQUAD_ASSIGNMENT_SHIFT;
+	}
 	public static MapLocation getMapLocationFromMsg(int encodedMsg) {
 		int xcoord = (encodedMsg & (X_COORD_MASK << X_COORD_SHIFT)) >> X_COORD_SHIFT;
 		int ycoord = (encodedMsg & (Y_COORD_MASK << Y_COORD_SHIFT)) >> Y_COORD_SHIFT;

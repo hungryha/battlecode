@@ -17,6 +17,7 @@ public class SoldierUnit extends BaseUnit {
 	
 	private MapLocation targetLoc = myBaseLoc;
 	private int squadId;
+	private int unitId;
 	private MapLocation curLoc;
 	private RobotType encampmentSecureType;
 	private int lastSquadMsg;
@@ -34,6 +35,7 @@ public class SoldierUnit extends BaseUnit {
 	public SoldierUnit(RobotController rc) {
 		super(rc);
 		squadId = HQUnit.NO_SQUAD;
+		unitId = HQUnit.NO_UNIT_ID;
 		state = SoldierState.DEFAULT;
 		lastSquadMsg = 0;
 		lastUnitMsg = 0;
@@ -53,7 +55,9 @@ public class SoldierUnit extends BaseUnit {
 				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
 			}
 			
-
+			if (unitId == HQUnit.NO_UNIT_ID) {
+				unitId = rc.readBroadcast(Util.getInitialUnitNumChannelNum());
+			}
 			
 			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
 
@@ -90,7 +94,7 @@ public class SoldierUnit extends BaseUnit {
 		}
 
 		this.curLoc = rc.getLocation();
-		rc.setIndicatorString(2, "cur state: " + state + " cur target: " + targetLoc + " squad: " + squadId);
+		rc.setIndicatorString(2, "cur state: " + state + " cur target: " + targetLoc + " squadId: " + squadId + " unitId: " + unitId);
 
 		switch (state) {
 
@@ -600,6 +604,12 @@ public class SoldierUnit extends BaseUnit {
 			}
 		}
 
+	}
+
+	@Override
+	public void runTest() throws GameActionException {
+		// TODO Auto-generated method stub
+		
 	}
 		
 	

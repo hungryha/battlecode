@@ -11,22 +11,25 @@ import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import battlecode.common.Team;
 import battlecode.common.Upgrade;
 
 //singleton
 public class HQUnit extends BaseUnit {
 	// squad consts
-	public static int SQUAD_ASSIGNMENT_CHANNEL = 7907;
-
-	public static int NO_SQUAD = 0;
-	public static int SCOUT_SQUAD = 1;
-	public static int ENCAMPMENT_SQUAD_1 = 2;
-	public static int ENCAMPMENT_SQUAD_2 = 3;
-	public static int ENCAMPMENT_SQUAD_3 = 4;
-	public static int ENCAMPMENT_SQUAD_4 = 5;
-	public static int ENCAMPMENT_SQUAD_5 = 6;
-	public static int DEFEND_BASE_SQUAD = 7;
-	public static int ATTACK_SQUAD = 8;
+	public static final int SQUAD_ASSIGNMENT_CHANNEL = 7907;
+	public static final int UNIT_ASSIGNMENT_CHANNEL = 13577;
+	
+	public static final int NO_UNIT_ID = -1;
+	public static final int NO_SQUAD = -1;
+	public static final int SCOUT_SQUAD = 1;
+	public static final int ENCAMPMENT_SQUAD_1 = 2;
+	public static final int ENCAMPMENT_SQUAD_2 = 3;
+	public static final int ENCAMPMENT_SQUAD_3 = 4;
+	public static final int ENCAMPMENT_SQUAD_4 = 5;
+	public static final int ENCAMPMENT_SQUAD_5 = 6;
+	public static final int DEFEND_BASE_SQUAD = 7;
+	public static final int ATTACK_SQUAD = 8;
 
 	public int unitsCount = 0;
 
@@ -41,13 +44,23 @@ public class HQUnit extends BaseUnit {
 		this.encampCounter = 0;
 		int start = Clock.getBytecodeNum();
 		this.initialTargetEncampments = getTargetEncampments();
-		System.out.println("getTargetEncampments bytecode usage: "
-				+ (Clock.getBytecodeNum() - start));
+//		System.out.println("getTargetEncampments bytecode usage: "
+//				+ (Clock.getBytecodeNum() - start));
+//		this.initialAnalysis();
+//		System.out.println("initial analysis: " + (Clock.getBytecodeNum() - start));
+		System.out.println("dist squared to enemy: " + this.distToEnemyBaseSquared + ", my hq loc: " + this.myBaseLoc + ", enemy hq loc: " + this.enemyBaseLoc);
+		System.out.println("dist squared: " + rc.senseHQLocation().distanceSquaredTo(rc.senseEnemyHQLocation()));
 	}
 
+	public void runTest() {
+		
+	}
+	
 	@Override
 	public void run() throws GameActionException {
+		
 		if (mapHeight > 65 && mapWidth > 65) {
+			System.out.println("big map: nuke strategy");
 			// big map, nuke strategy
 
 			if (Clock.getRoundNum() < 100) {
@@ -76,17 +89,14 @@ public class HQUnit extends BaseUnit {
 						0));
 			}
 
-		} else if (this.distEnemyBase <= 800) {
+		} else if (this.distToEnemyBaseSquared <= 800) {
+			System.out.println("small map: rush strategy");
 			// small map, rush strategy
 			if (Clock.getRoundNum() <= 100
 					&& myBaseLoc.distanceSquaredTo(initialTargetEncampments[0]) <= 150
-					&& (myBaseLoc.directionTo(initialTargetEncampments[0]) == myBaseLoc
-							.directionTo(enemyBaseLoc)
-							|| myBaseLoc
-									.directionTo(initialTargetEncampments[0]) == myBaseLoc
-									.directionTo(enemyBaseLoc).rotateLeft() || myBaseLoc
-							.directionTo(initialTargetEncampments[0]) == myBaseLoc
-							.directionTo(enemyBaseLoc).rotateRight())) {
+					&& (myBaseLoc.directionTo(initialTargetEncampments[0]).equals(myBaseLoc.directionTo(enemyBaseLoc)) || 
+							myBaseLoc.directionTo(initialTargetEncampments[0]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateLeft()) || 
+							myBaseLoc.directionTo(initialTargetEncampments[0]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateRight()))) {
 				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 						initialTargetEncampments[0],
 						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
@@ -105,7 +115,7 @@ public class HQUnit extends BaseUnit {
 				this.spawnInAvailable();
 			}
 		} else {
-
+			System.out.println("not small or big map");
 			// check enemy nuke progress
 			if (Clock.getRoundNum() >= 200) {
 				if (rc.getTeamPower() >= 50) {
@@ -120,10 +130,11 @@ public class HQUnit extends BaseUnit {
 				}
 			}
 
-			if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST) {
+			if (rc.getTeamPower() >= 2*GameConstants.BROADCAST_SEND_COST) {
 				rc.broadcast(Util.getInitialSquadNumChannelNum(),
 						getCurrentSquadAssignment());
-
+				rc.broadcast(Util.getInitialUnitNumChannelNum(), getCurrentUnitAssignment());
+				
 				if (Clock.getRoundNum() < 70) {
 					// broadcast
 					GameObject[] myUnits = rc.senseNearbyGameObjects(
@@ -332,7 +343,10 @@ public class HQUnit extends BaseUnit {
 		}
 
 	}
-
+	
+	public int getCurrentUnitAssignment() {
+		return unitsCount;
+	}
 	public int getCurrentSquadAssignment() {
 		if (unitsCount < 1) {
 			return SCOUT_SQUAD;
@@ -437,13 +451,53 @@ public class HQUnit extends BaseUnit {
 		return targetEncampments;
 	}
 
-	public void initialAnalysis() {
+	public void initialAnalysisAndInitialization() {
 		int numEncampmentsBetweenHQs = 0;
 		int numNeutralMinesBetweenHQs = 0;
 		int numTotalMines = 0;
 		int numTotalEncampments = 0;
+		int[][] mineMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
+		int[][] encampmentMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
+		
+		MapLocation[] allEncampmentLocs = rc.senseAllEncampmentSquares();
+		
+		// should cover all mines
+		MapLocation[] allNeutralMineLocs = rc.senseMineLocations(new MapLocation(mapWidth/2, mapHeight/2), 2000, Team.NEUTRAL);
+		
+		for (int i=0; i < allEncampmentLocs.length; i++) {
+			encampmentMap[allEncampmentLocs[i].x][allEncampmentLocs[i].y] = 1;	
+		}
+		
+		for (int i=0; i < allNeutralMineLocs.length; i++) {
+			mineMap[allNeutralMineLocs[i].x][allNeutralMineLocs[i].y] = 1;
+		}
+		
+		int startX = Math.min(myBaseLoc.x, enemyBaseLoc.x);
+		int endX = Math.max(myBaseLoc.x, enemyBaseLoc.x);
+		int startY = Math.min(myBaseLoc.y, enemyBaseLoc.y);
+		int endY = Math.max(myBaseLoc.y, enemyBaseLoc.y);
+		
+		for (int i = startX; i <= endX; i++) {
+			for (int j = startY; j <= endY; j++) {
+				numEncampmentsBetweenHQs += encampmentMap[i][j];
+				numNeutralMinesBetweenHQs += mineMap[i][j];
+			}
+		}
+		
+		System.out.println("num encampments between hqs: " + numEncampmentsBetweenHQs);
+		System.out.println("num neutral mines between hqs: " + numNeutralMinesBetweenHQs);
+
+		// start out building suppliers and generators in encampments far-ish from base
+		// defense strategy: build shields(25%), medbays(25%), artillery(50%), capture neutral and enemy medbays near base, build nuke
+		// offense strategy: build artillery near their hq, 
+		//					 build shields if they have artillery near base, 
+		//					 attacking units should recharge at nearby shields and medbay
+		// build artillery at most within 8 units of bases
+		
+		// heuristics? build more artillery when there are less mines around
 	}
 
+	// not used
 	public void findPath(MapLocation start, MapLocation goal) {
 		MapLocation[] path = new MapLocation[200];
 		int[][] costs = new int[mapHeight][mapWidth];

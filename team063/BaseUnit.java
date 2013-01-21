@@ -30,7 +30,7 @@ public abstract class BaseUnit {
 	protected MapLocation[] prevLocs = new MapLocation[5];
 	protected int prevLocsCounter = 0;
 	protected boolean haveSeenEnemy = false;
-	protected int distEnemyBase;
+	protected int distToEnemyBaseSquared;
 	
 	public BaseUnit(RobotController rc) {
 		this.rc = rc;
@@ -41,13 +41,14 @@ public abstract class BaseUnit {
 		this.myBaseLoc = rc.senseHQLocation();
 		this.mapHeight = rc.getMapHeight();
 		this.mapWidth = rc.getMapWidth();
-		this.distEnemyBase=myBaseLoc.distanceSquaredTo(enemyBaseLoc);
+		this.distToEnemyBaseSquared=myBaseLoc.distanceSquaredTo(enemyBaseLoc);
 	}
 
 	public void loop() {
 		while (true) {
 			try {
 				run();
+//				runTest();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -56,7 +57,7 @@ public abstract class BaseUnit {
 	}
 
 	abstract public void run() throws GameActionException;
-
+	abstract public void runTest() throws GameActionException;
 
 	abstract public void decodeMsg(int encodedMsg);
 
