@@ -546,5 +546,36 @@ public class HQUnit extends BaseUnit {
 		}
 
 	}
-
+	
+	public class EncampmentComparatorZone1 implements Comparator {
+		
+		@Override
+		public int compare(Object Enc0, Object Enc1){
+			return (((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc1).distanceSquaredTo(myBaseLoc));
+		}
+	}
+	
+	public class EncampmentComparatorZone2 implements Comparator {
+		
+		@Override
+		public int compare(Object Enc0, Object Enc1){
+			return ((((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc))-(((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)));
+		}
+	}
+	
+	public class EncampmentComparatorZone3 implements Comparator {
+		
+		@Override
+		public int compare(Object Enc0,Object Enc1){
+			return ((((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc0).distanceSquaredTo(myBaseLoc))-(((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)));
+		}
+	}
+	
+	public class EncampmentComparatorZone4 implements Comparator {
+		
+		@Override
+		public int compare(Object Enc0,Object Enc1){
+			return (((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc1).distanceSquaredTo(myBaseLoc));
+		}
+	}
 }
