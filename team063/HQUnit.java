@@ -84,9 +84,24 @@ public class HQUnit extends BaseUnit {
 		
 		this.zoneEncampments(encampmentLocs);
 		Arrays.sort(zone1Locs, new EncampmentComparatorZone1());
+		Arrays.sort(zone2Locs, new EncampmentComparatorZone2());
+		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
+		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 		System.out.println("zone 1 sorted encampments:");
 		for (int i=0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
+		}
+		System.out.println("zone 2 sorted encampments:");
+		for (int i=0; i < zone2Locs.length; i++) {
+			System.out.println(zone2Locs[i]);
+		}		
+		System.out.println("zone 3 sorted encampments:");
+		for (int i=0; i < zone3Locs.length; i++) {
+			System.out.println(zone3Locs[i]);
+		}
+		System.out.println("zone 4 sorted encampments:");
+		for (int i=0; i < zone4Locs.length; i++) {
+			System.out.println(zone4Locs[i]);
 		}
 	}
 
