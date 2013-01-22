@@ -24,12 +24,13 @@ public class HQUnit extends BaseUnit {
 	public static final int REGULAR_MAP_STRAT = 0;
 	
 	// encampment arrays and relevant vars
+	public static final int ZONE_ENCAMPMENT_LIMIT = 10;
 	public MapLocation[] encampmentLocs= rc.senseAllEncampmentSquares();
 	public int numEncampments=encampmentLocs.length;
-	public MapLocation[] zone1Locs= new MapLocation[numEncampments];
-	public MapLocation[] zone2Locs= new MapLocation[numEncampments];
-	public MapLocation[] zone3Locs= new MapLocation[numEncampments];
-	public MapLocation[] zone4Locs= new MapLocation[numEncampments];
+	public MapLocation[] zone1Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
+	public MapLocation[] zone2Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
+	public MapLocation[] zone3Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
+	public MapLocation[] zone4Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
 	private int distBetweenBases=myBaseLoc.distanceSquaredTo(enemyBaseLoc);		// the distance between bases
 	private int closeToBase=400;												// the distance which classifies encampments into Zone1
 	private int awayFromEnemyForgiveness=200; 									// the distance added to the distance between bases for Zone1
@@ -516,23 +517,31 @@ public class HQUnit extends BaseUnit {
 			int distToEnemyBase=encampment.distanceSquaredTo(enemyBaseLoc);
 			//zone1
 			if (distToMyBase<=closeToBase && distToEnemyBase<=(distBetweenBases+awayFromEnemyForgiveness)){
-				zone1Locs[zone1Counter]=encampment;
-				zone1Counter+=1;
+				if (zone1Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone1Locs[zone1Counter]=encampment;
+					zone1Counter+=1;
+				}
 			}
 			//zone2
 			else if (distToMyBase<=(distBetweenBases+awayFromEquidistantForgiveness) && distToEnemyBase<=(distBetweenBases+awayFromEquidistantForgiveness)){
-				zone2Locs[zone2Counter]=encampment;
-				zone2Counter+=1;
+				if (zone2Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone2Locs[zone2Counter]=encampment;
+					zone2Counter+=1;
+				}
 			}
 			//zone3
 			else if (distToEnemyBase<=closeToEnemy && distToMyBase<=distBetweenBases){
-				zone3Locs[zone3Counter]=encampment;
-				zone3Counter+=1;
+				if (zone3Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone3Locs[zone3Counter]=encampment;
+					zone3Counter+=1;
+				}
 			}
 			//zone 4
 			else if (distToEnemyBase>=farEnoughFromEnemy){
-				zone4Locs[zone4Counter]=encampment;
-				zone4Counter+=1;
+				if (zone4Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone4Locs[zone4Counter]=encampment;
+					zone4Counter+=1;
+				}
 			}
 		}
 	}
