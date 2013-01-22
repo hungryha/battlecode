@@ -22,6 +22,19 @@ public class HQUnit extends BaseUnit {
 	public static final int SMALL_MAP_STRAT = 1;
 	public static final int REGULAR_MAP_STRAT = 0;
 	
+	// encampment arrays and relevant vars
+	public MapLocation[] zone1Locs;
+	public MapLocation[] zone2Locs;
+	public MapLocation[] zone3Locs;
+	public MapLocation[] zone4Locs;
+	public MapLocation[] encampmentLocs= rc.senseAllEncampmentSquares();
+	private int distBetweenBases=myBaseLoc.distanceSquaredTo(enemyBaseLoc);		// the distance between bases
+	private int closeToBase=400;												// the distance which classifies encampments into Zone1
+	private int awayFromEnemyForgiveness=200; 									// the distance added to the distance between bases for Zone1
+	private int awayFromEquidistantForgiveness=200;								// the forgiveness from an equidistant location between both bases allowed for Zone2
+	private int closeToEnemy=400;												// the distance which classifies encampments into Zone3
+	private int farEnoughFromEnemy=600;											// the distance which classifies encampments into Zone4
+	
 	// squad consts
 	public static final int SQUAD_ASSIGNMENT_CHANNEL = 7907;
 	public static final int UNIT_ASSIGNMENT_CHANNEL = 13577;
@@ -536,6 +549,29 @@ public class HQUnit extends BaseUnit {
 
 	}
 
+	public void zoneEncampments(MapLocation[] encampmentLocs){
+		for (MapLocation encampment:encampmentLocs){
+			int distToMyBase=encampment.distanceSquaredTo(myBaseLoc);
+			int distToEnemyBase=encampment.distanceSquaredTo(enemyBaseLoc);
+			//zone1
+			if (distToMyBase<=closeToBase && distToEnemyBase<=(distBetweenBases+awayFromEnemyForgiveness)){
+				//put encampment in zone1
+			}
+			//zone2
+			else if (distToMyBase<=(distBetweenBases+awayFromEquidistantForgiveness) && distToEnemyBase<=(distBetweenBases+awayFromEquidistantForgiveness)){
+				//put encampment in zone2
+			}
+			//zone3
+			else if (distToEnemyBase<=closeToEnemy && distToMyBase<=distBetweenBases){
+				//put encampment in zone3
+			}
+			//zone 4
+			else if (distToEnemyBase>=farEnoughFromEnemy){
+				//put encampment in zone4
+			}
+		}
+	}
+	
 	public class MapLocationComparator implements Comparator {
 
 		@Override
