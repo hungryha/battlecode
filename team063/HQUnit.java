@@ -23,11 +23,12 @@ public class HQUnit extends BaseUnit {
 	public static final int REGULAR_MAP_STRAT = 0;
 	
 	// encampment arrays and relevant vars
-	public MapLocation[] zone1Locs;
-	public MapLocation[] zone2Locs;
-	public MapLocation[] zone3Locs;
-	public MapLocation[] zone4Locs;
 	public MapLocation[] encampmentLocs= rc.senseAllEncampmentSquares();
+	public int numEncampments=encampmentLocs.length;
+	public MapLocation[] zone1Locs= new MapLocation[numEncampments];
+	public MapLocation[] zone2Locs= new MapLocation[numEncampments];
+	public MapLocation[] zone3Locs= new MapLocation[numEncampments];
+	public MapLocation[] zone4Locs= new MapLocation[numEncampments];
 	private int distBetweenBases=myBaseLoc.distanceSquaredTo(enemyBaseLoc);		// the distance between bases
 	private int closeToBase=400;												// the distance which classifies encampments into Zone1
 	private int awayFromEnemyForgiveness=200; 									// the distance added to the distance between bases for Zone1
@@ -56,7 +57,7 @@ public class HQUnit extends BaseUnit {
 	protected int numMaxEncampsZone1 = 0; // 1 per squad
 	protected int numMaxEncampsZone2 = 0; // 2 per squad
 	protected int numMaxEncampsZone3 = 0; // many per squad or many squads
-	protected int numMAxEncampsZone4 = 0; // extras
+	protected int numMaxEncampsZone4 = 0; // extras
 	
 	
 	public int unitsCount = 0;
@@ -73,7 +74,6 @@ public class HQUnit extends BaseUnit {
 		this.unitsMap = new int[2000];
 		this.encampCounter = 0;
 		int start = Clock.getBytecodeNum();
-		this.initialTargetEncampments = getTargetEncampments();
 //		System.out.println("getTargetEncampments bytecode usage: "
 //				+ (Clock.getBytecodeNum() - start));
 //		this.initialAnalysis();
@@ -488,24 +488,29 @@ public class HQUnit extends BaseUnit {
 	}
 
 	public void zoneEncampments(MapLocation[] encampmentLocs){
+		int zone1Counter=0; int zone2Counter=0; int zone3Counter=0; int zone4Counter=0;
 		for (MapLocation encampment:encampmentLocs){
 			int distToMyBase=encampment.distanceSquaredTo(myBaseLoc);
 			int distToEnemyBase=encampment.distanceSquaredTo(enemyBaseLoc);
 			//zone1
 			if (distToMyBase<=closeToBase && distToEnemyBase<=(distBetweenBases+awayFromEnemyForgiveness)){
-				//put encampment in zone1
+				zone1Locs[zone1Counter]=encampment;
+				zone1Counter+=1;
 			}
 			//zone2
 			else if (distToMyBase<=(distBetweenBases+awayFromEquidistantForgiveness) && distToEnemyBase<=(distBetweenBases+awayFromEquidistantForgiveness)){
-				//put encampment in zone2
+				zone2Locs[zone2Counter]=encampment;
+				zone2Counter+=1;
 			}
 			//zone3
 			else if (distToEnemyBase<=closeToEnemy && distToMyBase<=distBetweenBases){
-				//put encampment in zone3
+				zone3Locs[zone3Counter]=encampment;
+				zone3Counter+=1;
 			}
 			//zone 4
 			else if (distToEnemyBase>=farEnoughFromEnemy){
-				//put encampment in zone4
+				zone4Locs[zone4Counter]=encampment;
+				zone4Counter+=1;
 			}
 		}
 	}
