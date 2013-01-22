@@ -277,8 +277,15 @@ public class SoldierUnit extends BaseUnit {
 						this.goToLocationBrute(targetLoc);
 					}
 					else if (ec.getTeam().equals(myTeam) && (rc.senseRobotInfo(objs[0]).type.equals(RobotType.SOLDIER))) {
-						rc.setIndicatorString(1, "encampment currently being captured, move towards it");
-						this.goToLocationBrute(targetLoc);
+						if (curLoc.distanceSquaredTo(targetLoc) > 9) {
+							rc.setIndicatorString(1, "encampment currently being captured, move towards it");
+							this.goToLocationBrute(targetLoc);
+						}
+						else {
+							rc.setIndicatorString(1, "encampment currently being captured, defend it");
+							this.defendPosition(targetLoc);
+						}
+
 					}
 					else if (ec.getTeam().equals(myTeam)) {
 						rc.setIndicatorString(1,
