@@ -16,6 +16,12 @@ import battlecode.common.Upgrade;
 
 //singleton
 public class HQUnit extends BaseUnit {
+	
+	// initial strategies
+	public static final int BIG_MAP_STRAT = 2;
+	public static final int SMALL_MAP_STRAT = 1;
+	public static final int REGULAR_MAP_STRAT = 0;
+	
 	// squad consts
 	public static final int SQUAD_ASSIGNMENT_CHANNEL = 7907;
 	public static final int UNIT_ASSIGNMENT_CHANNEL = 13577;
@@ -37,7 +43,8 @@ public class HQUnit extends BaseUnit {
 	protected int[] squads;
 	protected MapLocation[] initialTargetEncampments;
 	private int encampCounter;
-
+	protected int initialStrategy = REGULAR_MAP_STRAT;
+	
 	public HQUnit(RobotController rc) {
 		super(rc);
 		this.unitsMap = new int[2000];
@@ -131,8 +138,8 @@ public class HQUnit extends BaseUnit {
 			}
 
 			if (rc.getTeamPower() >= 2*GameConstants.BROADCAST_SEND_COST) {
-				rc.broadcast(Util.getInitialSquadNumChannelNum(),
-						getCurrentSquadAssignment());
+//				rc.broadcast(Util.getInitialSquadNumChannelNum(),
+//						getCurrentSquadAssignment());
 				rc.broadcast(Util.getInitialUnitNumChannelNum(), getCurrentUnitAssignment());
 				
 				if (Clock.getRoundNum() < 70) {
@@ -142,7 +149,11 @@ public class HQUnit extends BaseUnit {
 					RobotType encampSup = RobotType.SUPPLIER;
 					RobotType encampGen = RobotType.GENERATOR;
 
-					if (rc.getTeamPower() > 5) {
+					if (rc.getTeamPower() >= unitsCount*GameConstants.BROADCAST_SEND_COST) {
+						for (int id=0; id < unitsCount; id++) {
+							rc.broadcast(Util.getUnitChannelNum(id), Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
+						}
+/*
 						if (myUnits.length <= 3) {
 							encampCounter = 0;
 							rc.broadcast(
@@ -191,7 +202,7 @@ public class HQUnit extends BaseUnit {
 											SoldierState.DEFEND_POSITION,
 											RobotType.HQ, 0));
 						}
-
+*/
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
 								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));

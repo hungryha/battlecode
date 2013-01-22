@@ -13,7 +13,7 @@ public class Util {
 	public static final int ENCAMPMENT_TYPE_MASK = 7;
 	public static final int CHECK_SUM_MASK = 7;
 	public static final int UNIT_SQUAD_ASSIGNMENT_MASK = 1;
-	public static final int SQUAD_ASSIGNMENT_MASK = 4;
+	public static final int SQUAD_ASSIGNMENT_MASK = 3;
 	
 	public static final int X_COORD_SHIFT = 0;
 	public static final int Y_COORD_SHIFT = 7;

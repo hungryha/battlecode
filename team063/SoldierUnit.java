@@ -59,6 +59,16 @@ public class SoldierUnit extends BaseUnit {
 				unitId = rc.readBroadcast(Util.getInitialUnitNumChannelNum());
 			}
 			
+			int unitMsg = rc.readBroadcast(Util.getUnitChannelNum(unitId));
+			
+			if (unitMsg != lastUnitMsg && unitMsg != 0) {
+				rc.setIndicatorString(0, "unitmsg in binary: " + Integer.toBinaryString(unitMsg) + " changeSquadBool: " + Util.getChangeSquadBool(unitMsg));
+				if (Util.getChangeSquadBool(unitMsg)) {
+					rc.setIndicatorString(1, "new squad: " + Util.getSquadAssignment(unitMsg));
+					squadId = Util.getSquadAssignment(unitMsg);
+				}
+			}
+			
 			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
 
 			if (squadMsg != lastSquadMsg && squadMsg != 0 && Util.decode(squadMsg) != null) {
