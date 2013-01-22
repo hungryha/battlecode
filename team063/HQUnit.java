@@ -530,8 +530,8 @@ public class HQUnit extends BaseUnit {
 		//zone1 is the zone near our base, probably only one robot per squad needed
 		@Override
 		public int compare(Object Enc0, Object Enc1){
-			if (Enc0==null){ return -1;} if (Enc1==null){ return 1;}
-			return (((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc1).distanceSquaredTo(myBaseLoc));
+			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
+			return (((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc0).distanceSquaredTo(myBaseLoc));
 		}
 	}
 	
@@ -539,8 +539,8 @@ public class HQUnit extends BaseUnit {
 		//zone2 is the zone near the center of the map, may need medium sized squads and quick action to take these
 		@Override
 		public int compare(Object Enc0, Object Enc1){
-			if (Enc0==null){ return -1;} if (Enc1==null){ return 1;}
-			return ((((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc))-(((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)));
+			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
+			return ((((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc))-(((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc)));
 		}
 	}
 	
@@ -548,8 +548,8 @@ public class HQUnit extends BaseUnit {
 		//zone3 is the zone near the enemy base we would want to put artillery, this should be taken when we are already pushing into the enemy lines, but probably not done immediately
 		@Override
 		public int compare(Object Enc0,Object Enc1){
-			if (Enc0==null){ return -1;} if (Enc1==null){ return 1;}
-			return ((((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc0).distanceSquaredTo(myBaseLoc))-(((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)));
+			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
+			return ((((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc1).distanceSquaredTo(myBaseLoc))-(((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)));
 		}
 	}
 	
@@ -557,8 +557,8 @@ public class HQUnit extends BaseUnit {
 		//zone4 is the "zone" of far away encampments that aren't near the enemy base
 		@Override
 		public int compare(Object Enc0,Object Enc1){
-			if (Enc0==null){ return -1;} if (Enc1==null){ return 1;}
-			return (((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc1).distanceSquaredTo(myBaseLoc));
+			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
+			return (((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc0).distanceSquaredTo(myBaseLoc));
 		}
 	}
 }
