@@ -179,10 +179,11 @@ public class HQUnit extends BaseUnit {
 						}
 						
 						for (int i = firstSquadLimit; i < unitsCount; i++) {
-							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(enemyBaseLoc, SoldierState.SCOUT, RobotType.HQ, 0));
+							System.out.println("broadcasting to unit: " + i);
+							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(initialTargetEncampments[i - firstSquadLimit + 1], SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
 						}
 						
-						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));
 						if (rc.isActive()) {

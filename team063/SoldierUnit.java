@@ -51,21 +51,36 @@ public class SoldierUnit extends BaseUnit {
 		 */
 		if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_READ_COST) {
 
-			if (squadId == HQUnit.NO_SQUAD) {
-				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
-			}
+//			if (squadId == HQUnit.NO_SQUAD) {
+//				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
+//			}
 			
 			if (unitId == HQUnit.NO_UNIT_ID) {
 				unitId = rc.readBroadcast(Util.getInitialUnitNumChannelNum());
 			}
 			
-			int unitMsg = rc.readBroadcast(Util.getUnitChannelNum(unitId));
-			
-			if (unitMsg != lastUnitMsg && unitMsg != 0) {
-				rc.setIndicatorString(0, "unitmsg in binary: " + Integer.toBinaryString(unitMsg) + " changeSquadBool: " + Util.getChangeSquadBool(unitMsg));
-				if (Util.getChangeSquadBool(unitMsg)) {
-					rc.setIndicatorString(1, "new squad: " + Util.getSquadAssignment(unitMsg));
-					squadId = Util.getSquadAssignment(unitMsg);
+
+			if (unitId != HQUnit.NO_UNIT_ID) {
+				if (Util.getUnitChannelNum(unitId) < 0 || Util.getUnitChannelNum(unitId) > 65535) {
+					System.out.println("unitId: " + unitId);
+					System.out.println("Util.getUnitChannelNum(unitId): " + Util.getUnitChannelNum(unitId));
+				}
+				int unitMsg = rc.readBroadcast(Util.getUnitChannelNum(unitId));
+
+				if (unitMsg != lastUnitMsg && unitMsg != 0) {
+					rc.setIndicatorString(0, "unitmsg in binary: " + Integer.toBinaryString(unitMsg)
+									+ " changeSquadBool: "
+									+ Util.getChangeSquadBool(unitMsg));
+					if (Util.getChangeSquadBool(unitMsg)) {
+						rc.setIndicatorString(1,"new squad: " + Util.getSquadAssignment(unitMsg));
+						squadId = Util.getSquadAssignment(unitMsg);
+					} else {
+						targetLoc = Util.getMapLocationFromMsg(unitMsg);
+						state = Util.getSoldierStateFromMsg(unitMsg);
+						encampmentSecureType = Util
+								.getEncampmentTypeFromMsg(unitMsg);
+					}
+					lastUnitMsg = unitMsg;
 				}
 			}
 			
@@ -574,12 +589,14 @@ public class SoldierUnit extends BaseUnit {
 										+ dir2 + " mineNum1: "
 										+ minesAlongWallDir1 + " mineNum2: "
 										+ minesAlongWallDir2);
-								rc.move(dir2);
-								prevDir = dir2;
-								prevLoc = curLoc;
-								initialWallLoc = curLoc;
-								followingWall = true;
-								wallDir = dir1.opposite();
+								if (rc.canMove(dir2)) {
+									rc.move(dir2);
+									prevDir = dir2;
+									prevLoc = curLoc;
+									initialWallLoc = curLoc;
+									followingWall = true;
+									wallDir = dir1.opposite();
+								}
 							} else {
 								rc.setIndicatorString(0,
 										"DEFUSING MINE, mineNum2: "

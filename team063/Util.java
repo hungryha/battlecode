@@ -53,7 +53,7 @@ public class Util {
 	}
 	
 	public static int getInitialUnitNumChannelNum() {
-		return encodeChannelNum(HQUnit.UNIT_ASSIGNMENT_CHANNEL);
+		return encodeChannelNum(1);
 	}
 	
 	public static int encodeChannelNum(int channelNum) {
