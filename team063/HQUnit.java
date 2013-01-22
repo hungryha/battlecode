@@ -32,11 +32,11 @@ public class HQUnit extends BaseUnit {
 	public MapLocation[] zone3Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
 	public MapLocation[] zone4Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
 	private int distBetweenBases=myBaseLoc.distanceSquaredTo(enemyBaseLoc);		// the distance between bases
-	private int closeToBase=400;												// the distance which classifies encampments into Zone1
-	private int awayFromEnemyForgiveness=200; 									// the distance added to the distance between bases for Zone1
-	private int awayFromEquidistantForgiveness=200;								// the forgiveness from an equidistant location between both bases allowed for Zone2
-	private int closeToEnemy=400;												// the distance which classifies encampments into Zone3
-	private int farEnoughFromEnemy=600;											// the distance which classifies encampments into Zone4
+	private int closeToBase=300;												// the distance which classifies encampments into Zone1
+	private int awayFromEnemyForgiveness=150; 									// the distance added to the distance between bases for Zone1
+	private int awayFromEquidistantForgiveness=60;								// the forgiveness from an equidistant location between both bases allowed for Zone2
+	private int closeToEnemy=300;												// the distance which classifies encampments into Zone3
+	private int farEnoughFromEnemy=400;											// the distance which classifies encampments into Zone4
 	
 	// squad consts
 	public static final int SQUAD_ASSIGNMENT_CHANNEL = 7907;
@@ -88,6 +88,8 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone2Locs, new EncampmentComparatorZone2());
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
+		
+		
 		System.out.println("zone 1 sorted encampments:");
 		for (int i=0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
@@ -104,6 +106,7 @@ public class HQUnit extends BaseUnit {
 		for (int i=0; i < zone4Locs.length; i++) {
 			System.out.println(zone4Locs[i]);
 		}
+		
 	}
 
 	public void runTest() {
@@ -523,7 +526,8 @@ public class HQUnit extends BaseUnit {
 				}
 			}
 			//zone2
-			else if (distToMyBase<=(distBetweenBases+awayFromEquidistantForgiveness) && distToEnemyBase<=(distBetweenBases+awayFromEquidistantForgiveness)){
+
+			else if (distToMyBase<=(distBetweenBases/2+awayFromEquidistantForgiveness) && distToEnemyBase<=(distBetweenBases/2+awayFromEquidistantForgiveness)){
 				if (zone2Counter < ZONE_ENCAMPMENT_LIMIT) {
 					zone2Locs[zone2Counter]=encampment;
 					zone2Counter+=1;
