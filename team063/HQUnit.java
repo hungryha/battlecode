@@ -538,7 +538,7 @@ public class HQUnit extends BaseUnit {
 		@Override
 		public int compare(Object Enc0, Object Enc1){
 			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
-			return (((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc0).distanceSquaredTo(myBaseLoc));
+			return (((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc1).distanceSquaredTo(myBaseLoc));
 		}
 	}
 	
@@ -547,7 +547,7 @@ public class HQUnit extends BaseUnit {
 		@Override
 		public int compare(Object Enc0, Object Enc1){
 			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
-			return ((((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc))-(((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc)));
+			return ((((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc))-(((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)+((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)));
 		}
 	}
 	
@@ -556,7 +556,7 @@ public class HQUnit extends BaseUnit {
 		@Override
 		public int compare(Object Enc0,Object Enc1){
 			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
-			return ((((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc1).distanceSquaredTo(myBaseLoc))-(((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)));
+			return ((((MapLocation) Enc0).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc0).distanceSquaredTo(myBaseLoc))-(((MapLocation) Enc1).distanceSquaredTo(enemyBaseLoc)*2+((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)));
 		}
 	}
 	
@@ -565,7 +565,7 @@ public class HQUnit extends BaseUnit {
 		@Override
 		public int compare(Object Enc0,Object Enc1){
 			if (Enc0==null){ return 1;} if (Enc1==null){ return -1;}
-			return (((MapLocation) Enc1).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc0).distanceSquaredTo(myBaseLoc));
+			return (((MapLocation) Enc0).distanceSquaredTo(myBaseLoc)-((MapLocation) Enc1).distanceSquaredTo(myBaseLoc));
 		}
 	}
 }
