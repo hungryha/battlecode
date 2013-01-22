@@ -37,13 +37,23 @@ public class HQUnit extends BaseUnit {
 	public static final int DEFEND_BASE_SQUAD = 7;
 	public static final int ATTACK_SQUAD = 8;
 
+	// encampment zones
+	protected int[] encampSquadCounters = new int[4];
+	protected int totalEncampSquads = 3;
+	protected int numMaxEncampsZone1 = 0; // 1 per squad
+	protected int numMaxEncampsZone2 = 0; // 2 per squad
+	protected int numMaxEncampsZone3 = 0; // many per squad or many squads
+	protected int numMAxEncampsZone4 = 0; // extras
+	
+	
 	public int unitsCount = 0;
-
 	protected int[] unitsMap;
 	protected int[] squads;
 	protected MapLocation[] initialTargetEncampments;
 	private int encampCounter;
 	protected int initialStrategy = REGULAR_MAP_STRAT;
+	
+
 	
 	public HQUnit(RobotController rc) {
 		super(rc);
@@ -153,56 +163,7 @@ public class HQUnit extends BaseUnit {
 						for (int id=0; id < unitsCount; id++) {
 							rc.broadcast(Util.getUnitChannelNum(id), Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
 						}
-/*
-						if (myUnits.length <= 3) {
-							encampCounter = 0;
-							rc.broadcast(
-									Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1),
-									Util.encodeMsg(
-											initialTargetEncampments[encampCounter],
-											SoldierState.SECURE_ENCAMPMENT,
-											encampSup, 0));
-
-						} else if (myUnits.length <= 5) {
-							encampCounter = 1;
-							rc.broadcast(
-									Util.getSquadChannelNum(ENCAMPMENT_SQUAD_2),
-									Util.encodeMsg(
-											initialTargetEncampments[encampCounter],
-											SoldierState.SECURE_ENCAMPMENT,
-											encampSup, 0));
-						} else if (myUnits.length <= 7) {
-							encampCounter = 2;
-							rc.broadcast(
-									Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3),
-									Util.encodeMsg(
-											initialTargetEncampments[encampCounter],
-											SoldierState.SECURE_ENCAMPMENT,
-											encampSup, 0));
-						} else if (myUnits.length <= 9) {
-							encampCounter = 3;
-							rc.broadcast(
-									Util.getSquadChannelNum(ENCAMPMENT_SQUAD_4),
-									Util.encodeMsg(
-											initialTargetEncampments[encampCounter],
-											SoldierState.SECURE_ENCAMPMENT,
-											encampSup, 0));
-						} else if (myUnits.length <= 11) {
-							encampCounter = 4;
-							rc.broadcast(
-									Util.getSquadChannelNum(ENCAMPMENT_SQUAD_5),
-									Util.encodeMsg(
-											initialTargetEncampments[encampCounter],
-											SoldierState.SECURE_ENCAMPMENT,
-											encampGen, 0));
-						} else {
-							rc.broadcast(Util
-									.getSquadChannelNum(DEFEND_BASE_SQUAD),
-									Util.encodeMsg(myBaseLoc,
-											SoldierState.DEFEND_POSITION,
-											RobotType.HQ, 0));
-						}
-*/
+						
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
 								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));
@@ -374,6 +335,24 @@ public class HQUnit extends BaseUnit {
 		}
 	}
 
+	public int getSquadAssignment(int unit) {
+		if (unit == 0 ) {
+			return SCOUT_SQUAD;
+		}
+		else if (unit <= 3 ) {
+			return ENCAMPMENT_SQUAD_1;
+		}
+		else if (unit <= 5) {
+			return ENCAMPMENT_SQUAD_2;
+		}
+		else if (unit <= 7) {
+			return ENCAMPMENT_SQUAD_3;
+		}
+		else if (unit <= 9) {
+			return ENCAMPMENT_SQUAD_4;
+		}
+		return DEFEND_BASE_SQUAD;
+	}
 	// checks all available spaces around hq for spawning
 	public boolean spawnInAvailable() throws GameActionException {
 		Direction dir = myBaseLoc.directionTo(enemyBaseLoc);
@@ -503,7 +482,7 @@ public class HQUnit extends BaseUnit {
 		// offense strategy: build artillery near their hq, 
 		//					 build shields if they have artillery near base, 
 		//					 attacking units should recharge at nearby shields and medbay
-		// build artillery at most within 8 units of bases
+		// build artillery at most within 7 units of bases
 		
 		// heuristics? build more artillery when there are less mines around
 	}
