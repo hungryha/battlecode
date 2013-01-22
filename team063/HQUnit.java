@@ -1,5 +1,6 @@
 package team063;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 import battlecode.common.Clock;
@@ -80,6 +81,13 @@ public class HQUnit extends BaseUnit {
 //		System.out.println("initial analysis: " + (Clock.getBytecodeNum() - start));
 		System.out.println("dist squared to enemy: " + this.distToEnemyBaseSquared + ", my hq loc: " + this.myBaseLoc + ", enemy hq loc: " + this.enemyBaseLoc);
 		System.out.println("dist squared: " + rc.senseHQLocation().distanceSquaredTo(rc.senseEnemyHQLocation()));
+		
+		this.zoneEncampments(encampmentLocs);
+		Arrays.sort(zone1Locs, new EncampmentComparatorZone1());
+		System.out.println("zone 1 sorted encampments:");
+		for (int i=0; i < zone1Locs.length; i++) {
+			System.out.println(zone1Locs[i]);
+		}
 	}
 
 	public void runTest() {
@@ -145,7 +153,6 @@ public class HQUnit extends BaseUnit {
 				this.spawnInAvailable();
 			}
 		} else {
-			System.out.println("not small or big map");
 			// check enemy nuke progress
 			if (Clock.getRoundNum() >= 200) {
 				if (rc.getTeamPower() >= 50) {

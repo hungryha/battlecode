@@ -47,8 +47,8 @@ public abstract class BaseUnit {
 	public void loop() {
 		while (true) {
 			try {
-				run();
-//				runTest();
+//				run();
+				runTest();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
