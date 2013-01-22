@@ -152,7 +152,7 @@ public class HQUnit extends BaseUnit {
 //						getCurrentSquadAssignment());
 				rc.broadcast(Util.getInitialUnitNumChannelNum(), getCurrentUnitAssignment());
 				
-				if (Clock.getRoundNum() < 70) {
+				if (Clock.getRoundNum() < 100) {
 					// broadcast
 					GameObject[] myUnits = rc.senseNearbyGameObjects(
 							Robot.class, 1000, myTeam);
@@ -160,26 +160,24 @@ public class HQUnit extends BaseUnit {
 					RobotType encampGen = RobotType.GENERATOR;
 
 					if (rc.getTeamPower() >= unitsCount*GameConstants.BROADCAST_SEND_COST) {
-						for (int id=0; id < unitsCount; id++) {
-							rc.broadcast(Util.getUnitChannelNum(id), Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
+						int firstSquadLimit = Math.min(6, unitsCount);
+						for (int id=0; id < firstSquadLimit; id++) {
+							rc.broadcast(Util.getUnitChannelNum(id), Util.encodeUnitSquadAssignmentChangeMsg(this.getSquadAssignment(id, Clock.getRoundNum())));
 						}
 						
-						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
-								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
+						for (int i = firstSquadLimit; i < unitsCount; i++) {
+							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(enemyBaseLoc, SoldierState.SCOUT, RobotType.HQ, 0));
+						}
+						
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));
 						if (rc.isActive()) {
 							this.spawnInAvailable();
 						}
 					}
 				}
-
-				// if (Clock.getRoundNum() > 70
-				// && !rc.hasUpgrade(Upgrade.DEFUSION)) {
-				// rc.setIndicatorString(0, "researching DEFUSION");
-				// rc.researchUpgrade(Upgrade.DEFUSION);
-				// } else
-
-				else if (Clock.getRoundNum() >= 70
+				else if (Clock.getRoundNum() >= 100
 						&& Clock.getRoundNum() <= 300) {
 					rc.setIndicatorString(
 							1,
@@ -272,14 +270,6 @@ public class HQUnit extends BaseUnit {
 					}
 
 				}
-				/*
-				 * else if (Clock.getRoundNum() <= 200) {
-				 * rc.setIndicatorString(1, "rally at shields");
-				 * rc.broadcast(Util.getAllUnitChannelNum(), Util
-				 * .encodeMsg(initialTargetEncampments[2],
-				 * SoldierState.BRUTE_MOVE, RobotType.SHIELDS, 0)); if
-				 * (rc.isActive()) { this.spawnInAvailable(); } }
-				 */
 				else if (Clock.getRoundNum() > 300
 						&& Clock.getRoundNum() <= 1000) {
 
@@ -319,37 +309,16 @@ public class HQUnit extends BaseUnit {
 	public int getCurrentUnitAssignment() {
 		return unitsCount;
 	}
-	public int getCurrentSquadAssignment() {
-		if (unitsCount < 1) {
-			return SCOUT_SQUAD;
-		} else if (unitsCount <= 3) {
-			return ENCAMPMENT_SQUAD_1;
-		} else if (unitsCount <= 5) {
-			return ENCAMPMENT_SQUAD_2;
-		} else if (unitsCount <= 7) {
-			return ENCAMPMENT_SQUAD_3;
-		}
 
-		else {
-			return DEFEND_BASE_SQUAD;
-		}
-	}
-
-	public int getSquadAssignment(int unit) {
+	public int getSquadAssignment(int unit, int round) {
 		if (unit == 0 ) {
 			return SCOUT_SQUAD;
 		}
-		else if (unit <= 3 ) {
+		else if (unit <= 5) {
 			return ENCAMPMENT_SQUAD_1;
 		}
-		else if (unit <= 5) {
+		else if (unit >= 11 && unit <= 15) {
 			return ENCAMPMENT_SQUAD_2;
-		}
-		else if (unit <= 7) {
-			return ENCAMPMENT_SQUAD_3;
-		}
-		else if (unit <= 9) {
-			return ENCAMPMENT_SQUAD_4;
 		}
 		return DEFEND_BASE_SQUAD;
 	}
@@ -403,17 +372,6 @@ public class HQUnit extends BaseUnit {
 		// int targetRangeSquared = targetRange * targetRange;
 		MapLocation[] targetEncampments = new MapLocation[10];
 
-		/*
-		 * int j = 0; if (myBaseLoc.x <= rc.getMapWidth()/2 || myBaseLoc.y <=
-		 * rc.getMapHeight()/2) { for (int i=0; i < encampments.length; i++) {
-		 * if (encampments[i].distanceSquaredTo(myBaseLoc) < targetRangeSquared)
-		 * { targetEncampments[j] = encampments[i]; j++; if (j ==
-		 * targetEncampments.length) { break; } } } } else { for (int
-		 * i=encampments.length-1; i>=0; i--) { if
-		 * (encampments[i].distanceSquaredTo(myBaseLoc) < targetRangeSquared) {
-		 * targetEncampments[j] = encampments[i]; j++; if (j ==
-		 * targetEncampments.length) { break; } } } }
-		 */
 		int[] targetDists = { 1000, 1000, 1000, 1000, 1000 };
 		for (int i = 0; i < encampments.length; i++) {
 			int dist = myBaseLoc.distanceSquaredTo(encampments[i]);

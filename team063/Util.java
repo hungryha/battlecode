@@ -45,7 +45,7 @@ public class Util {
 	}
 	
 	public static int getInitialSquadNumChannelNum() {
-		return encodeChannelNum(1);
+		return encodeChannelNum(HQUnit.SQUAD_ASSIGNMENT_CHANNEL);
 	}
 	
 	public static int getAllUnitExceptScoutChannelNum() {
