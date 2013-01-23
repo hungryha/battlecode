@@ -101,7 +101,7 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 		
 		
-		/*
+		
 		System.out.println("zone 1 sorted encampments:");
 		for (int i=0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
@@ -115,10 +115,10 @@ public class HQUnit extends BaseUnit {
 			System.out.println(zone3Locs[i]);
 		}
 		System.out.println("zone 4 sorted encampments:");
-		for (int i=0; i < zone4Locs.length; i++) {arg0
+		for (int i=0; i < zone4Locs.length; i++) {
 			System.out.println(zone4Locs[i]);
 		}
-		*/
+		
 	}
 
 	public void runTest() {
@@ -224,7 +224,6 @@ public class HQUnit extends BaseUnit {
 						}
 						
 						int singleUnitsWave2End = Math.min(20, unitsCount);
-						encampIndex = 0;
 						for (int i = 15; i < singleUnitsWave2End; i++) {
 							MapLocation target = zone1Locs[encampIndex];
 							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(target, SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
@@ -259,6 +258,7 @@ public class HQUnit extends BaseUnit {
 						}
 					}
 				}
+
 				/*
 				else if (Clock.getRoundNum() >= 200
 						&& Clock.getRoundNum() <= 300) {
