@@ -218,8 +218,15 @@ public class HQUnit extends BaseUnit {
 						int encampIndex = 0;
 						for (int i = firstSquadLimit; i < singleUnitsWave1End; i++) {
 							MapLocation target = zone1Locs[encampIndex];
-							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(target, SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
-							encampIndex = Math.min(encampIndex + 1, endZone1Index);
+
+							if (encampIndex > endZone1Index || target == null) {
+								rc.broadcast(Util.getUnitChannelNum(i), Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
+							}
+							else {
+								rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(target, SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+							}
+//							encampIndex = Math.min(encampIndex + 1, endZone1Index);
+							encampIndex++;
 						}
 						
 						int secondSquadLimit = Math.min(16, unitsCount);
@@ -231,8 +238,15 @@ public class HQUnit extends BaseUnit {
 						int singleUnitsWave2End = Math.min(20, unitsCount);
 						for (int i = 15; i < singleUnitsWave2End; i++) {
 							MapLocation target = zone1Locs[encampIndex];
-							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(target, SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
-							encampIndex = Math.min(encampIndex + 1, endZone1Index);
+
+							if (encampIndex > endZone1Index || target == null) {
+								rc.broadcast(Util.getUnitChannelNum(i), Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
+							}
+							else {
+								rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(target, SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+							}
+//							encampIndex = Math.min(encampIndex + 1, endZone1Index);
+							encampIndex++;
 						}
 						
 						int thirdSquadLimit = Math.min(26, unitsCount);
