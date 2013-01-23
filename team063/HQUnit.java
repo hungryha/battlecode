@@ -38,6 +38,7 @@ public class HQUnit extends BaseUnit {
 	private int awayFromEquidistantForgiveness=(int) Math.max(distBetweenBases*.02,35);		// the forgiveness from an equidistant location between both bases allowed for Zone2
 	private int closeToEnemy=300;															// the distance which classifies encampments into Zone3
 	private int farEnoughFromEnemy=400;														// the distance which classifies encampments into Zone4
+	private MapLocation chosenEncampment=null;
 	
 	// squad consts
 	public static final int SQUAD_ASSIGNMENT_CHANNEL = 7907;
@@ -69,7 +70,6 @@ public class HQUnit extends BaseUnit {
 	public int unitsCount = 0;
 	protected int[] unitsMap;
 	protected int[] squads;
-	protected MapLocation[] initialTargetEncampments;
 	private int encampCounter;
 	protected int initialStrategy = REGULAR_MAP_STRAT;
 	
@@ -128,13 +128,13 @@ public class HQUnit extends BaseUnit {
 	@Override
 	public void run() throws GameActionException {
 		
-		if (mapHeight > 65 && mapWidth > 65) {
+		/*if (mapHeight > 65 && mapWidth > 65) {
 			System.out.println("big map: nuke strategy");
 			// big map, nuke strategy
 
 			if (Clock.getRoundNum() < 100) {
 				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-						initialTargetEncampments[0],
+						Z[0],
 						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
 				if (rc.isActive()) {
 					this.spawnInAvailable();
@@ -158,31 +158,50 @@ public class HQUnit extends BaseUnit {
 						0));
 			}
 
-		} else if (this.distToEnemyBaseSquared <= 800) {
-			System.out.println("small map: rush strategy");
+		}*/ if (this.distToEnemyBaseSquared <= 800) {
+			//System.out.println("small map: rush strategy");
 			// small map, rush strategy
-			if (Clock.getRoundNum() <= 100
-					&& myBaseLoc.distanceSquaredTo(initialTargetEncampments[0]) <= 150
-					&& (myBaseLoc.directionTo(initialTargetEncampments[0]).equals(myBaseLoc.directionTo(enemyBaseLoc)) || 
-							myBaseLoc.directionTo(initialTargetEncampments[0]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateLeft()) || 
-							myBaseLoc.directionTo(initialTargetEncampments[0]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateRight()))) {
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-						initialTargetEncampments[0],
-						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+			if (rc.isActive()) {
+				this.spawnInAvailable();
+			}
+			if (Clock.getRoundNum() <= 100){
+				
+				for (int i = 0; i<=3;i++){
+					
+					if (myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc)) || 
+								myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateLeft()) || 
+								myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateRight())) {
+									
+						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+								zone1Locs[i],
+								SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+						if (chosenEncampment==null){
+							chosenEncampment=zone1Locs[i];
+						}
+					}
+				}
+					
 
-			} else if (Clock.getRoundNum() <= 100) {
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
-						0));
-			} else {
+			} else if (Clock.getRoundNum() <= 150 && Clock.getRoundNum()>100) {
+				System.out.println(chosenEncampment);
+				if (chosenEncampment!=null){
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						chosenEncampment, SoldierState.DEFEND_POSITION, RobotType.HQ,0));
+				} else {
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+							myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,0));
+				}
+
+			} /*else if (zone3Locs[0]!=null){
+				rc.broadcast(Util.getAllUnitChannelNum(),Util.encodeMsg(zone3Locs[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+			
+			}*/ else {
 				rc.broadcast(Util.getAllUnitChannelNum(), Util
 						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
 								RobotType.HQ, 0));
 			}
 
-			if (rc.isActive()) {
-				this.spawnInAvailable();
-			}
+			
 		} else {
 			// check enemy nuke progress
 			if (Clock.getRoundNum() >= 200) {
@@ -439,47 +458,6 @@ public class HQUnit extends BaseUnit {
 	public void decodeMsg(int encodedMsg) {
 		// TODO Auto-generated method stub
 
-	}
-
-	public MapLocation[] getTargetEncampments() {
-		MapLocation[] encampments = this.rc.senseAllEncampmentSquares();
-
-		// compute distances of encampments to hq location
-		// sort by distance
-		// take top k
-		// TODO use median of medians?
-		// Arrays.sort(encampments, new MapLocationComparator()); // 6300
-		// bytecodes
-
-		// int targetRange = Math.max(rc.getMapHeight(), rc.getMapWidth())/2;
-		// int targetRangeSquared = targetRange * targetRange;
-		MapLocation[] targetEncampments = new MapLocation[10];
-
-		int[] targetDists = { 1000, 1000, 1000, 1000, 1000 };
-		for (int i = 0; i < encampments.length; i++) {
-			int dist = myBaseLoc.distanceSquaredTo(encampments[i]);
-			int largestIndex = 0;
-			for (int k = 1; k < 5; k++) {
-				if (targetDists[k] > targetDists[largestIndex]) {
-					largestIndex = k;
-				}
-			}
-			if (targetEncampments[largestIndex] == null
-					|| targetDists[largestIndex] == 0
-					|| dist < targetDists[largestIndex]) {
-				targetDists[largestIndex] = dist;
-				targetEncampments[largestIndex] = encampments[i];
-			}
-		}
-		/*
-		 * [java] [server] basicplayer (A) wins
-		 * System.out.println("start sorted encampments");
-		 * System.out.println("myBaseLoc x: " + myBaseLoc.x + " y: " +
-		 * myBaseLoc.y); for (int i=0; i < targetEncampments.length; i++) {
-		 * System.out.println("x: " + targetEncampments[i].x + " y: " +
-		 * targetEncampments[i].y); }
-		 */
-		return targetEncampments;
 	}
 
 	public void initialAnalysisAndInitialization() {

@@ -138,6 +138,13 @@ public class SoldierUnit extends BaseUnit {
 			Robot[] farAllies;
 			double lowHealth=200;
 			int lowHealthIndex=0;
+			int squadSize;
+			
+			if (this.distToEnemyBaseSquared<=800){
+				squadSize=4;
+			} else {
+				squadSize=7;
+			}
 			
 			if (mapHeight <=30 && mapWidth<=30){
 				farAllies = rc.senseNearbyGameObjects(Robot.class,20,myTeam);
@@ -155,12 +162,12 @@ public class SoldierUnit extends BaseUnit {
 				if (nearbyEnemies.length < 1 && farMines.length >0){
 					rc.setIndicatorString(0,"defusing mine");
 					rc.defuseMine(farMines[0]);
-				} else if (nearbyAllies.length >= 7 && nearbyEnemies.length <= 2){
+				} else if (nearbyAllies.length >= squadSize && nearbyEnemies.length <= 2){
 					rc.setIndicatorString(0, "attacking!");
 					this.goToLocationBrute(targetLoc);
 //					this.goToLocationSmart(targetLoc);
 				
-				} else if (nearbyAllies.length>=7){
+				} else if (nearbyAllies.length>=squadSize){
 					if (rc.getEnergon()<=20){
 						MapLocation stepAwayLoc=rc.senseRobotInfo(nearbyAllies[0]).location.subtract(curLoc.directionTo(targetLoc));
 						rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
