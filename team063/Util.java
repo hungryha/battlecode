@@ -119,13 +119,24 @@ public class Util {
 	}
 	
 	public static SoldierState getSoldierStateFromMsg(int encodedMsg) {
+		
 		int index = (encodedMsg & (SOLDIER_STATE_MASK << SOLDIER_STATE_SHIFT)) >> SOLDIER_STATE_SHIFT;
-		return SoldierState.values()[index];
+		if (index < 12) {
+			return SoldierState.values()[index];
+		}
+		else {
+			return SoldierState.DEFAULT;
+		}
 	}
 	
 	public static RobotType getEncampmentTypeFromMsg(int encodedMsg) {
 		int index = (encodedMsg & (ENCAMPMENT_TYPE_MASK << ENCAMPMENT_TYPE_SHIFT)) >> ENCAMPMENT_TYPE_SHIFT;
-		return RobotType.values()[index];
+		if (index < 7) {
+			return RobotType.values()[index];
+		}
+		else {
+			return RobotType.ARTILLERY;
+		}
 	}
 	
 	public static int getOtherInfoFromMsg(int encodedMsg) {

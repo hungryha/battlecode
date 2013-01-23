@@ -24,8 +24,8 @@ public abstract class BaseUnit {
 	protected int squadId;
 	protected MapLocation enemyBaseLoc;
 	protected MapLocation myBaseLoc;
-	protected int mapHeight;
-	protected int mapWidth;
+	protected final int mapHeight;
+	protected final int mapWidth;
 	protected int patienceCounter=0;
 	protected MapLocation[] prevLocs = new MapLocation[5];
 	protected int prevLocsCounter = 0;
@@ -48,7 +48,7 @@ public abstract class BaseUnit {
 		while (true) {
 			try {
 				run();
-//				runTest();
+//				this.runTest();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

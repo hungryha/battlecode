@@ -143,7 +143,7 @@ public class SoldierUnit extends BaseUnit {
 			if (this.distToEnemyBaseSquared<=800){
 				squadSize=4;
 			} else {
-				squadSize=7;
+				squadSize=6;
 			}
 			
 			if (mapHeight <=30 && mapWidth<=30){
@@ -234,7 +234,8 @@ public class SoldierUnit extends BaseUnit {
 			} else {
 				if (rc.isActive()) {
 //					this.goToLocationCareful(targetLoc);
-					this.goToLocationBugCrawl(targetLoc);
+//					this.goToLocationBugCrawl(targetLoc);
+					this.goToLocationBrute(targetLoc);
 				}
 			}
 			break;
@@ -307,6 +308,8 @@ public class SoldierUnit extends BaseUnit {
 					} else {
 						// uh oh
 						rc.setIndicatorString(1, "near enemy encampment");
+						this.goToLocationBrute(targetLoc);
+
 					}
 				} else {
 					rc.setIndicatorString(1,
