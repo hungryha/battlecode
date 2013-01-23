@@ -73,7 +73,12 @@ public class HQUnit extends BaseUnit {
 	private int encampCounter;
 	protected int initialStrategy = REGULAR_MAP_STRAT;
 	
-
+	protected RobotType[] encampSelection = {RobotType.ARTILLERY, RobotType.MEDBAY, 
+												RobotType.ARTILLERY, RobotType.SHIELDS, 
+												RobotType.ARTILLERY, RobotType.MEDBAY, 
+												RobotType.ARTILLERY, RobotType.SHIELDS, 
+												RobotType.ARTILLERY, RobotType.MEDBAY, 
+												RobotType.ARTILLERY, RobotType.SHIELDS};
 	
 	public HQUnit(RobotController rc) {
 		super(rc);
@@ -101,7 +106,7 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 		
 		
-		
+		/*
 		System.out.println("zone 1 sorted encampments:");
 		for (int i=0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
@@ -118,7 +123,7 @@ public class HQUnit extends BaseUnit {
 		for (int i=0; i < zone4Locs.length; i++) {
 			System.out.println(zone4Locs[i]);
 		}
-		
+		*/
 	}
 
 	public void runTest() {
@@ -235,6 +240,13 @@ public class HQUnit extends BaseUnit {
 							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_3));
 
 						}
+						
+						int fourthSquadLimit = Math.min(30, unitsCount);
+						for (int i = 26; i < fourthSquadLimit; i++) {
+							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_4));
+
+						}
+						
 						// if encampment captured, capture the next one
 						if (rc.canSenseSquare(zone2Locs[curZone2Counter])) {
 							GameObject obj = rc.senseObjectAtLocation(zone2Locs[curZone2Counter]);
@@ -246,9 +258,10 @@ public class HQUnit extends BaseUnit {
 								curZone2Counter = Math.min(curZone2Counter+1, endZone2Index);
 							}
 						}
-						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(zone2Locs[curZone2Counter], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_2), Util.encodeMsg(zone2Locs[Math.max(0,curZone2Counter-1)], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(zone2Locs[Math.max(0,curZone2Counter-2)], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(zone2Locs[curZone2Counter], SoldierState.SECURE_ENCAMPMENT, encampSelection[curZone2Counter], 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_2), Util.encodeMsg(zone2Locs[Math.max(0,curZone2Counter-1)], SoldierState.SECURE_ENCAMPMENT, encampSelection[Math.max(0,curZone2Counter-1)], 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(zone2Locs[Math.max(0,curZone2Counter-2)], SoldierState.SECURE_ENCAMPMENT, encampSelection[Math.max(0,curZone2Counter-2)], 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_4), Util.encodeMsg(zone2Locs[Math.max(0,curZone2Counter-3)], SoldierState.SECURE_ENCAMPMENT, encampSelection[Math.max(0,curZone2Counter-3)], 0));
 
 						// suicide scout
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
