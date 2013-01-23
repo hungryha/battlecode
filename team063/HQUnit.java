@@ -24,12 +24,14 @@ public class HQUnit extends BaseUnit {
 	public static final int REGULAR_MAP_STRAT = 0;
 	
 	// encampment arrays and relevant vars
+	public static final int ZONE_ENCAMPMENT_LIMIT = 10;
 	public MapLocation[] encampmentLocs= rc.senseAllEncampmentSquares();
 	public int numEncampments=encampmentLocs.length;
-	public MapLocation[] zone1Locs= new MapLocation[numEncampments];
-	public MapLocation[] zone2Locs= new MapLocation[numEncampments];
-	public MapLocation[] zone3Locs= new MapLocation[numEncampments];
-	public MapLocation[] zone4Locs= new MapLocation[numEncampments];
+
+	public MapLocation[] zone1Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
+	public MapLocation[] zone2Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
+	public MapLocation[] zone3Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
+	public MapLocation[] zone4Locs= new MapLocation[Math.min(numEncampments, ZONE_ENCAMPMENT_LIMIT)];
 	private int distBetweenBases=myBaseLoc.distanceSquaredTo(enemyBaseLoc);					// the distance between bases
 	private int closeToBase=(int) Math.min(300,distBetweenBases*.35);						// the distance which classifies encampments into Zone1
 	private int awayFromEnemyForgiveness=(int) Math.round(distBetweenBases*.2); 			// the distance added to the distance between bases for Zone1
@@ -55,11 +57,14 @@ public class HQUnit extends BaseUnit {
 	// encampment zones
 	protected int[] encampSquadCounters = new int[4];
 	protected int totalEncampSquads = 3;
-	protected int numMaxEncampsZone1 = 0; // 1 per squad
-	protected int numMaxEncampsZone2 = 0; // 2 per squad
-	protected int numMaxEncampsZone3 = 0; // many per squad or many squads
-	protected int numMaxEncampsZone4 = 0; // extras
-	
+	protected int endZone1Index = 0; // 1 per squad
+	protected int endZone2Index = 0; // 2 per squad
+	protected int endZone3Index = 0; // many per squad or many squads
+	protected int endZone4Index = 0; // extras
+	private int curZone1Counter = 0;
+	private int curZone2Counter = 0;
+	private int curZone3Counter = 0;
+	private int curZone4Counter = 0;
 	
 	public int unitsCount = 0;
 	protected int[] unitsMap;
@@ -79,14 +84,24 @@ public class HQUnit extends BaseUnit {
 //				+ (Clock.getBytecodeNum() - start));
 //		this.initialAnalysis();
 //		System.out.println("initial analysis: " + (Clock.getBytecodeNum() - start));
-		System.out.println("dist squared to enemy: " + this.distToEnemyBaseSquared + ", my hq loc: " + this.myBaseLoc + ", enemy hq loc: " + this.enemyBaseLoc);
-		System.out.println("dist squared: " + rc.senseHQLocation().distanceSquaredTo(rc.senseEnemyHQLocation()));
-		
+//		System.out.println("dist squared to enemy: " + this.distToEnemyBaseSquared + ", my hq loc: " + this.myBaseLoc + ", enemy hq loc: " + this.enemyBaseLoc);
+//		System.out.println("dist squared: " + rc.senseHQLocation().distanceSquaredTo(rc.senseEnemyHQLocation()));
+		if (rc.isActive()) {
+			try {
+				this.spawnInAvailable();
+			} catch (GameActionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		this.zoneEncampments(encampmentLocs);
 		Arrays.sort(zone1Locs, new EncampmentComparatorZone1());
 		Arrays.sort(zone2Locs, new EncampmentComparatorZone2());
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
+		
+		
+		/*
 		System.out.println("zone 1 sorted encampments:");
 		for (int i=0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
@@ -100,9 +115,10 @@ public class HQUnit extends BaseUnit {
 			System.out.println(zone3Locs[i]);
 		}
 		System.out.println("zone 4 sorted encampments:");
-		for (int i=0; i < zone4Locs.length; i++) {
+		for (int i=0; i < zone4Locs.length; i++) {arg0
 			System.out.println(zone4Locs[i]);
 		}
+		*/
 	}
 
 	public void runTest() {
@@ -183,29 +199,59 @@ public class HQUnit extends BaseUnit {
 			}
 
 			if (rc.getTeamPower() >= 2*GameConstants.BROADCAST_SEND_COST) {
-//				rc.broadcast(Util.getInitialSquadNumChannelNum(),
-//						getCurrentSquadAssignment());
 				rc.broadcast(Util.getInitialUnitNumChannelNum(), getCurrentUnitAssignment());
 				
-				if (Clock.getRoundNum() < 100) {
+				if (Clock.getRoundNum() < 300) {
 					// broadcast
-					GameObject[] myUnits = rc.senseNearbyGameObjects(
-							Robot.class, 1000, myTeam);
-					RobotType encampSup = RobotType.SUPPLIER;
-					RobotType encampGen = RobotType.GENERATOR;
-
 					if (rc.getTeamPower() >= unitsCount*GameConstants.BROADCAST_SEND_COST) {
 						int firstSquadLimit = Math.min(6, unitsCount);
 						for (int id=0; id < firstSquadLimit; id++) {
 							rc.broadcast(Util.getUnitChannelNum(id), Util.encodeUnitSquadAssignmentChangeMsg(this.getSquadAssignment(id, Clock.getRoundNum())));
 						}
 						
-						for (int i = firstSquadLimit; i < unitsCount; i++) {
-							System.out.println("broadcasting to unit: " + i);
-							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(initialTargetEncampments[i - firstSquadLimit + 1], SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+						int singleUnitsWave1End = Math.min(10,unitsCount);
+						int encampIndex = 0;
+						for (int i = firstSquadLimit; i < singleUnitsWave1End; i++) {
+							MapLocation target = zone1Locs[encampIndex];
+							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(target, SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+							encampIndex = Math.min(encampIndex + 1, endZone1Index);
 						}
 						
-						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(initialTargetEncampments[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+						int secondSquadLimit = Math.min(16, unitsCount);
+						for (int i = 10; i < secondSquadLimit; i++) {
+							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_2));
+
+						}
+						
+						int singleUnitsWave2End = Math.min(20, unitsCount);
+						encampIndex = 0;
+						for (int i = 15; i < singleUnitsWave2End; i++) {
+							MapLocation target = zone1Locs[encampIndex];
+							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeMsg(target, SoldierState.SECURE_ENCAMPMENT, RobotType.SUPPLIER, 0));
+							encampIndex = Math.min(encampIndex + 1, endZone1Index);
+						}
+						
+						int thirdSquadLimit = Math.min(26, unitsCount);
+						for (int i = 20; i < thirdSquadLimit; i++) {
+							rc.broadcast(Util.getUnitChannelNum(i), Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_3));
+
+						}
+						// if encampment captured, capture the next one
+						if (rc.canSenseSquare(zone2Locs[curZone2Counter])) {
+							GameObject obj = rc.senseObjectAtLocation(zone2Locs[curZone2Counter]);
+							// should use broadcast, oh well
+							Robot[] objs = rc.senseNearbyGameObjects(Robot.class, zone2Locs[curZone2Counter], 1, myTeam);
+
+							if (obj != null && obj.getTeam().equals(myTeam) && rc.senseRobotInfo(objs[0]).type.isEncampment) {
+								// prev encampment captured
+								curZone2Counter = Math.min(curZone2Counter+1, endZone2Index);
+							}
+						}
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util.encodeMsg(zone2Locs[curZone2Counter], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_2), Util.encodeMsg(zone2Locs[Math.max(0,curZone2Counter-1)], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+						rc.broadcast(Util.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util.encodeMsg(zone2Locs[Math.max(0,curZone2Counter-2)], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+
+						// suicide scout
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
 										RobotType.HQ, 0));
 						if (rc.isActive()) {
@@ -213,7 +259,8 @@ public class HQUnit extends BaseUnit {
 						}
 					}
 				}
-				else if (Clock.getRoundNum() >= 100
+				/*
+				else if (Clock.getRoundNum() >= 200
 						&& Clock.getRoundNum() <= 300) {
 					rc.setIndicatorString(
 							1,
@@ -222,8 +269,7 @@ public class HQUnit extends BaseUnit {
 									+ " rally at shields, writing to channel: "
 									+ Util.getAllUnitExceptScoutChannelNum()
 									+ " msg: "
-									+ Util.encodeMsg(
-											initialTargetEncampments[2],
+									+ Util.encodeMsg(enemyBaseLoc,
 											SoldierState.BRUTE_MOVE,
 											RobotType.SUPPLIER, 0));
 					// if encampments done
@@ -305,7 +351,8 @@ public class HQUnit extends BaseUnit {
 						}
 					}
 
-				}
+				} */
+				/*
 				else if (Clock.getRoundNum() > 300
 						&& Clock.getRoundNum() <= 1000) {
 
@@ -335,7 +382,7 @@ public class HQUnit extends BaseUnit {
 					if (rc.isActive()) {
 						this.spawnInAvailable();
 					}
-				}
+				}*/
 			}
 
 		}
@@ -516,25 +563,38 @@ public class HQUnit extends BaseUnit {
 			int distToEnemyBase=encampment.distanceSquaredTo(enemyBaseLoc);
 			//zone1
 			if (distToMyBase<=closeToBase && distToEnemyBase<=(distBetweenBases+awayFromEnemyForgiveness)){
-				zone1Locs[zone1Counter]=encampment;
-				zone1Counter+=1;
+				if (zone1Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone1Locs[zone1Counter]=encampment;
+					zone1Counter+=1;
+				}
 			}
 			//zone2
+
 			else if (distToMyBase<=(distBetweenBases/2+awayFromEquidistantForgiveness) && distToEnemyBase<=(distBetweenBases/2+awayFromEquidistantForgiveness)){
-				zone2Locs[zone2Counter]=encampment;
-				zone2Counter+=1;
+				if (zone2Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone2Locs[zone2Counter]=encampment;
+					zone2Counter+=1;
+				}
 			}
 			//zone3
 			else if (distToEnemyBase<=closeToEnemy && distToMyBase<=distBetweenBases){
-				zone3Locs[zone3Counter]=encampment;
-				zone3Counter+=1;
+				if (zone3Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone3Locs[zone3Counter]=encampment;
+					zone3Counter+=1;
+				}
 			}
 			//zone 4
 			else if (distToEnemyBase>=farEnoughFromEnemy){
-				zone4Locs[zone4Counter]=encampment;
-				zone4Counter+=1;
+				if (zone4Counter < ZONE_ENCAMPMENT_LIMIT) {
+					zone4Locs[zone4Counter]=encampment;
+					zone4Counter+=1;
+				}
 			}
 		}
+		endZone1Index = zone1Counter - 1;
+		endZone2Index = zone2Counter - 1;
+		endZone3Index = zone3Counter - 1;
+		endZone4Index = zone4Counter - 1;
 	}
 	
 	public class MapLocationComparator implements Comparator {
