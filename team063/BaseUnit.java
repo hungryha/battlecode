@@ -4,7 +4,6 @@ package team063;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import team063.message.Message;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
