@@ -189,53 +189,53 @@ public class HQUnit extends BaseUnit {
 	
 	@Override
 	public void run() throws GameActionException {
-//		System.out.println("clock: " + Clock.getRoundNum());
-//		if (mapHeight > 65 && mapWidth > 65) {
-//			System.out.println("big map: nuke strategy");
-//			// big map, nuke strategy
-//
-//			if (Clock.getRoundNum() < 100) {
-//				if (zone1Locs[0] != null) {
-//					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-//						zone1Locs[0],
-//						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-//				}
-//				else {
-//					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-//							myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
-//							0));
-//				}
-//				if (rc.isActive()) {
-//					this.spawnInAvailable();
-//				}
-//			} else if (Clock.getRoundNum() >= 100 && Clock.getRoundNum() < 200) {
-//				// spawn robots
-//				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-//						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
-//						0));
-//				if (!rc.hasUpgrade(Upgrade.PICKAXE)) {
-//					if (rc.isActive()) {
-//						rc.researchUpgrade(Upgrade.PICKAXE);
-//					}
-//				}
-//				else {
-//					if (rc.isActive()) {
-//						this.spawnInAvailable();
-//					}
-//				}
-//				
-//			} else {
-//				System.out.println("researching nuke " + Clock.getRoundNum());
-//				if (rc.isActive()) {
-//					rc.researchUpgrade(Upgrade.NUKE);
-//				}
-//
-//				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-//						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
-//						0));
-//			}
-//
-//		} 
+		System.out.println("clock: " + Clock.getRoundNum());
+		if (mapHeight > 65 && mapWidth > 65) {
+			System.out.println("big map: nuke strategy");
+			// big map, nuke strategy
+
+			if (Clock.getRoundNum() < 100) {
+				if (zone1Locs[0] != null) {
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						zone1Locs[0],
+						SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+				}
+				else {
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+							myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
+							0));
+				}
+				if (rc.isActive()) {
+					this.spawnInAvailable();
+				}
+			} else if (Clock.getRoundNum() >= 100 && Clock.getRoundNum() < 200) {
+				// spawn robots
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
+						0));
+				if (!rc.hasUpgrade(Upgrade.PICKAXE)) {
+					if (rc.isActive()) {
+						rc.researchUpgrade(Upgrade.PICKAXE);
+					}
+				}
+				else {
+					if (rc.isActive()) {
+						this.spawnInAvailable();
+					}
+				}
+				
+			} else {
+				System.out.println("researching nuke " + Clock.getRoundNum());
+				if (rc.isActive()) {
+					rc.researchUpgrade(Upgrade.NUKE);
+				}
+
+				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
+						0));
+			}
+
+		} 
 		
 		if (this.distToEnemyBaseSquared <= 800) {
 			//System.out.println("small map: rush strategy");
@@ -508,11 +508,10 @@ public class HQUnit extends BaseUnit {
 			return true;
 		} else {
 			dir = dir.rotateLeft();
-			int limit = 0;
-			while ((!rc.canMove(dir) || rc.senseMine(myBaseLoc.add(dir)) != null
-					|| dir.equals(dirOrig)) && limit < 8) {
+			
+			// can't move in dir, or if there is a non-allied mine in the way, then try dir.rotateLeft()
+			while (!rc.canMove(dir) || (rc.senseMine(myBaseLoc.add(dir)) != null && !rc.senseMine(myBaseLoc.add(dir)).equals(myTeam))) {
 				dir = dir.rotateLeft();
-				limit++;
 			}
 
 			if (dir.equals(dirOrig)) {

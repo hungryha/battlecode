@@ -21,12 +21,6 @@ public class EncampmentUnit extends BaseUnit {
 		case SHIELDS:
 			break;
 		case ARTILLERY:
-			if (Clock.getRoundNum() > 500 && Clock.getRoundNum() <= 1000) {
-				if (rc.getLocation().distanceSquaredTo(enemyBaseLoc) > 2*63) {
-					rc.suicide();
-					rc.yield();
-				}
-			}
 			Robot[] nearbyEnemies=rc.senseNearbyGameObjects(Robot.class, 63, otherTeam);
 			if (nearbyEnemies.length >= 1){
 				for (int i=0; i<nearbyEnemies.length; i++){
