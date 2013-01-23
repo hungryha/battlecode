@@ -26,7 +26,7 @@ public class EncampmentUnit extends BaseUnit {
 					enemyLoc = rc.senseRobotInfo(nearbyEnemies[i]).location;
 					if (rc.senseNearbyGameObjects(Robot.class, enemyLoc, 2, myTeam).length <1){
 						if (rc.isActive()) {
-							rc.attackSquare(rc.senseRobotInfo(nearbyEnemies[i]).location);
+							rc.attackSquare(enemyLoc);
 						}
 					}
 				}

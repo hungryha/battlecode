@@ -31,9 +31,9 @@ public class HQUnit extends BaseUnit {
 	public MapLocation[] zone3Locs= new MapLocation[numEncampments];
 	public MapLocation[] zone4Locs= new MapLocation[numEncampments];
 	private int distBetweenBases=myBaseLoc.distanceSquaredTo(enemyBaseLoc);					// the distance between bases
-	private int closeToBase=300;															// the distance which classifies encampments into Zone1
+	private int closeToBase=(int) Math.min(300,distBetweenBases*.35);						// the distance which classifies encampments into Zone1
 	private int awayFromEnemyForgiveness=(int) Math.round(distBetweenBases*.2); 			// the distance added to the distance between bases for Zone1
-	private int awayFromEquidistantForgiveness=(int) Math.round(distBetweenBases*.02);		// the forgiveness from an equidistant location between both bases allowed for Zone2
+	private int awayFromEquidistantForgiveness=(int) Math.max(distBetweenBases*.02,35);		// the forgiveness from an equidistant location between both bases allowed for Zone2
 	private int closeToEnemy=300;															// the distance which classifies encampments into Zone3
 	private int farEnoughFromEnemy=400;														// the distance which classifies encampments into Zone4
 	
