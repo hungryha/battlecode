@@ -288,9 +288,15 @@ public class SoldierUnit extends BaseUnit {
 
 					}
 					else if (ec.getTeam().equals(myTeam)) {
-						rc.setIndicatorString(1,
-								"encampment captured, defend it");
-						this.defendPosition(targetLoc);
+						if (curLoc.distanceSquaredTo(targetLoc) > 9) {
+							rc.setIndicatorString(1, "encampment captured, move towards it");
+							this.goToLocationBrute(targetLoc);
+
+						}
+						else {
+							rc.setIndicatorString(1, "encampment captured, defend it");
+							this.defendPosition(targetLoc);
+						}
 					} else {
 						// uh oh
 						rc.setIndicatorString(1, "near enemy encampment");
@@ -377,7 +383,7 @@ public class SoldierUnit extends BaseUnit {
 					Direction randomDir = Direction.values()[(int) (Math.random() * 8)];
 					
 					for (int index=0;index<=3;index++){
-						if (rc.senseObjectAtLocation(locationArray[index])==null && rc.senseMine(locationArray[index])==null){
+						if (rc.canSenseSquare(locationArray[index]) && rc.senseObjectAtLocation(locationArray[index])==null && rc.senseMine(locationArray[index])==null){
 							this.goToLocationBrute(locationArray[index]);
 						} else if (curLoc == locationArray[index]){
 							rc.yield();
