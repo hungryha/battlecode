@@ -172,16 +172,17 @@ public class HQUnit extends BaseUnit {
 			if (Clock.getRoundNum() <= 100){
 				
 				for (int i = 0; i<=3;i++){
-					
-					if (myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc)) || 
-								myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateLeft()) || 
-								myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateRight())) {
+					if (zone1Locs[i]!=null){
+						if (myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc)) || 
+									myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateLeft()) || 
+									myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateRight())) {
 									
-						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-								zone1Locs[i],
-								SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
-						if (chosenEncampment==null){
-							chosenEncampment=zone1Locs[i];
+							rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+									zone1Locs[i],
+									SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+							if (chosenEncampment==null){
+								chosenEncampment=zone1Locs[i];
+							}
 						}
 					}
 				}
@@ -191,7 +192,7 @@ public class HQUnit extends BaseUnit {
 				System.out.println(chosenEncampment);
 				if (chosenEncampment!=null){
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-						chosenEncampment, SoldierState.DEFEND_POSITION, RobotType.HQ,0));
+						chosenEncampment.add(chosenEncampment.directionTo(enemyBaseLoc)), SoldierState.DEFEND_POSITION, RobotType.HQ,0));
 				} else {
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,0));
