@@ -190,22 +190,43 @@ public class SoldierUnit extends BaseUnit {
 						rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
 						this.goToLocationBrute(stepAwayLoc);
 					} else {
-						for (int index = 0; index < nearbyEnemies.length - 3; index += 3) {
-							if (rc.senseRobotInfo(nearbyEnemies[index]).energon < lowHealth) {
-								lowHealth = rc
-										.senseRobotInfo(nearbyEnemies[index]).energon;
-								lowHealthIndex = index;
+						int[] dirOffsets={0, 1, -1, 2, -2, 3, -3, 4};
+						int minEnemies=10;
+						MapLocation lookingAtCurrently=curLoc;
+						MapLocation curTarget;
+						int adjacentEnemies;
+						Direction lookingDir;
+						for (int offset:dirOffsets){
+							lookingDir=Direction.values()[(8+offset)%8];
+							if (rc.canMove(lookingDir)) {
+								lookingAtCurrently=curLoc.add(lookingDir);
+								adjacentEnemies = rc.senseNearbyGameObjects(
+										Robot.class, lookingAtCurrently, 2,
+										otherTeam).length;
+								if (adjacentEnemies < minEnemies) {
+									minEnemies = adjacentEnemies;
+									curTarget = lookingAtCurrently;
+								}
 							}
 						}
-						MapLocation weakEnemyLoc = rc
-								.senseRobotInfo(nearbyEnemies[lowHealthIndex]).location;
-						rc.setIndicatorString(0,
-								"attacking weak enemy robot at: ("
-										+ weakEnemyLoc.x + "," + weakEnemyLoc.y
-										+ ")");
-						if (rc.isActive()) {
-							this.goToLocationCareful(weakEnemyLoc);
-						}
+						rc.move(curLoc.directionTo(lookingAtCurrently));						
+						
+//						for (int index = 0; index < nearbyEnemies.length - 3; index += 3) {
+//							if (rc.senseRobotInfo(nearbyEnemies[index]).energon < lowHealth) {
+//								lowHealth = rc
+//										.senseRobotInfo(nearbyEnemies[index]).energon;
+//								lowHealthIndex = index;
+//							}
+//						}
+//						MapLocation weakEnemyLoc = rc
+//								.senseRobotInfo(nearbyEnemies[lowHealthIndex]).location;
+//						rc.setIndicatorString(0,
+//								"attacking weak enemy robot at: ("
+//										+ weakEnemyLoc.x + "," + weakEnemyLoc.y
+//										+ ")");
+//						if (rc.isActive()) {
+//							this.goToLocationCareful(weakEnemyLoc);
+						
 					}
 
 				} else if (farAllies.length >= 7){

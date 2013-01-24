@@ -67,7 +67,7 @@ public abstract class BaseUnit {
 		MapLocation curLoc = rc.getLocation();
 		MapLocation lookingAtCurrently = curLoc;
 		for (int d : directionOffsets) {
-			lookingAtCurrently = rc.getLocation().add(Direction.values()[(dir.ordinal() + d + 8) % 8]); //TODO optimize this so it just checks the 8 spaces rather than calling the "add" method to check them
+			lookingAtCurrently = curLoc.add(Direction.values()[(dir.ordinal() + d + 8) % 8]); //TODO optimize this so it just checks the 8 spaces rather than calling the "add" method to check them
 			Team mineTeam = rc.senseMine(lookingAtCurrently);
 			if (mineTeam != null && !(mineTeam.equals(myTeam))) {
 				return lookingAtCurrently;
