@@ -17,10 +17,15 @@ public class RobotPlayer {
 			try {
 				if (rc.getType() == RobotType.HQ) {
 					if (rc.isActive()) {
-						if (Clock.getRoundNum() < 200) {
+						if (Clock.getRoundNum() < 130) {
+							if (!rc.hasUpgrade(Upgrade.PICKAXE)) {
+								rc.researchUpgrade(Upgrade.PICKAXE);
+							}
 							// spawn robots
-							if (rc.canMove(enemyBaseDir)) {				//TODO make it spawn in other positions if this position isn't open. check for a freespace
-								rc.spawn(enemyBaseDir);
+							if (rc.canMove(enemyBaseDir)) {				
+								if (rc.isActive()) {
+									rc.spawn(enemyBaseDir);
+								}
 							}
 						} else {
 							rc.researchUpgrade(Upgrade.NUKE);
@@ -37,7 +42,7 @@ public class RobotPlayer {
 				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			// End turn
 			rc.yield();

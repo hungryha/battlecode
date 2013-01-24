@@ -323,7 +323,7 @@ public class SoldierUnit extends BaseUnit {
 
 			break;
 		case DEFAULT:
-			this.defendPosition(myBaseLoc);
+//			this.defendPosition(myBaseLoc);
 			break;
 		default:
 			// do nothing if no instructions from hq
