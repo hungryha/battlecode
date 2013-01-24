@@ -1,6 +1,7 @@
 package team063;
 
 public enum SoldierState {
+	RUSH_ENEMY_HQ,
 	BRUTE_MOVE,
 	SMART_MOVE,
 	ATTACK_MOVE, // smart formation movement, don't chase

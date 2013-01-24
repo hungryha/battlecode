@@ -91,6 +91,12 @@ public class HQUnit extends BaseUnit {
 		if (rc.isActive()) {
 			try {
 				this.spawnInAvailable();
+				rc.broadcast(
+						Util.getUnitChannelNum(0),
+						Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
+				rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
+						.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
+								RobotType.HQ, 0));
 			} catch (GameActionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -228,7 +234,7 @@ public class HQUnit extends BaseUnit {
 						// base to all units
 						rc.broadcast(Util.getAllUnitChannelNum(), Util
 								.encodeMsg(enemyBaseLoc,
-										SoldierState.BRUTE_MOVE, RobotType.HQ,
+										SoldierState.RUSH_ENEMY_HQ, RobotType.HQ,
 										0));
 						if (rc.isActive()) {
 							if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
@@ -249,12 +255,12 @@ public class HQUnit extends BaseUnit {
 				if (Clock.getRoundNum() < 300) {
 					// broadcast
 					if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_SEND_COST) {
-						if (Clock.getRoundNum() < 3) {
-							rc.broadcast(
-									Util.getUnitChannelNum(0),
-									Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
-						
-						}
+//						if (Clock.getRoundNum() < 3) {
+//							rc.broadcast(
+//									Util.getUnitChannelNum(0),
+//									Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
+//						
+//						}
 
 						if (unitsCount >= 1 && unitsCount < 6) {
 							rc.broadcast(

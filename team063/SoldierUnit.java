@@ -122,8 +122,25 @@ public class SoldierUnit extends BaseUnit {
 		rc.setIndicatorString(2, "cur state: " + state + " cur target: " + targetLoc + " squadId: " + squadId + " unitId: " + unitId);
 
 		switch (state) {
-
+		case RUSH_ENEMY_HQ:
+			// if next enemyBase, don't move
+			// if next to enemy, don't move
+			int[] offsets = {0, 1, -1, 2, -2};
+			boolean nextToBase = false;
+			Direction dir = curLoc.directionTo(enemyBaseLoc);
+			for (int d: offsets) {
+				dir = Direction.values()[(dir.ordinal() + d + 8) % 8];
+				if (curLoc.add(dir).equals(enemyBaseLoc)) {
+					nextToBase = true;
+					break;
+				}
+			}
+			if (!nextToBase) {
+				this.goToLocationBrute(targetLoc);
+			}
+			break;
 		case BRUTE_MOVE:
+
 			this.goToLocationBrute(this.targetLoc);
 			break;
 		case SMART_MOVE:
@@ -234,8 +251,8 @@ public class SoldierUnit extends BaseUnit {
 			} else {
 				if (rc.isActive()) {
 //					this.goToLocationCareful(targetLoc);
-//					this.goToLocationBugCrawl(targetLoc);
-					this.goToLocationBrute(targetLoc);
+					this.goToLocationBugCrawl(targetLoc);
+//					this.goToLocationBrute(targetLoc);
 				}
 			}
 			break;

@@ -80,24 +80,40 @@ public abstract class BaseUnit {
 	
 	protected void goToLocationBrute(MapLocation whereToGo) //340 bytecode
 			throws GameActionException {
+		System.out.println("in go to location brute");
 		MapLocation curLoc = rc.getLocation();
 		int dist = curLoc.distanceSquaredTo(whereToGo);
 		if (dist > 0 && rc.isActive()) {
 			Direction dir = curLoc.directionTo(whereToGo);
 			int[] directionOffsets = { 0, 1, -1, 2, -2 };
+			Direction bestDir = dir;
 			Direction lookingAtCurrently = dir;
+			int bestDist = 10000000; // should use max_int
+			MapLocation candidateLoc = curLoc.add(lookingAtCurrently);
+			boolean canMoveForward = false;
 			for (int d : directionOffsets) {
 				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
-				if (rc.canMove(lookingAtCurrently)) {
-					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
-					if ((teamOfMine == null) || (teamOfMine == myTeam)) {
-						rc.move(lookingAtCurrently);
+				candidateLoc = curLoc.add(lookingAtCurrently);
+				Team potentialMineLoc = rc.senseMine(candidateLoc);
+				if (rc.canMove(lookingAtCurrently)
+						&& (potentialMineLoc == null || potentialMineLoc
+								.equals(myTeam))) {
+					int curDist = candidateLoc.distanceSquaredTo(whereToGo);
+					if (curDist < bestDist) {
+						canMoveForward = true;
+						bestDist = curDist;
+						bestDir = lookingAtCurrently;
 					}
-					else {
-						rc.defuseMine(curLoc.add(lookingAtCurrently));
-					}
-					break;
 				}
+			}
+			
+			if (canMoveForward) {
+				rc.setIndicatorString(0, "Brute Move: can move forward");
+				rc.move(bestDir);
+			}
+			else {
+				rc.setIndicatorString(0, "Brute Move: can't move forward, so defusing mine");
+				rc.defuseMine(curLoc.add(dir));
 			}
 		}
 	}

@@ -88,19 +88,42 @@ public abstract class BaseUnit {
 		if (dist > 0 && rc.isActive()) {
 			Direction dir = curLoc.directionTo(whereToGo);
 			int[] directionOffsets = { 0, 1, -1, 2, -2 };
+			Direction bestDir = dir;
 			Direction lookingAtCurrently = dir;
-			for (int d : directionOffsets) {
+			int bestDist = 10000000; // should use max_int
+			MapLocation candidateLoc = curLoc.add(lookingAtCurrently);
+			boolean canMoveForward = false;
+			int bestMineDirIndex = directionOffsets.length - 1;
+			for (int i=0; i < directionOffsets.length; i++) {
+				int d = directionOffsets[i];
 				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
-				if (rc.canMove(lookingAtCurrently)) {
-					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
-					if ((teamOfMine == null) || (teamOfMine == myTeam)) {
-						rc.move(lookingAtCurrently);
+				candidateLoc = curLoc.add(lookingAtCurrently);
+				Team potentialMineLoc = rc.senseMine(candidateLoc);
+				if (rc.canMove(lookingAtCurrently)
+						&& (potentialMineLoc == null || potentialMineLoc
+								.equals(myTeam))) {
+					int curDist = candidateLoc.distanceSquaredTo(whereToGo);
+					if (curDist < bestDist) {
+						canMoveForward = true;
+						bestDist = curDist;
+						bestDir = lookingAtCurrently;
 					}
-					else {
-						rc.defuseMine(curLoc.add(lookingAtCurrently));
-					}
-					break;
 				}
+				else if (potentialMineLoc != null && potentialMineLoc.equals(otherTeam)) {
+					if (i < bestMineDirIndex) {
+						bestMineDirIndex = i;
+					}
+				}
+			}
+			
+			if (canMoveForward) {
+				rc.setIndicatorString(0, "Brute Move: can move forward");
+				rc.move(bestDir);
+			}
+			else {
+				Direction mineDir = Direction.values()[(dir.ordinal() + bestMineDirIndex + 8) % 8];
+				rc.setIndicatorString(0, "Brute Move: can't move forward, so defusing mine at " + mineDir);
+				rc.defuseMine(curLoc.add(mineDir));
 			}
 		}
 	}
