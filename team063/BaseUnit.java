@@ -87,7 +87,7 @@ public abstract class BaseUnit {
 		int dist = curLoc.distanceSquaredTo(whereToGo);
 		if (dist > 0 && rc.isActive()) {
 			Direction dir = curLoc.directionTo(whereToGo);
-			int[] directionOffsets = { 0, 1, -1 };
+			int[] directionOffsets = { 0, 1, -1, 2, -2 };
 			Direction bestDir = dir;
 			Direction lookingAtCurrently = dir;
 			int bestDist = 10000000; // should use max_int
@@ -119,17 +119,14 @@ public abstract class BaseUnit {
 			}
 			
 			if (canMoveForward) {
-				rc.setIndicatorString(0, "Brute Move: can move forward");
 				rc.move(bestDir);
 			}
 			else {
 				if (enemyMineDetected) {
 					Direction mineDir = Direction.values()[(dir.ordinal() + bestMineDirIndex + 8) % 8];
-					rc.setIndicatorString(0, "Brute Move: can't move forward, so defusing (enemy?)mine at " + mineDir);
 					rc.defuseMine(curLoc.add(mineDir));
 				}
 				else {
-					rc.setIndicatorString(0, "Brute Move: can't move forward, so defusing mine at " + dir);
 					rc.defuseMine(curLoc.add(dir));
 				}
 			}
