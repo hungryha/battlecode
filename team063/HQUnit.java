@@ -109,7 +109,7 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 		
 		
-		
+		/*
 		System.out.println("zone 1 sorted encampments:");
 		for (int i=0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
@@ -126,7 +126,7 @@ public class HQUnit extends BaseUnit {
 		for (int i=0; i < zone4Locs.length; i++) {
 			System.out.println(zone4Locs[i]);
 		}
-		
+		*/
 	}
 
 	public void runTest() throws GameActionException {

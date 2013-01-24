@@ -87,13 +87,14 @@ public abstract class BaseUnit {
 		int dist = curLoc.distanceSquaredTo(whereToGo);
 		if (dist > 0 && rc.isActive()) {
 			Direction dir = curLoc.directionTo(whereToGo);
-			int[] directionOffsets = { 0, 1, -1, 2, -2 };
+			int[] directionOffsets = { 0, 1, -1 };
 			Direction bestDir = dir;
 			Direction lookingAtCurrently = dir;
 			int bestDist = 10000000; // should use max_int
 			MapLocation candidateLoc = curLoc.add(lookingAtCurrently);
 			boolean canMoveForward = false;
 			int bestMineDirIndex = directionOffsets.length - 1;
+			boolean enemyMineDetected = false;
 			for (int i=0; i < directionOffsets.length; i++) {
 				int d = directionOffsets[i];
 				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
@@ -110,6 +111,7 @@ public abstract class BaseUnit {
 					}
 				}
 				else if (potentialMineLoc != null && potentialMineLoc.equals(otherTeam)) {
+					enemyMineDetected = true;
 					if (i < bestMineDirIndex) {
 						bestMineDirIndex = i;
 					}
@@ -121,9 +123,15 @@ public abstract class BaseUnit {
 				rc.move(bestDir);
 			}
 			else {
-				Direction mineDir = Direction.values()[(dir.ordinal() + bestMineDirIndex + 8) % 8];
-				rc.setIndicatorString(0, "Brute Move: can't move forward, so defusing mine at " + mineDir);
-				rc.defuseMine(curLoc.add(mineDir));
+				if (enemyMineDetected) {
+					Direction mineDir = Direction.values()[(dir.ordinal() + bestMineDirIndex + 8) % 8];
+					rc.setIndicatorString(0, "Brute Move: can't move forward, so defusing (enemy?)mine at " + mineDir);
+					rc.defuseMine(curLoc.add(mineDir));
+				}
+				else {
+					rc.setIndicatorString(0, "Brute Move: can't move forward, so defusing mine at " + dir);
+					rc.defuseMine(curLoc.add(dir));
+				}
 			}
 		}
 	}
