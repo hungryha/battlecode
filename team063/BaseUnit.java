@@ -88,6 +88,31 @@ public abstract class BaseUnit {
 		if (dist > 0 && rc.isActive()) {
 			Direction dir = curLoc.directionTo(whereToGo);
 			int[] directionOffsets = { 0, 1, -1, 2, -2 };
+			Direction lookingAtCurrently = dir;
+			for (int d : directionOffsets) {
+				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
+				if (rc.canMove(lookingAtCurrently)) {
+					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
+					if ((teamOfMine == null) || (teamOfMine == myTeam)) {
+						rc.move(lookingAtCurrently);
+					}
+					else {
+						rc.defuseMine(curLoc.add(lookingAtCurrently));
+					}
+					break;
+				}
+			}
+		}
+	}
+	
+	/*
+	protected void goToLocationBrute(MapLocation whereToGo) //340 bytecode
+			throws GameActionException {
+		MapLocation curLoc = rc.getLocation();
+		int dist = curLoc.distanceSquaredTo(whereToGo);
+		if (dist > 0 && rc.isActive()) {
+			Direction dir = curLoc.directionTo(whereToGo);
+			int[] directionOffsets = { 0, 1, -1, 2, -2 };
 			Direction bestDir = dir;
 			Direction lookingAtCurrently = dir;
 			int bestDist = 10000000; // should use max_int
@@ -132,7 +157,7 @@ public abstract class BaseUnit {
 			}
 		}
 	}
-	
+	*/
 
 	// buggy
 	protected void goToLocationCareful(MapLocation dest) throws GameActionException {

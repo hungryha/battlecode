@@ -51,7 +51,7 @@ public class HQUnit extends BaseUnit {
 			.round(distBetweenBases * .2); // the distance added to the distance
 											// between bases for Zone1
 	private int awayFromEquidistantForgiveness = (int) Math.max(
-			distBetweenBases * .02, 35); // the forgiveness from an equidistant
+			distBetweenBases * .015, 20); // the forgiveness from an equidistant
 											// location between both bases
 											// allowed for Zone2
 	private int closeToEnemy = 300; // the distance which classifies encampments
@@ -60,9 +60,7 @@ public class HQUnit extends BaseUnit {
 											// encampments into Zone4
 	private MapLocation chosenEncampment = null;
 
-	// squad consts
-	public static final int SQUAD_ASSIGNMENT_CHANNEL = 6011;
-	public static final int UNIT_ASSIGNMENT_CHANNEL = 11489;
+
 
 	public static final int NO_UNIT_ID = -1;
 	public static final int NO_SQUAD = -1;

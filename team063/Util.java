@@ -28,6 +28,11 @@ public class Util {
 	public static final int SQUAD_CHANNEL_INDEX = 10;
 	public static final int SEED = 3221;
 	
+	// channels
+	// squad consts
+	public static final int SQUAD_ASSIGNMENT_CHANNEL = 6011;
+	public static final int UNIT_ASSIGNMENT_CHANNEL = 11489;
+	public static final int HQ_LISTEN_FOR_SCOUT_CHANNEL = 1753;
 	/**
 	 * Message/broadcast methods
 	 */
@@ -45,7 +50,7 @@ public class Util {
 	}
 	
 	public static int getInitialSquadNumChannelNum() {
-		return encodeChannelNum(HQUnit.SQUAD_ASSIGNMENT_CHANNEL);
+		return encodeChannelNum(Util.SQUAD_ASSIGNMENT_CHANNEL);
 	}
 	
 	public static int getAllUnitExceptScoutChannelNum() {
