@@ -61,8 +61,8 @@ public class HQUnit extends BaseUnit {
 	private MapLocation chosenEncampment = null;
 
 	// squad consts
-	public static final int SQUAD_ASSIGNMENT_CHANNEL = 7907;
-	public static final int UNIT_ASSIGNMENT_CHANNEL = 13577;
+	public static final int SQUAD_ASSIGNMENT_CHANNEL = 6011;
+	public static final int UNIT_ASSIGNMENT_CHANNEL = 11489;
 
 	public static final int NO_UNIT_ID = -1;
 	public static final int NO_SQUAD = -1;
@@ -260,9 +260,6 @@ public class HQUnit extends BaseUnit {
 					if (rc.senseEnemyNukeHalfDone()) {
 						// enemy half done with nuke, broadcast attack enemy
 						// base to all units
-						System.out.println("broadcasting rush at enemy hq to channel " + Util.getAllUnitChannelNum() + " msg: " + Util.encodeMsg(enemyBaseLoc,
-								SoldierState.RUSH_ENEMY_HQ,
-								RobotType.HQ, 0));
 						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc,
 										SoldierState.RUSH_ENEMY_HQ,
 										RobotType.HQ, 0));
