@@ -272,8 +272,8 @@ public class SoldierUnit extends BaseUnit {
 			} else {
 				if (rc.isActive()) {
 //					this.goToLocationCareful(targetLoc);
-					this.goToLocationBugCrawl(targetLoc);
-//					this.goToLocationBrute(targetLoc);
+//					this.goToLocationBugCrawl(targetLoc);
+					this.goToLocationBrute(targetLoc);
 				}
 			}
 			break;

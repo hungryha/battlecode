@@ -47,11 +47,10 @@ public class HQUnit extends BaseUnit {
 																			// encampments
 																			// into
 																			// Zone1
-	private int awayFromEnemyForgiveness = (int) Math
-			.round(distBetweenBases * .2); // the distance added to the distance
+	private int awayFromEnemyForgiveness = (int) Math.round(distBetweenBases * .2); // the distance added to the distance
 											// between bases for Zone1
-	private int awayFromEquidistantForgiveness = (int) Math.max(
-			distBetweenBases * .015, 20); // the forgiveness from an equidistant
+	private int awayFromEquidistantForgiveness = (int) Math.max(distBetweenBases * .235, 25); // the forgiveness from an equidistant
+
 											// location between both bases
 											// allowed for Zone2
 	private int closeToEnemy = 300; // the distance which classifies encampments
@@ -367,15 +366,15 @@ public class HQUnit extends BaseUnit {
 								Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
 						Robot[] enemiesByBase = rc.senseNearbyGameObjects(
 								Robot.class, distBetweenBases / 9, otherTeam);
-						if (enemiesByBase.length > 0) {
-							System.out.println("base under attack");
-							rc.broadcast(
-									Util.getAllUnitChannelNum(),
-									Util.encodeMsg(
-											rc.senseRobotInfo(enemiesByBase[0]).location,
-											SoldierState.ATTACK_MOVE,
-											RobotType.HQ, 0));
-						} else {
+//						if (enemiesByBase.length > 0) {
+//							System.out.println("base under attack");
+//							rc.broadcast(
+//									Util.getAllUnitChannelNum(),
+//									Util.encodeMsg(
+//											rc.senseRobotInfo(enemiesByBase[0]).location,
+//											SoldierState.ATTACK_MOVE,
+//											RobotType.HQ, 0));
+//						} else {
 							rc.broadcast(
 									Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1),
 									Util.encodeMsg(zone2Locs[curZone2Counter],
@@ -402,7 +401,7 @@ public class HQUnit extends BaseUnit {
 											SoldierState.SECURE_ENCAMPMENT,
 											encampSelection[Math.max(0,
 													curZone2Counter - 3)], 0));
-						}
+//						}
 						// suicide scout
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
 								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
@@ -428,7 +427,6 @@ public class HQUnit extends BaseUnit {
 
 				} else if (Clock.getRoundNum() > 300
 						&& Clock.getRoundNum() <= 425) {
-					System.out.println("between 300 and 425");
 					MapLocation target = zone2Locs[0];
 					if (target == null) {
 						target = new MapLocation(mapWidth / 2, mapHeight / 2);
@@ -447,7 +445,6 @@ public class HQUnit extends BaseUnit {
 
 				} else if (Clock.getRoundNum() > 425
 						&& Clock.getRoundNum() <= 1200) {
-					System.out.println("broadcasting attack_move at enemyBaseLoc to all units");
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							enemyBaseLoc, SoldierState.ATTACK_MOVE,
 							RobotType.HQ, 0));
@@ -661,8 +658,8 @@ public class HQUnit extends BaseUnit {
 			}
 			// zone2
 
-			else if (distToMyBase <= (distBetweenBases / 2 + awayFromEquidistantForgiveness)
-					&& distToEnemyBase <= (distBetweenBases / 2 + awayFromEquidistantForgiveness)) {
+			else if ((distToMyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))
+					&& (distToEnemyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))) {
 				if (zone2Counter < ZONE_ENCAMPMENT_LIMIT) {
 					zone2Locs[zone2Counter] = encampment;
 					zone2Counter += 1;
