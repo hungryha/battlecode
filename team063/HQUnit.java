@@ -51,7 +51,7 @@ public class HQUnit extends BaseUnit {
 			.round(distBetweenBases * .2); // the distance added to the distance
 											// between bases for Zone1
 	private int awayFromEquidistantForgiveness = (int) Math.max(
-			distBetweenBases * .02, 35); // the forgiveness from an equidistant
+			distBetweenBases * .235, 25); // the forgiveness from an equidistant
 											// location between both bases
 											// allowed for Zone2
 	private int closeToEnemy = 300; // the distance which classifies encampments
@@ -663,8 +663,10 @@ public class HQUnit extends BaseUnit {
 			}
 			// zone2
 
-			else if (distToMyBase <= (distBetweenBases / 2 + awayFromEquidistantForgiveness)
-					&& distToEnemyBase <= (distBetweenBases / 2 + awayFromEquidistantForgiveness)) {
+			else if ((distToMyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))
+					&& (distToEnemyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))) {
+				System.out.println("awayFromEquidistantForgiveness: "+awayFromEquidistantForgiveness+" This encampment is this far away from myBase and enemyBase: "+distToMyBase+","+distToEnemyBase);
+				System.out.println("distBetweenBases/4 + awayFromEquidistantForgiveness: "+(distBetweenBases/4+awayFromEquidistantForgiveness));
 				if (zone2Counter < ZONE_ENCAMPMENT_LIMIT) {
 					zone2Locs[zone2Counter] = encampment;
 					zone2Counter += 1;
