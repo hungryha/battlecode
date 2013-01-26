@@ -309,14 +309,12 @@ public class HQUnit extends BaseUnit {
 				Robot[] enemiesByBase = rc.senseNearbyGameObjects(
 						Robot.class, distBetweenBases / 9, otherTeam);
 				if (enemiesByBase.length > 0) {
-					System.out.println("base under attack");
 					roundStrategy = RoundStrategy.DEFEND_BASE;
 				}
 			
 				else if (Clock.getRoundNum() < 300) {
 					roundStrategy = RoundStrategy.BUILD_MACRO;
 				}
-				
 				else if (Clock.getRoundNum() >= 300 && Clock.getRoundNum() < 425) {
 					roundStrategy = RoundStrategy.RALLY;
 				}
@@ -600,9 +598,24 @@ public class HQUnit extends BaseUnit {
 			}
 
 			if (unitsCount > 30) {
+
+				int mod = unitsCount % 7;
+				int squad;
+				if (mod == 0 || mod == 1) {
+					squad = ENCAMPMENT_SQUAD_1;
+				}
+				else if(mod == 2 || mod == 3) {
+					squad = ENCAMPMENT_SQUAD_2;
+				}
+				else if (mod == 4 || mod == 5) {
+					squad = ENCAMPMENT_SQUAD_3;
+				}
+				else {
+					squad = DEFEND_BASE_SQUAD;
+				}
 				rc.broadcast(
 						Util.getUnitChannelNum(unitsCount),
-						Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
+						Util.encodeUnitSquadAssignmentChangeMsg(squad));
 			}
 
 		}
