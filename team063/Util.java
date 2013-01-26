@@ -90,6 +90,10 @@ public class Util {
 		return (1 << UNIT_SQUAD_ASSIGNMENT_SHIFT) | (squadNum << SQUAD_ASSIGNMENT_SHIFT);
 	}
 	
+	public static int encodeSquadToHQMsg(MapLocation location, int numEnemies, int numEncamps, int numMines) {
+		return 0;
+	}
+	
 	public static int[] decode(int msg) {
 		
 		int xcoord = (msg & (X_COORD_MASK << X_COORD_SHIFT)) >> X_COORD_SHIFT;

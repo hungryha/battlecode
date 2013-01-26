@@ -24,7 +24,7 @@ public class HQUnit extends BaseUnit {
 	public static final int REGULAR_MAP_STRAT = 0;
 
 	// encampment arrays and relevant vars
-	public static final int ZONE_ENCAMPMENT_LIMIT = 10;
+	public static final int ZONE_ENCAMPMENT_LIMIT = 15;
 	public MapLocation[] encampmentLocs = rc.senseAllEncampmentSquares();
 	public int numEncampments = encampmentLocs.length;
 
@@ -83,7 +83,13 @@ public class HQUnit extends BaseUnit {
 	private int curZone2Counter = 0;
 	private int curZone3Counter = 0;
 	private int curZone4Counter = 0;
-
+	
+	// for initial filtering
+	private int zone1Counter = 0;
+	private int zone2Counter = 0;
+	private int zone3Counter = 0;
+	private int zone4Counter = 0;
+	
 	public int unitsCount = 0;
 	protected int[] unitsMap;
 	protected int[] squads;
@@ -118,7 +124,7 @@ public class HQUnit extends BaseUnit {
 				e.printStackTrace();
 			}
 		}
-		this.zoneEncampments(encampmentLocs);
+		this.zoneEncampments(rc.senseAllEncampmentSquares());
 		Arrays.sort(zone1Locs, new EncampmentComparatorZone1());
 		Arrays.sort(zone2Locs, new EncampmentComparatorZone2());
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
@@ -333,7 +339,7 @@ public class HQUnit extends BaseUnit {
 						if (unitsCount >= 26 && unitsCount < 30) {
 							rc.broadcast(
 									Util.getUnitChannelNum(unitsCount),
-									Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_4));
+									Util.encodeUnitSquadAssignmentChangeMsg(DEFEND_BASE_SQUAD));
 
 						}
 
@@ -366,15 +372,15 @@ public class HQUnit extends BaseUnit {
 								Util.encodeUnitSquadAssignmentChangeMsg(SCOUT_SQUAD));
 						Robot[] enemiesByBase = rc.senseNearbyGameObjects(
 								Robot.class, distBetweenBases / 9, otherTeam);
-//						if (enemiesByBase.length > 0) {
-//							System.out.println("base under attack");
-//							rc.broadcast(
-//									Util.getAllUnitChannelNum(),
-//									Util.encodeMsg(
-//											rc.senseRobotInfo(enemiesByBase[0]).location,
-//											SoldierState.ATTACK_MOVE,
-//											RobotType.HQ, 0));
-//						} else {
+						if (enemiesByBase.length > 0) {
+							System.out.println("base under attack");
+							rc.broadcast(
+									Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
+									Util.encodeMsg(
+											rc.senseRobotInfo(enemiesByBase[0]).location,
+											SoldierState.ATTACK_MOVE,
+											RobotType.HQ, 0));
+						} else {
 							rc.broadcast(
 									Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1),
 									Util.encodeMsg(zone2Locs[curZone2Counter],
@@ -395,13 +401,10 @@ public class HQUnit extends BaseUnit {
 											encampSelection[Math.max(0,
 													curZone2Counter - 2)], 0));
 							rc.broadcast(Util
-									.getSquadChannelNum(ENCAMPMENT_SQUAD_4),
-									Util.encodeMsg(zone2Locs[Math.max(0,
-											curZone2Counter - 3)],
-											SoldierState.SECURE_ENCAMPMENT,
-											encampSelection[Math.max(0,
-													curZone2Counter - 3)], 0));
-//						}
+									.getSquadChannelNum(DEFEND_BASE_SQUAD),
+									Util.encodeMsg(myBaseLoc,
+											SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
+						}
 						// suicide scout
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
 								.encodeMsg(enemyBaseLoc, SoldierState.SCOUT,
@@ -636,50 +639,15 @@ public class HQUnit extends BaseUnit {
 	}
 
 	public void zoneEncampments(MapLocation[] encampmentLocs) {
-		int zone1Counter = 0;
-		int zone2Counter = 0;
-		int zone3Counter = 0;
-		int zone4Counter = 0;
-		for (MapLocation encampment : encampmentLocs) {
-			int distToMyBase = encampment.distanceSquaredTo(myBaseLoc);
-
-			// skip encampments within 2 of base so we don't trap ourselves in
-			if (distToMyBase <= 4) {
-				continue;
-			}
-			int distToEnemyBase = encampment.distanceSquaredTo(enemyBaseLoc);
-			// zone1
-			if (distToMyBase <= closeToBase
-					&& distToEnemyBase <= (distBetweenBases + awayFromEnemyForgiveness)) {
-				if (zone1Counter < ZONE_ENCAMPMENT_LIMIT) {
-					zone1Locs[zone1Counter] = encampment;
-					zone1Counter += 1;
-				}
-			}
-			// zone2
-
-			else if ((distToMyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))
-					&& (distToEnemyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))) {
-				if (zone2Counter < ZONE_ENCAMPMENT_LIMIT) {
-					zone2Locs[zone2Counter] = encampment;
-					zone2Counter += 1;
-				}
-			}
-			// zone3
-			else if (distToEnemyBase <= closeToEnemy
-					&& distToMyBase <= distBetweenBases) {
-				if (zone3Counter < ZONE_ENCAMPMENT_LIMIT) {
-					zone3Locs[zone3Counter] = encampment;
-					zone3Counter += 1;
-				}
-			}
-			// zone 4
-			else if (distToEnemyBase >= farEnoughFromEnemy) {
-				if (zone4Counter < ZONE_ENCAMPMENT_LIMIT) {
-					zone4Locs[zone4Counter] = encampment;
-					zone4Counter += 1;
-				}
-			}
+		int forwardScan = encampmentLocs.length/2;
+		int backwardScan = encampmentLocs.length/2 - 1;
+		
+		int limit = encampmentLocs.length/2;
+		for (int i=0; i < limit; i++) {
+			MapLocation encampment1 = encampmentLocs[forwardScan + i];
+			MapLocation encampment2 = encampmentLocs[backwardScan - i];
+			putEncampmentIntoZone(encampment1);
+			putEncampmentIntoZone(encampment2);
 		}
 		endZone1Index = zone1Counter - 1;
 		endZone2Index = zone2Counter - 1;
@@ -687,6 +655,50 @@ public class HQUnit extends BaseUnit {
 		endZone4Index = zone4Counter - 1;
 	}
 
+	private void putEncampmentIntoZone(MapLocation encampment) {
+		int distToMyBase = encampment.distanceSquaredTo(myBaseLoc);
+		int distToEnemyBase = encampment.distanceSquaredTo(enemyBaseLoc);
+		
+		// skip encampments within 2 of base so we don't trap ourselves in
+		if (distToMyBase <= 4) {
+			return;
+		}
+		// zone1
+		if (distToMyBase <= closeToBase
+				&& distToEnemyBase <= (distBetweenBases + awayFromEnemyForgiveness)) {
+			if (zone1Counter < ZONE_ENCAMPMENT_LIMIT) {
+				zone1Locs[zone1Counter] = encampment;
+				zone1Counter += 1;
+			}
+		}
+		// zone2
+
+		else if ((distToMyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))
+				&& (distToEnemyBase <= (distBetweenBases / 4 + awayFromEquidistantForgiveness))) {
+			if (zone2Counter < ZONE_ENCAMPMENT_LIMIT) {
+				zone2Locs[zone2Counter] = encampment;
+				zone2Counter += 1;
+			}
+			else {
+//				System.out.println("zone 2 too full for: " + encampment);
+			}
+		}
+		// zone3
+		else if (distToEnemyBase <= closeToEnemy
+				&& distToMyBase <= distBetweenBases) {
+			if (zone3Counter < ZONE_ENCAMPMENT_LIMIT) {
+				zone3Locs[zone3Counter] = encampment;
+				zone3Counter += 1;
+			}
+		}
+		// zone 4
+		else if (distToEnemyBase >= farEnoughFromEnemy) {
+			if (zone4Counter < ZONE_ENCAMPMENT_LIMIT) {
+				zone4Locs[zone4Counter] = encampment;
+				zone4Counter += 1;
+			}
+		}
+	}
 	public class MapLocationComparator implements Comparator {
 
 		@Override
@@ -748,6 +760,7 @@ public class HQUnit extends BaseUnit {
 					.distanceSquaredTo(myBaseLoc)) - (((MapLocation) Enc1)
 					.distanceSquaredTo(enemyBaseLoc) * 2 + ((MapLocation) Enc1)
 					.distanceSquaredTo(myBaseLoc)));
+
 		}
 	}
 
@@ -764,6 +777,8 @@ public class HQUnit extends BaseUnit {
 			}
 			return (((MapLocation) Enc0).distanceSquaredTo(myBaseLoc) - ((MapLocation) Enc1)
 					.distanceSquaredTo(myBaseLoc));
+
 		}
 	}
+	
 }
