@@ -18,11 +18,6 @@ import battlecode.common.Upgrade;
 //singleton
 public class HQUnit extends BaseUnit {
 
-	// initial strategies
-	public static final int BIG_MAP_STRAT = 2;
-	public static final int SMALL_MAP_STRAT = 1;
-	public static final int REGULAR_MAP_STRAT = 0;
-
 	// encampment arrays and relevant vars
 	public static final int ZONE_ENCAMPMENT_LIMIT = 15;
 	public MapLocation[] encampmentLocs = rc.senseAllEncampmentSquares();
@@ -94,7 +89,6 @@ public class HQUnit extends BaseUnit {
 	protected int[] unitsMap;
 	protected int[] squads;
 	private int encampCounter;
-	protected int initialStrategy = REGULAR_MAP_STRAT;
 
 	protected RobotType[] supGenSelection = { RobotType.SUPPLIER,
 			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,
@@ -105,6 +99,18 @@ public class HQUnit extends BaseUnit {
 			RobotType.ARTILLERY, RobotType.MEDBAY, RobotType.ARTILLERY,
 			RobotType.SHIELDS, RobotType.ARTILLERY, RobotType.MEDBAY,
 			RobotType.ARTILLERY, RobotType.SHIELDS };
+
+	private enum MapStrategy {
+		NUKE_AND_PICKAXE, // build suppliers, generators, artillery, and medbays around you, upgrade pickaxe and nuke obv
+		STRAIGHT_RUSH, // build suppliers, artillery, and shields
+		NORMAL_MACRO,
+	}
+	
+	private enum ROUND_STRATEGY {
+		
+	}
+	
+	protected MapStrategy mapStrategy = MapStrategy.NORMAL_MACRO;
 
 	public HQUnit(RobotController rc) {
 		super(rc);
@@ -130,6 +136,9 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 
+
+		this.mapStrategy = MapStrategy.NORMAL_MACRO;
+		
 		System.out.println("zone 1 sorted encampments:");
 		for (int i = 0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
@@ -146,7 +155,7 @@ public class HQUnit extends BaseUnit {
 		for (int i = 0; i < zone4Locs.length; i++) {
 			System.out.println(zone4Locs[i]);
 		}
-
+		
 	}
 
 	public void runTest() throws GameActionException {
@@ -154,7 +163,8 @@ public class HQUnit extends BaseUnit {
 
 	@Override
 	public void run() throws GameActionException {
-		if (mapHeight > 65 && mapWidth > 65) {
+		switch(mapStrategy) {
+		case NUKE_AND_PICKAXE:
 			// big map, nuke strategy
 
 			if (Clock.getRoundNum() < 100) {
@@ -195,10 +205,10 @@ public class HQUnit extends BaseUnit {
 						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
 						0));
 			}
-
-		}
-
-		if (this.distToEnemyBaseSquared <= 800) {
+			
+			break;
+			
+		case STRAIGHT_RUSH:
 			// System.out.println("small map: rush strategy");
 			// small map, rush strategy
 			if (rc.isActive()) {
@@ -254,7 +264,9 @@ public class HQUnit extends BaseUnit {
 								RobotType.HQ, 0));
 			}
 
-		} else {
+			
+			break;
+		case NORMAL_MACRO:
 			// check enemy nuke progress
 			boolean nukeDetected = false;
 			if (Clock.getRoundNum() >= 200) {
@@ -263,7 +275,8 @@ public class HQUnit extends BaseUnit {
 					if (rc.senseEnemyNukeHalfDone()) {
 						// enemy half done with nuke, broadcast attack enemy
 						// base to all units
-						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(enemyBaseLoc,
+						rc.broadcast(Util.getAllUnitChannelNum(), Util
+								.encodeMsg(enemyBaseLoc,
 										SoldierState.RUSH_ENEMY_HQ,
 										RobotType.HQ, 0));
 						if (rc.isActive()) {
@@ -276,8 +289,8 @@ public class HQUnit extends BaseUnit {
 						nukeDetected = true;
 					}
 				}
-			} 
-			
+			}
+
 			if (!nukeDetected) {
 
 				rc.broadcast(Util.getInitialUnitNumChannelNum(),
@@ -288,7 +301,9 @@ public class HQUnit extends BaseUnit {
 					if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_SEND_COST) {
 
 						if (unitsCount >= 1 && unitsCount < 6) {
-							rc.broadcast(Util.getUnitChannelNum(unitsCount), Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
+							rc.broadcast(
+									Util.getUnitChannelNum(unitsCount),
+									Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
 						}
 
 						if (unitsCount >= 6 && unitsCount < 11) {
@@ -403,7 +418,8 @@ public class HQUnit extends BaseUnit {
 							rc.broadcast(Util
 									.getSquadChannelNum(DEFEND_BASE_SQUAD),
 									Util.encodeMsg(myBaseLoc,
-											SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
+											SoldierState.DEFEND_POSITION,
+											RobotType.HQ, 0));
 						}
 						// suicide scout
 						rc.broadcast(Util.getSquadChannelNum(SCOUT_SQUAD), Util
@@ -509,7 +525,14 @@ public class HQUnit extends BaseUnit {
 					}
 				}
 			}
+			break;
+		default:
+			break;
 		}
+
+
+
+		
 
 	}
 
@@ -558,7 +581,8 @@ public class HQUnit extends BaseUnit {
 
 	}
 
-	public void initialAnalysisAndInitialization() {
+	public MapStrategy initialAnalysisAndInitialization() {
+		/*
 		int numEncampmentsBetweenHQs = 0;
 		int numNeutralMinesBetweenHQs = 0;
 		int numTotalMines = 0;
@@ -597,7 +621,7 @@ public class HQUnit extends BaseUnit {
 				+ numEncampmentsBetweenHQs);
 		System.out.println("num neutral mines between hqs: "
 				+ numNeutralMinesBetweenHQs);
-
+		*/
 		// start out building suppliers and generators in encampments far-ish
 		// from base
 		// defense strategy: build shields(25%), medbays(25%), artillery(50%),
@@ -608,6 +632,14 @@ public class HQUnit extends BaseUnit {
 		// build artillery at most within 7 units of bases
 
 		// heuristics? build more artillery when there are less mines around
+		
+		if (mapHeight >= 65 && mapWidth >= 65) {
+			return MapStrategy.NUKE_AND_PICKAXE;
+		}
+		if (distBetweenBases <= 800) {
+			return MapStrategy.STRAIGHT_RUSH;
+		}
+		return MapStrategy.NORMAL_MACRO;
 	}
 
 	// not used
