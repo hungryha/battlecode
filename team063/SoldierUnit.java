@@ -286,7 +286,7 @@ public class SoldierUnit extends BaseUnit {
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,40,myTeam);
 			medbayLoc=targetLoc;
 			for (int i = 0; i<friendlyEnc.length; i++){
-				System.out.println(i);
+//				System.out.println(i);
 				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc[i])).type==RobotType.MEDBAY){
 					medbayLoc=friendlyEnc[i];
 				} 
@@ -316,7 +316,7 @@ public class SoldierUnit extends BaseUnit {
 			MapLocation[] friendlyEnc2=rc.senseEncampmentSquares(targetLoc,40,myTeam);
 			medbayLoc=targetLoc;
 			for (int i = 0; i<friendlyEnc2.length;i++){
-				System.out.println(i);
+//				System.out.println(i);
 				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc2[i])).type==RobotType.MEDBAY){
 					medbayLoc=friendlyEnc2[i];
 				} 
