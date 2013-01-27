@@ -115,7 +115,7 @@ public class HQUnit extends BaseUnit {
 		RALLY,
 	}
 	
-	protected MapStrategy mapStrategy = MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
+	protected MapStrategy mapStrategy;
 
 	public HQUnit(RobotController rc) {
 		super(rc);
@@ -142,7 +142,7 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 
 
-		this.mapStrategy = MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
+		this.mapStrategy = this.initialAnalysisAndInitialization();
 		
 		System.out.println("zone 1 sorted encampments:");
 		for (int i = 0; i < zone1Locs.length; i++) {
@@ -172,7 +172,7 @@ public class HQUnit extends BaseUnit {
 		case MAP_STRATEGY_NUKE_AND_PICKAXE:
 			// big map, nuke strategy
 
-			if (Clock.getRoundNum() < 100) {
+			if (Clock.getRoundNum() < 75) {
 				if (zone1Locs[0] != null) {
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							zone1Locs[0], SoldierState.SECURE_ENCAMPMENT,
@@ -185,7 +185,7 @@ public class HQUnit extends BaseUnit {
 				if (rc.isActive()) {
 					this.spawnInAvailable();
 				}
-			} else if (Clock.getRoundNum() >= 100 && Clock.getRoundNum() < 200) {
+			} else if (Clock.getRoundNum() >= 75 && Clock.getRoundNum() < 175) {
 				// spawn robots
 				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
@@ -483,7 +483,12 @@ public class HQUnit extends BaseUnit {
 										RobotType.ARTILLERY, 0));
 					}
 					if (rc.isActive()) {
-						this.spawnInAvailable();
+						if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
+							rc.researchUpgrade(Upgrade.DEFUSION);
+						}
+						else {
+							this.spawnInAvailable();
+						}
 					}
 					break;
 				default:

@@ -311,7 +311,7 @@ public class SoldierUnit extends BaseUnit {
 					} else {
 						rc.setIndicatorString(1,
 								"not enough power, waiting till next turn to capture");
-						rc.yield();
+//						rc.yield();
 					}
 				} else if (rc.canSenseSquare(targetLoc)) {
 					GameObject ec = rc.senseObjectAtLocation(targetLoc);
