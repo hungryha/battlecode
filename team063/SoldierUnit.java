@@ -31,6 +31,7 @@ public class SoldierUnit extends BaseUnit {
 	private MapLocation prevLoc = null;
 	private MapLocation initialWallLoc = null;
 	private Direction wallDir = null; // direction of wall relative to unit
+	private MapLocation medbayLoc;
 	
 	public SoldierUnit(RobotController rc) {
 		super(rc);
@@ -282,8 +283,14 @@ public class SoldierUnit extends BaseUnit {
 		case CAPTURE_MOVE:
 			break;
 		case DEFEND_POSITION:
+			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,40,myTeam);
+			if (friendlyEnc.length>0){
+				medbayLoc=friendlyEnc[0];
+			} else {
+				medbayLoc=targetLoc;
+			}
 			if (rc.isActive()) {
-				defendPosition(targetLoc);
+				defendPosition(targetLoc, medbayLoc);
 			}
 			break;
 		case BATTLE:
@@ -304,6 +311,12 @@ public class SoldierUnit extends BaseUnit {
 			 * on encampment: capture it else: if mine in the way: defuse it
 			 * else: go towards targetLoc
 			 */
+			MapLocation[] friendlyEnc2=rc.senseEncampmentSquares(targetLoc,40,myTeam);
+			if (friendlyEnc2.length>0){
+				medbayLoc=friendlyEnc2[0];
+			} else {
+				medbayLoc=targetLoc;
+			}
 			
 			if (rc.isActive()) {
 				if (rc.getLocation().equals(targetLoc)) {
@@ -332,7 +345,7 @@ public class SoldierUnit extends BaseUnit {
 						}
 						else {
 							rc.setIndicatorString(1, "encampment currently being captured, defend it");
-							this.defendPosition(targetLoc);
+							this.defendPosition(targetLoc, medbayLoc);
 						}
 
 					}
@@ -345,7 +358,7 @@ public class SoldierUnit extends BaseUnit {
 						}
 						else {
 							rc.setIndicatorString(1, "encampment captured, defend it");
-							this.defendPosition(targetLoc);
+							this.defendPosition(targetLoc,medbayLoc);
 						}
 					} else {
 						// uh oh
@@ -382,7 +395,7 @@ public class SoldierUnit extends BaseUnit {
 
 	}
 
-	protected void defendPosition(MapLocation defendPoint)
+	protected void defendPosition(MapLocation defendPoint, MapLocation medbayLoc)
 			throws GameActionException { // 50 - 800 bytecode
 		if (rc.isActive()) {
 			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 20,
@@ -391,7 +404,7 @@ public class SoldierUnit extends BaseUnit {
 				if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
 					rc.setIndicatorString(0, "not enough neraby allies to fight!");
 					this.goToLocationBrute(defendPoint);
-				} else if (curLoc.distanceSquaredTo(defendPoint) <= 49) {
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= (49)) {
 					if (rc.getEnergon()>=10){
 						rc.setIndicatorString(0, "attacking nearby enemy!");
 						this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
@@ -399,8 +412,10 @@ public class SoldierUnit extends BaseUnit {
 						MapLocation stepAwayLoc=curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies[0]).location));
 						rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
 						this.goToLocationBrute(stepAwayLoc);
-					} else {
+					} else if (rc.getEnergon()>=30 || medbayLoc.equals(targetLoc)) {
 						this.goToLocationBrute(targetLoc);
+					} else {
+						this.goToLocationCareful(medbayLoc);
 					}
 					
 				} else {
@@ -426,33 +441,19 @@ public class SoldierUnit extends BaseUnit {
 					rc.setIndicatorString(0,"laying mine");
 					rc.layMine();
 					rc.yield();
-				} else if (curLoc.distanceSquaredTo(defendPoint) <= 20) {
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= (49) && rc.getEnergon()>=35) {
 					// standing on own mine and within defense radius
-					rc.setIndicatorString(0, "moving to defensive formation");
-					MapLocation topLeft=new MapLocation(defendPoint.x-2, defendPoint.y-2);
-					MapLocation topRight=new MapLocation(defendPoint.x+2,defendPoint.y-2);
-					MapLocation bottomLeft=new MapLocation(defendPoint.x-2,defendPoint.y+2);
-					MapLocation bottomRight = new MapLocation(defendPoint.x+2,defendPoint.y+2);
-					MapLocation[] locationArray={topLeft,topRight,bottomLeft,bottomRight, new MapLocation(defendPoint.x,defendPoint.y+1), new MapLocation(defendPoint.x,defendPoint.y-1), new MapLocation(defendPoint.x-1,defendPoint.y), new MapLocation(defendPoint.x+1,defendPoint.y)};
-					Direction randomDir = Direction.values()[(int) (Math.random() * 8)];
-					
-					for (int index=0;index<=3;index++){
-						if (rc.canSenseSquare(locationArray[index]) && rc.senseObjectAtLocation(locationArray[index])==null && rc.senseMine(locationArray[index])==null){
-							this.goToLocationBrute(locationArray[index]);
-						} else if (curLoc == locationArray[index]){
-							rc.yield();
-						} else {
-							if (rc.canMove(randomDir) && rc.isActive()){
-								rc.move(randomDir);
-							}
-						}
-					}
+					rc.setIndicatorString(0, "moving towards enemy");
+					this.goToLocationCareful(enemyBaseLoc);
 					
 					rc.yield();
-				} else {
+				} else if (rc.getEnergon()>=35){
 					// outside defense radius, so move towards defend point
 					rc.setIndicatorString(0, "returning to defend point");
-					this.goToLocationBrute(defendPoint);
+					this.goToLocationBrute(targetLoc);
+				} else {
+					rc.setIndicatorString(0,"healing");
+					this.goToLocationCareful(medbayLoc);
 				}
 			}
 		}

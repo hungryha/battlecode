@@ -36,7 +36,7 @@ public class HQUnit extends BaseUnit {
 																				// distance
 																				// between
 																				// bases
-	private int closeToBase = (int) Math.min(300, distBetweenBases * .35); // the
+	private int closeToBase = (int) Math.min(300, distBetweenBases * .25); // the
 																			// distance
 																			// which
 																			// classifies
@@ -142,7 +142,8 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 
-		this.mapStrategy = this.initialAnalysisAndInitialization();
+	//	this.mapStrategy = initialAnalysisAndInitialization();
+		this.mapStrategy=MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
 
 		
 		System.out.println("zone 1 sorted encampments:");
@@ -173,12 +174,21 @@ public class HQUnit extends BaseUnit {
 		case MAP_STRATEGY_NUKE_AND_PICKAXE:
 			// big map, nuke strategy
 
-			if (Clock.getRoundNum() < 75) {
-				if (zone1Locs[0] != null) {
+			if (Clock.getRoundNum() < 150) {
+				if (zone1Locs[0] != null ) {
+					if (myBaseLoc.directionTo(zone1Locs[0]).equals(
+							myBaseLoc.directionTo(enemyBaseLoc))
+							|| myBaseLoc.directionTo(zone1Locs[0]).equals(
+									myBaseLoc.directionTo(enemyBaseLoc)
+											.rotateLeft())
+							|| myBaseLoc.directionTo(zone1Locs[0]).equals(
+									myBaseLoc.directionTo(enemyBaseLoc)
+											.rotateRight())){
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							zone1Locs[0], SoldierState.SECURE_ENCAMPMENT,
-							RobotType.ARTILLERY, 0));
-				} else {
+							RobotType.MEDBAY, 0));
+					}
+				}else {
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							myBaseLoc, SoldierState.DEFEND_POSITION,
 							RobotType.HQ, 0));
@@ -186,30 +196,28 @@ public class HQUnit extends BaseUnit {
 				if (rc.isActive()) {
 					this.spawnInAvailable();
 				}
-			} else if (Clock.getRoundNum() >= 75 && Clock.getRoundNum() < 175) {
+
+			} else if (!rc.hasUpgrade(Upgrade.PICKAXE)){
+				if (rc.isActive()) {
+					rc.researchUpgrade(Upgrade.PICKAXE);
+				}
+			} else if ((Clock.getRoundNum() >= 150 && Clock.getRoundNum()<=300) || rc.senseNearbyGameObjects(Robot.class,49,myTeam).length<=8) {
 				// spawn robots
+				if (rc.isActive()) {
+					this.spawnInAvailable();
+				}
 				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
 						0));
-				if (!rc.hasUpgrade(Upgrade.PICKAXE)) {
-					if (rc.isActive()) {
-						rc.researchUpgrade(Upgrade.PICKAXE);
-					}
-				} else {
-					if (rc.isActive()) {
-						this.spawnInAvailable();
-					}
-				}
-
 			} else {
 				System.out.println("researching nuke " + Clock.getRoundNum());
 				if (rc.isActive()) {
 					rc.researchUpgrade(Upgrade.NUKE);
 				}
 
-				rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+			/*	rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 						myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,
-						0));
+						0));*/
 			}
 			
 			break;
