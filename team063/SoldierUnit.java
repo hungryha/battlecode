@@ -389,13 +389,15 @@ public class SoldierUnit extends BaseUnit {
 					rc.setIndicatorString(0, "not enough neraby allies to fight!");
 					this.goToLocationBrute(defendPoint);
 				} else if (curLoc.distanceSquaredTo(defendPoint) <= 49) {
-					if (rc.getEnergon()>=20){
+					if (rc.getEnergon()>=10){
 						rc.setIndicatorString(0, "attacking nearby enemy!");
 						this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
-					} else {
+					} else if (rc.senseNearbyGameObjects(Robot.class, targetLoc, 5, otherTeam).length<1){
 						MapLocation stepAwayLoc=curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies[0]).location));
 						rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
 						this.goToLocationBrute(stepAwayLoc);
+					} else {
+						this.goToLocationBrute(targetLoc);
 					}
 					
 				} else {

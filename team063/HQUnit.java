@@ -141,8 +141,8 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 
-
 		this.mapStrategy = this.initialAnalysisAndInitialization();
+
 		
 		System.out.println("zone 1 sorted encampments:");
 		for (int i = 0; i < zone1Locs.length; i++) {
@@ -627,7 +627,7 @@ public class HQUnit extends BaseUnit {
 	}
 
 	public MapStrategy initialAnalysisAndInitialization() {
-		/*
+
 		int numEncampmentsBetweenHQs = 0;
 		int numNeutralMinesBetweenHQs = 0;
 		int numTotalMines = 0;
@@ -666,7 +666,7 @@ public class HQUnit extends BaseUnit {
 				+ numEncampmentsBetweenHQs);
 		System.out.println("num neutral mines between hqs: "
 				+ numNeutralMinesBetweenHQs);
-		*/
+		
 		// start out building suppliers and generators in encampments far-ish
 		// from base
 		// defense strategy: build shields(25%), medbays(25%), artillery(50%),
@@ -681,7 +681,7 @@ public class HQUnit extends BaseUnit {
 		if (mapHeight >= 65 && mapWidth >= 65) {
 			return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
 		}
-		if (distBetweenBases <= 800) {
+		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), 400).length<=20)) {
 			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
 		}
 		return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
