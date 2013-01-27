@@ -281,10 +281,12 @@ public class SoldierUnit extends BaseUnit {
 			break;
 		case DEFEND_POSITION:
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,40,myTeam);
-			if (friendlyEnc.length>0){
-				medbayLoc=friendlyEnc[0];
-			} else {
-				medbayLoc=targetLoc;
+			medbayLoc=targetLoc;
+			for (int i = 0; i<friendlyEnc.length; i++){
+				System.out.println(i);
+				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc[i])).type==RobotType.MEDBAY){
+					medbayLoc=friendlyEnc[i];
+				} 
 			}
 			if (rc.isActive()) {
 				defendPosition(targetLoc, medbayLoc);
@@ -309,10 +311,12 @@ public class SoldierUnit extends BaseUnit {
 			 * else: go towards targetLoc
 			 */
 			MapLocation[] friendlyEnc2=rc.senseEncampmentSquares(targetLoc,40,myTeam);
-			if (friendlyEnc2.length>0){
-				medbayLoc=friendlyEnc2[0];
-			} else {
-				medbayLoc=targetLoc;
+			medbayLoc=targetLoc;
+			for (int i = 0; i<friendlyEnc2.length;i++){
+				System.out.println(i);
+				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc2[i])).type==RobotType.MEDBAY){
+					medbayLoc=friendlyEnc2[i];
+				} 
 			}
 			
 			if (rc.isActive()) {
@@ -444,7 +448,7 @@ public class SoldierUnit extends BaseUnit {
 					this.goToLocationCareful(enemyBaseLoc);
 					
 					rc.yield();
-				} else if (rc.getEnergon()>=35){
+				} else if (rc.getEnergon()>=35 || medbayLoc.equals(targetLoc)){
 					// outside defense radius, so move towards defend point
 					rc.setIndicatorString(0, "returning to defend point");
 					this.goToLocationBrute(targetLoc);
