@@ -50,10 +50,6 @@ public class SoldierUnit extends BaseUnit {
 		 * state
 		 */
 		if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_READ_COST) {
-
-//			if (squadId == HQUnit.NO_SQUAD) {
-//				squadId = rc.readBroadcast(Util.getInitialSquadNumChannelNum());
-//			}
 			
 			if (unitId == HQUnit.NO_UNIT_ID) {
 				unitId = rc.readBroadcast(Util.getInitialUnitNumChannelNum());
@@ -65,6 +61,7 @@ public class SoldierUnit extends BaseUnit {
 					System.out.println("unitId: " + unitId);
 					System.out.println("Util.getUnitChannelNum(unitId): " + Util.getUnitChannelNum(unitId));
 				}
+
 				int unitMsg = rc.readBroadcast(Util.getUnitChannelNum(unitId));
 
 				if (unitMsg != lastUnitMsg && unitMsg != 0) {
@@ -80,19 +77,21 @@ public class SoldierUnit extends BaseUnit {
 						encampmentSecureType = Util
 								.getEncampmentTypeFromMsg(unitMsg);
 					}
-					lastUnitMsg = unitMsg;
 				}
 			}
-			
-			int squadMsg = rc.readBroadcast(Util.getSquadChannelNum(squadId));
+			if (squadId != HQUnit.NO_SQUAD) {
+				int squadMsg = rc.readBroadcast(Util
+						.getSquadChannelNum(squadId));
 
-			if (squadMsg != lastSquadMsg && squadMsg != 0 && Util.decode(squadMsg) != null) {
-				targetLoc = Util.getMapLocationFromMsg(squadMsg);
-				state = Util.getSoldierStateFromMsg(squadMsg);
-				encampmentSecureType = Util.getEncampmentTypeFromMsg(squadMsg);
-				lastSquadMsg = squadMsg;
-			}
-		
+				if (squadMsg != lastSquadMsg && squadMsg != 0
+						&& Util.decode(squadMsg) != null) {
+					targetLoc = Util.getMapLocationFromMsg(squadMsg);
+					state = Util.getSoldierStateFromMsg(squadMsg);
+					encampmentSecureType = Util
+							.getEncampmentTypeFromMsg(squadMsg);
+					lastSquadMsg = squadMsg;
+				}
+			}	
 			// read message sent to all squads except scout
 			if (squadId != HQUnit.SCOUT_SQUAD) {
 				int curMsg = rc.readBroadcast(Util.getAllUnitExceptScoutChannelNum());

@@ -24,7 +24,7 @@ public class Util {
 	public static final int SQUAD_ASSIGNMENT_SHIFT = 24;
 	
 	
-	public static final int UNIT_CHANNEL_INDEX = 16;
+	public static final int UNIT_CHANNEL_INDEX = 56;
 	public static final int SQUAD_CHANNEL_INDEX = 10;
 	public static final int SEED = 3221;
 	

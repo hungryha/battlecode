@@ -101,9 +101,9 @@ public class HQUnit extends BaseUnit {
 			RobotType.ARTILLERY, RobotType.SHIELDS };
 
 	private enum MapStrategy {
-		NUKE_AND_PICKAXE, // build suppliers, generators, artillery, and medbays around you, upgrade pickaxe and nuke obv
-		STRAIGHT_RUSH, // build suppliers, artillery, and shields
-		NORMAL_MACRO, // zoning
+		MAP_STRATEGY_NUKE_AND_PICKAXE, // build suppliers, generators, artillery, and medbays around you, upgrade pickaxe and nuke obv
+		MAP_STRATEGY_STRAIGHT_RUSH, // build suppliers, artillery, and shields
+		MAP_STRATEGY_NORMAL_MACRO, // zoning
 	}
 	
 	private enum RoundStrategy {
@@ -115,7 +115,7 @@ public class HQUnit extends BaseUnit {
 		RALLY,
 	}
 	
-	protected MapStrategy mapStrategy = MapStrategy.NORMAL_MACRO;
+	protected MapStrategy mapStrategy = MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
 
 	public HQUnit(RobotController rc) {
 		super(rc);
@@ -140,6 +140,7 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone2Locs, new EncampmentComparatorZone2());
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
+
 
 
 		this.mapStrategy = initialAnalysisAndInitialization();
@@ -169,7 +170,7 @@ public class HQUnit extends BaseUnit {
 	@Override
 	public void run() throws GameActionException {
 		switch(mapStrategy) {
-		case NUKE_AND_PICKAXE:
+		case MAP_STRATEGY_NUKE_AND_PICKAXE:
 			// big map, nuke strategy
 
 			if (Clock.getRoundNum() < 100) {
@@ -213,7 +214,7 @@ public class HQUnit extends BaseUnit {
 			
 			break;
 			
-		case STRAIGHT_RUSH:
+		case MAP_STRATEGY_STRAIGHT_RUSH:
 			// System.out.println("small map: rush strategy");
 			// small map, rush strategy
 			if (rc.isActive()) {
@@ -271,7 +272,7 @@ public class HQUnit extends BaseUnit {
 
 			
 			break;
-		case NORMAL_MACRO:
+		case MAP_STRATEGY_NORMAL_MACRO:
 			// check enemy nuke progress
 			boolean nukeDetected = false;
 			if (Clock.getRoundNum() >= 200) {
@@ -297,56 +298,52 @@ public class HQUnit extends BaseUnit {
 			}
 
 			if (!nukeDetected) {
-				RoundStrategy roundStrategy = RoundStrategy.BUILD_MACRO;
+				RoundStrategy roundStrategy;
 				
 				
 				rc.broadcast(Util.getInitialUnitNumChannelNum(),
 						getCurrentUnitAssignment());
 				
-				// start of round analysis
+				//assigning squads
+				this.initialRoundActions();
+				// START OF ROUND STRATEGY ANALYSIS
 				Robot[] enemiesByBase = rc.senseNearbyGameObjects(
 						Robot.class, distBetweenBases / 9, otherTeam);
 				if (enemiesByBase.length > 0) {
 					System.out.println("base under attack");
 					roundStrategy = RoundStrategy.DEFEND_BASE;
 				}
-				
-				if (Clock.getRoundNum() < 300) {
+			
+				else if (Clock.getRoundNum() < 300) {
 					roundStrategy = RoundStrategy.BUILD_MACRO;
 				}
 				
-				if (Clock.getRoundNum() >= 300 && Clock.getRoundNum() < 425) {
+				else if (Clock.getRoundNum() >= 300 && Clock.getRoundNum() < 425) {
 					roundStrategy = RoundStrategy.RALLY;
 				}
 				
-				if (Clock.getRoundNum() >= 425 && Clock.getRoundNum() < 1200) {
+				else if (Clock.getRoundNum() >= 425 && Clock.getRoundNum() < 1200) {
 					roundStrategy = RoundStrategy.PUSH;
 				}
 				
-				if (Clock.getRoundNum() >= 1200) {
+				else if (Clock.getRoundNum() >= 1200) {
 					roundStrategy = RoundStrategy.RESEARCH_NUKE;
 				}
-				// end of round analysis;
+				else {
+					roundStrategy = RoundStrategy.BUILD_MACRO;
+				}
+				// END OF ROUND STRATEGY ANALYSIS
 				
-				// applying strategies
+				
+				// APPLYING STRATEGY
+				rc.setIndicatorString(2, "mapStrategy: " + mapStrategy + " round strategy: " + roundStrategy);
 				switch(roundStrategy) {
 				case BUILD_MACRO:
 					if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_SEND_COST) {
-
-						if (unitsCount >= 1 && unitsCount < 6) {
-							rc.broadcast(
-									Util.getUnitChannelNum(unitsCount),
-									Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
-						}
-
+						
 						if (unitsCount >= 6 && unitsCount < 11) {
 							int zone1Index = unitsCount - 6;
-							if (zone1Index > endZone1Index
-									|| zone1Locs[zone1Index] == null) {
-								rc.broadcast(
-										Util.getUnitChannelNum(unitsCount),
-										Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
-							} else {
+							if (zone1Index <= endZone1Index && zone1Locs[zone1Index] != null) {
 								rc.broadcast(
 										Util.getUnitChannelNum(unitsCount),
 										Util.encodeMsg(zone1Locs[zone1Index],
@@ -355,20 +352,9 @@ public class HQUnit extends BaseUnit {
 							}
 						}
 
-						if (unitsCount >= 11 && unitsCount < 16) {
-							rc.broadcast(
-									Util.getUnitChannelNum(unitsCount),
-									Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_2));
-						}
-
 						if (unitsCount >= 16 && unitsCount < 21) {
 							int index = unitsCount - 11;
-							if (index > endZone1Index
-									|| zone1Locs[curZone1Counter] == null) {
-								rc.broadcast(
-										Util.getUnitChannelNum(unitsCount),
-										Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
-							} else {
+							if (index <= endZone1Index && zone1Locs[index] != null) {
 								rc.broadcast(
 										Util.getUnitChannelNum(unitsCount),
 										Util.encodeMsg(zone1Locs[index],
@@ -377,25 +363,6 @@ public class HQUnit extends BaseUnit {
 							}
 						}
 
-						if (unitsCount >= 21 && unitsCount < 26) {
-							rc.broadcast(
-									Util.getUnitChannelNum(unitsCount),
-									Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_3));
-
-						}
-
-						if (unitsCount >= 26 && unitsCount < 30) {
-							rc.broadcast(
-									Util.getUnitChannelNum(unitsCount),
-									Util.encodeUnitSquadAssignmentChangeMsg(DEFEND_BASE_SQUAD));
-
-						}
-
-						if (unitsCount > 30) {
-							rc.broadcast(
-									Util.getUnitChannelNum(unitsCount),
-									Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
-						}
 						// if encampment captured, capture the next one
 						if (rc.canSenseSquare(zone2Locs[curZone2Counter])) {
 							GameObject obj = rc
@@ -483,7 +450,7 @@ public class HQUnit extends BaseUnit {
 					break;
 				case DEFEND_BASE:
 					rc.broadcast(
-							Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
+							Util.getAllUnitChannelNum(),
 							Util.encodeMsg(
 									rc.senseRobotInfo(enemiesByBase[0]).location,
 									SoldierState.ATTACK_MOVE,
@@ -589,35 +556,22 @@ public class HQUnit extends BaseUnit {
 
 	}
 
-	/**
-	 * NOT USED NOW
-	 * @throws GameActionException
-	 */
 	private void initialRoundActions() throws GameActionException {
 		rc.broadcast(Util.getInitialUnitNumChannelNum(), getCurrentUnitAssignment());
 		
-		if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_SEND_COST) {
+		if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST) {
 
 			if (unitsCount >= 1 && unitsCount < 6) {
+
 				rc.broadcast(
 						Util.getUnitChannelNum(unitsCount),
 						Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
 			}
 
 			if (unitsCount >= 6 && unitsCount < 11) {
-				int zone1Index = unitsCount - 6;
-				if (zone1Index > endZone1Index
-						|| zone1Locs[zone1Index] == null) {
-					rc.broadcast(
+				rc.broadcast(
 							Util.getUnitChannelNum(unitsCount),
 							Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
-				} else {
-					rc.broadcast(
-							Util.getUnitChannelNum(unitsCount),
-							Util.encodeMsg(zone1Locs[zone1Index],
-									SoldierState.SECURE_ENCAMPMENT,
-									supGenSelection[zone1Index], 0));
-				}
 			}
 
 			if (unitsCount >= 11 && unitsCount < 16) {
@@ -627,19 +581,9 @@ public class HQUnit extends BaseUnit {
 			}
 
 			if (unitsCount >= 16 && unitsCount < 21) {
-				int index = unitsCount - 11;
-				if (index > endZone1Index
-						|| zone1Locs[curZone1Counter] == null) {
-					rc.broadcast(
+				rc.broadcast(
 							Util.getUnitChannelNum(unitsCount),
 							Util.encodeUnitSquadAssignmentChangeMsg(ENCAMPMENT_SQUAD_1));
-				} else {
-					rc.broadcast(
-							Util.getUnitChannelNum(unitsCount),
-							Util.encodeMsg(zone1Locs[index],
-									SoldierState.SECURE_ENCAMPMENT,
-									supGenSelection[index], 0));
-				}
 			}
 
 			if (unitsCount >= 21 && unitsCount < 26) {
@@ -718,12 +662,12 @@ public class HQUnit extends BaseUnit {
 		// heuristics? build more artillery when there are less mines around
 		
 		if (mapHeight >= 65 && mapWidth >= 65) {
-			return MapStrategy.NUKE_AND_PICKAXE;
+			return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
 		}
 		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), 400).length<=20)) {
-			return MapStrategy.STRAIGHT_RUSH;
+			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
 		}
-		return MapStrategy.NORMAL_MACRO;
+		return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
 	}
 
 	// not used
