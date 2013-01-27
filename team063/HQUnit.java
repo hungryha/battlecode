@@ -11,6 +11,7 @@ import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
@@ -407,40 +408,46 @@ public class HQUnit extends BaseUnit {
 					}
 					break;
 				case PUSH:
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-							enemyBaseLoc, SoldierState.ATTACK_MOVE,
-							RobotType.HQ, 0));
-					// // if (rc.senseCaptureCost() > rc.getTeamPower()) {
-					// // rc.broadcast(Util.getAllUnitChannelNum(), Util
-					// // .encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
-					// // RobotType.HQ, 0));
-					// // }
-					// // else {
-					// // // if encampment captured, capture the next one
-					// // if (rc.canSenseSquare(zone3Locs[curZone3Counter])) {
-					// // GameObject obj = rc
-					// // .senseObjectAtLocation(zone3Locs[curZone3Counter]);
-					// // // should use broadcast, oh well
-					// // Robot[] objs = rc.senseNearbyGameObjects(
-					// // Robot.class, zone3Locs[curZone3Counter], 1,
-					// // myTeam);
-					// //
-					// // if (obj != null
-					// // && obj.getTeam().equals(myTeam)
-					// // && rc.senseRobotInfo(objs[0]).type.isEncampment) {
-					// // // prev encampment captured
-					// // System.out.println("prev encampment captured: " +
-					// curZone3Counter);
-					// // curZone3Counter = Math.min(curZone3Counter + 1,
-					// // endZone3Index);
-					// // }
-					// // }
-					// //
-					// // rc.broadcast(Util.getAllUnitChannelNum(), Util
-					// // .encodeMsg(zone3Locs[curZone3Counter],
-					// // SoldierState.SECURE_ENCAMPMENT,
-					// // RobotType.ARTILLERY, 0));
-					// // }
+//					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+//							enemyBaseLoc, SoldierState.ATTACK_MOVE,
+//							RobotType.HQ, 0));
+					if (zone3Locs[0] == null) {
+						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+								enemyBaseLoc, SoldierState.ATTACK_MOVE,
+								RobotType.HQ, 0));
+					}
+					else {
+						MapLocation targetLoc = null;
+						for (int i=0; i <= endZone3Index; i++) {
+							if (rc.canSenseSquare(zone3Locs[i])) {
+								Robot enemy = (Robot) rc.senseObjectAtLocation(zone3Locs[i]);
+
+								if (enemy != null) {
+									RobotInfo enemyInfo = rc.senseRobotInfo(enemy);
+									if (enemyInfo.team.equals(otherTeam)) {
+										if (enemyInfo.type.equals(RobotType.ARTILLERY)
+											|| enemyInfo.type.equals(RobotType.MEDBAY)
+											|| enemyInfo.type.equals(RobotType.SUPPLIER)) {
+											targetLoc = zone3Locs[i];
+											break;
+										}
+									}
+								}
+							}
+						}
+						if (targetLoc != null) {
+							System.out.println("found encampment to attack");
+							rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+									targetLoc, SoldierState.ATTACK_MOVE,
+									RobotType.HQ, 0));
+						}
+						else {
+							rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+									enemyBaseLoc, SoldierState.ATTACK_MOVE,
+									RobotType.HQ, 0));
+						}
+					}
+
 					if (rc.isActive()) {
 						this.spawnInAvailable();
 					}

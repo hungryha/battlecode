@@ -123,7 +123,6 @@ public class SoldierUnit extends BaseUnit {
 		switch (state) {
 		case RUSH_ENEMY_HQ:
 			// if next enemyBase, don't move
-			// if next to enemy, don't move
 			int[] offsets = {0, 1, -1, 2, -2};
 			boolean nextToBase = false;
 			Direction dir = curLoc.directionTo(enemyBaseLoc);
@@ -135,6 +134,7 @@ public class SoldierUnit extends BaseUnit {
 				}
 			}
 			if (!nextToBase) {
+				// destroy close artillery, medbay, and suppliers
 				this.goToLocationBrute(targetLoc);
 			}
 			break;
@@ -196,7 +196,7 @@ public class SoldierUnit extends BaseUnit {
 						int adjacentEnemies;
 						Direction lookingDir;
 						for (int offset:dirOffsets){
-							lookingDir=Direction.values()[(8+offset)%8];
+							lookingDir=Direction.values()[(Direction.NORTH.ordinal() + 8+offset)%8];
 							if (rc.canMove(lookingDir)) {
 								lookingAtCurrently=curLoc.add(lookingDir);
 								adjacentEnemies = rc.senseNearbyGameObjects(
@@ -208,7 +208,10 @@ public class SoldierUnit extends BaseUnit {
 								}
 							}
 						}
-						rc.move(curLoc.directionTo(lookingAtCurrently));						
+						Direction moveDir = curLoc.directionTo(lookingAtCurrently);
+						if (!moveDir.equals(Direction.OMNI) && !moveDir.equals(Direction.NONE)) {
+							rc.move(moveDir);
+						}
 						
 //						for (int index = 0; index < nearbyEnemies.length - 3; index += 3) {
 //							if (rc.senseRobotInfo(nearbyEnemies[index]).energon < lowHealth) {
