@@ -36,7 +36,7 @@ public class HQUnit extends BaseUnit {
 																				// distance
 																				// between
 																				// bases
-	private int closeToBase = (int) Math.min(300, distBetweenBases * .25); // the
+	private int closeToBase = (int) Math.min(125, distBetweenBases * .25); // the
 																			// distance
 																			// which
 																			// classifies
@@ -225,7 +225,7 @@ public class HQUnit extends BaseUnit {
 					this.spawnInAvailable();
 				}
 
-			} else if ((Clock.getRoundNum() >= 150 && Clock.getRoundNum()<=300) || rc.senseNearbyGameObjects(Robot.class,49,myTeam).length<=8) {
+			} else if ((Clock.getRoundNum() >= 150 && Clock.getRoundNum()<=300) || rc.senseNearbyGameObjects(Robot.class,125,myTeam).length<=8) {
 				// spawn robots
 				if (rc.isActive()) {
 					this.spawnInAvailable();
