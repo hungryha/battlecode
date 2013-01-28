@@ -49,7 +49,7 @@ public abstract class BaseUnit {
 				run();
 //				this.runTest();
 			} catch (Exception e) {
-//				e.printStackTrace();
+				e.printStackTrace();
 			}
 			rc.yield();
 		}
