@@ -382,7 +382,16 @@ public class SoldierUnit extends BaseUnit {
 
 			break;
 		case DEFAULT:
-//			this.defendPosition(myBaseLoc);
+			MapLocation[] friends=rc.senseEncampmentSquares(targetLoc,40,myTeam);
+			medbayLoc=targetLoc;
+			for (int i = 0; i<friends.length; i++){
+				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friends[i])).type==RobotType.MEDBAY){
+					medbayLoc=friends[i];
+				} 
+			}
+			if (rc.isActive()) {
+				defendPosition(targetLoc, medbayLoc);
+			}			
 			break;
 		default:
 			// do nothing if no instructions from hq
