@@ -176,18 +176,9 @@ public class HQUnit extends BaseUnit {
 
 			if (Clock.getRoundNum() < 150) {
 				if (zone1Locs[0] != null ) {
-					if (myBaseLoc.directionTo(zone1Locs[0]).equals(
-							myBaseLoc.directionTo(enemyBaseLoc))
-							|| myBaseLoc.directionTo(zone1Locs[0]).equals(
-									myBaseLoc.directionTo(enemyBaseLoc)
-											.rotateLeft())
-							|| myBaseLoc.directionTo(zone1Locs[0]).equals(
-									myBaseLoc.directionTo(enemyBaseLoc)
-											.rotateRight())){
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							zone1Locs[0], SoldierState.SECURE_ENCAMPMENT,
 							RobotType.MEDBAY, 0));
-					}
 				}else {
 					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 							myBaseLoc, SoldierState.DEFEND_POSITION,
