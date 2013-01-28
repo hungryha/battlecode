@@ -95,8 +95,8 @@ public class HQUnit extends BaseUnit {
 			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,
 			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,
 			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER };
-	protected RobotType[] encampSelection = { RobotType.ARTILLERY,
-			RobotType.ARTILLERY, RobotType.ARTILLERY, RobotType.SHIELDS,
+	protected RobotType[] encampSelection = { RobotType.SHIELDS,
+			RobotType.SHIELDS, RobotType.SHIELDS, RobotType.ARTILLERY,
 			RobotType.ARTILLERY, RobotType.MEDBAY, RobotType.ARTILLERY,
 			RobotType.SHIELDS, RobotType.ARTILLERY, RobotType.MEDBAY,
 			RobotType.ARTILLERY, RobotType.SHIELDS };
@@ -203,6 +203,13 @@ public class HQUnit extends BaseUnit {
 			
 			//assigning squads
 			this.initialRoundActions();
+			
+			if (!rc.hasUpgrade(Upgrade.PICKAXE)){
+				if (rc.isActive()) {
+					rc.researchUpgrade(Upgrade.PICKAXE);
+				}
+			} 
+			
 			if (Clock.getRoundNum() < 150) {
 				if (zone1Locs[0] != null ) {
 					if (myBaseLoc.directionTo(zone1Locs[0]).equals(
@@ -232,10 +239,6 @@ public class HQUnit extends BaseUnit {
 					this.spawnInAvailable();
 				}
 
-			} else if (!rc.hasUpgrade(Upgrade.PICKAXE)){
-				if (rc.isActive()) {
-					rc.researchUpgrade(Upgrade.PICKAXE);
-				}
 			} else if ((Clock.getRoundNum() >= 150 && Clock.getRoundNum()<=300) || rc.senseNearbyGameObjects(Robot.class,49,myTeam).length<=8) {
 				// spawn robots
 				if (rc.isActive()) {
@@ -318,44 +321,75 @@ public class HQUnit extends BaseUnit {
 		case MAP_STRATEGY_NORMAL_MACRO:
 			// check enemy nuke progress
 			boolean nukeDetected = false;
-			if (Clock.getRoundNum() >= 200) {
-				if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST
-						&& rc.checkResearchProgress(Upgrade.NUKE) < 200) {
-					if (rc.senseEnemyNukeHalfDone()) {
-						// enemy half done with nuke, broadcast attack enemy
-						// base to all units
-						rc.broadcast(Util.getAllUnitChannelNum(), Util
-								.encodeMsg(enemyBaseLoc,
-										SoldierState.RUSH_ENEMY_HQ,
-										RobotType.HQ, 0));
-						if (rc.isActive()) {
-							if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
-								rc.researchUpgrade(Upgrade.DEFUSION);
-							} else {
-								this.spawnInAvailable();
+			RoundStrategy roundStrategy;
+			rc.broadcast(Util.getInitialUnitNumChannelNum(),
+					getCurrentUnitAssignment());
+			
+			//assigning squads
+			this.initialRoundActions();
+			
+//			if (Clock.getRoundNum() >= 200) {
+//				if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST
+//						&& rc.checkResearchProgress(Upgrade.NUKE) < 200) {
+//					if (rc.senseEnemyNukeHalfDone()) {
+//						// enemy half done with nuke, broadcast attack enemy
+//						// base to all units
+//						rc.broadcast(Util.getAllUnitChannelNum(), Util
+//								.encodeMsg(enemyBaseLoc,
+//										SoldierState.RUSH_ENEMY_HQ,
+//										RobotType.HQ, 0));
+//						if (rc.isActive()) {
+//							if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
+//								rc.researchUpgrade(Upgrade.DEFUSION);
+//							} else {
+//								this.spawnInAvailable();
+//							}
+//						}
+//						nukeDetected = true;
+//					}
+//				}
+//			}
+
+//			if (!nukeDetected) {
+				
+				if (Clock.getRoundNum() >= 200) {
+					if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST
+							&& rc.checkResearchProgress(Upgrade.NUKE) < 200) {
+						if (rc.senseEnemyNukeHalfDone()) {
+							// enemy half done with nuke, broadcast attack enemy
+							// base to all units
+//							rc.broadcast(Util.getAllUnitChannelNum(), Util
+//									.encodeMsg(enemyBaseLoc,
+//											SoldierState.RUSH_ENEMY_HQ,
+//											RobotType.HQ, 0));
+							roundStrategy = RoundStrategy.PUSH;
+							if (rc.isActive()) {
+								if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
+									rc.researchUpgrade(Upgrade.DEFUSION);
+								} else {
+									this.spawnInAvailable();
+								}
 							}
+							nukeDetected = true;
 						}
-						nukeDetected = true;
 					}
 				}
-			}
-
-			if (!nukeDetected) {
-				RoundStrategy roundStrategy;
-				
-				
-				rc.broadcast(Util.getInitialUnitNumChannelNum(),
-						getCurrentUnitAssignment());
-				
-				//assigning squads
-				this.initialRoundActions();
 				// START OF ROUND STRATEGY ANALYSIS
 				Robot[] enemiesByBase = rc.senseNearbyGameObjects(
 						Robot.class, distBetweenBases / 9, otherTeam);
-				if (enemiesByBase.length > 0) {
+				if (nukeDetected) {
+					roundStrategy = RoundStrategy.PUSH;
+					if (rc.isActive()) {
+						if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
+							rc.researchUpgrade(Upgrade.DEFUSION);
+						} else {
+							this.spawnInAvailable();
+						}
+					}
+				}
+				else if (enemiesByBase.length > 0) {
 					roundStrategy = RoundStrategy.DEFEND_BASE;
 				}
-			
 				else if (Clock.getRoundNum() < 300) {
 					roundStrategy = RoundStrategy.BUILD_MACRO;
 				}
@@ -479,7 +513,7 @@ public class HQUnit extends BaseUnit {
 							}
 						}
 						if (targetLoc != null) {
-							System.out.println("found encampment to attack");
+//							System.out.println("found encampment to attack");
 							rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 									targetLoc, SoldierState.ATTACK_MOVE,
 									RobotType.HQ, 0));
@@ -548,7 +582,7 @@ public class HQUnit extends BaseUnit {
 					}
 				}
 			
-			}
+//			}
 			
 			
 			
