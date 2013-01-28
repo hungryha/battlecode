@@ -283,7 +283,7 @@ public class SoldierUnit extends BaseUnit {
 		case CAPTURE_MOVE:
 			break;
 		case DEFEND_POSITION:
-			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,40,myTeam);
+			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,125,myTeam);
 			medbayLoc=targetLoc;
 			for (int i = 0; i<friendlyEnc.length; i++){
 //				System.out.println(i);
@@ -313,7 +313,7 @@ public class SoldierUnit extends BaseUnit {
 			 * on encampment: capture it else: if mine in the way: defuse it
 			 * else: go towards targetLoc
 			 */
-			MapLocation[] friendlyEnc2=rc.senseEncampmentSquares(targetLoc,40,myTeam);
+			MapLocation[] friendlyEnc2=rc.senseEncampmentSquares(targetLoc,125,myTeam);
 			medbayLoc=targetLoc;
 			for (int i = 0; i<friendlyEnc2.length;i++){
 //				System.out.println(i);
@@ -406,9 +406,9 @@ public class SoldierUnit extends BaseUnit {
 					otherTeam);
 			if (nearbyEnemies.length >= 1) {
 				if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
-					rc.setIndicatorString(0, "not enough neraby allies to fight!");
+					rc.setIndicatorString(0, "not enough nearby allies to fight!");
 					this.goToLocationBrute(defendPoint);
-				} else if (curLoc.distanceSquaredTo(defendPoint) <= (49)) {
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= (125)) {
 					if (rc.getEnergon()>=10){
 						rc.setIndicatorString(0, "attacking nearby enemy!");
 						this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
@@ -445,7 +445,7 @@ public class SoldierUnit extends BaseUnit {
 					rc.setIndicatorString(0,"laying mine");
 					rc.layMine();
 					rc.yield();
-				} else if (curLoc.distanceSquaredTo(defendPoint) <= (49) && rc.getEnergon()>=35) {
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= (125) && rc.getEnergon()>=35) {
 					// standing on own mine and within defense radius
 					rc.setIndicatorString(0, "moving towards enemy");
 					this.goToLocationCareful(enemyBaseLoc);
