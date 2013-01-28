@@ -66,9 +66,10 @@ public class SoldierUnit extends BaseUnit {
 				int unitMsg = rc.readBroadcast(Util.getUnitChannelNum(unitId));
 
 				if (unitMsg != lastUnitMsg && unitMsg != 0) {
-					rc.setIndicatorString(0, "unitmsg in binary: " + Integer.toBinaryString(unitMsg)
+					rc.setIndicatorString(0, "unitmsg: " + unitMsg 
 									+ " changeSquadBool: "
 									+ Util.getChangeSquadBool(unitMsg));
+//					System.out.println("received unitmsg: " + unitMsg);
 					if (Util.getChangeSquadBool(unitMsg)) {
 						rc.setIndicatorString(1,"new squad: " + Util.getSquadAssignment(unitMsg));
 						squadId = Util.getSquadAssignment(unitMsg);
@@ -411,8 +412,9 @@ public class SoldierUnit extends BaseUnit {
 	protected void defendPosition(MapLocation defendPoint, MapLocation medbayLoc)
 			throws GameActionException { // 50 - 800 bytecode
 		if (rc.isActive()) {
-			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 20,
-					otherTeam);
+
+			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 25,
+			otherTeam);
 			if (nearbyEnemies.length >= 1) {
 				if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
 					rc.setIndicatorString(0, "not enough nearby allies to fight!");

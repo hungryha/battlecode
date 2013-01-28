@@ -23,8 +23,8 @@ public class RobotPlayer{
 					hqCode();
 				}
 			}catch (Exception e){
-				System.out.println("caught exception before it killed us:");
-				e.printStackTrace();
+//				System.out.println("caught exception before it killed us:");
+//				e.printStackTrace();
 			}
 			rc.yield();
 		}
