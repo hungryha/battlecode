@@ -20,10 +20,6 @@ public class SoldierUnit extends BaseUnit {
 	private int unitId;
 	private MapLocation curLoc;
 	private RobotType encampmentSecureType;
-	private int lastSquadMsg;
-	private int lastUnitMsg;
-	private int lastAllMsg;
-	private int lastAllExceptScoutMsg;
 	
 	// bug crawl algo states
 	private boolean followingWall;
@@ -38,10 +34,6 @@ public class SoldierUnit extends BaseUnit {
 		squadId = HQUnit.NO_SQUAD;
 		unitId = HQUnit.NO_UNIT_ID;
 		state = SoldierState.DEFAULT;
-		lastSquadMsg = 0;
-		lastUnitMsg = 0;
-		lastAllMsg = 0;
-		lastAllExceptScoutMsg = 0;
 	}
 	
 	@Override
@@ -64,8 +56,8 @@ public class SoldierUnit extends BaseUnit {
 				}
 
 				int unitMsg = rc.readBroadcast(Util.getUnitChannelNum(unitId));
-
-				if (unitMsg != lastUnitMsg && unitMsg != 0) {
+//				System.out.println("unit channel: " + Util.getUnitChannelNum(unitId) + " unitMsg: " + unitMsg);
+				if (unitMsg != 0) {
 					rc.setIndicatorString(0, "unitmsg: " + unitMsg 
 									+ " changeSquadBool: "
 									+ Util.getChangeSquadBool(unitMsg));
@@ -84,34 +76,32 @@ public class SoldierUnit extends BaseUnit {
 			if (squadId != HQUnit.NO_SQUAD) {
 				int squadMsg = rc.readBroadcast(Util
 						.getSquadChannelNum(squadId));
-
-				if (squadMsg != lastSquadMsg && squadMsg != 0
-						&& Util.decode(squadMsg) != null) {
+//				System.out.println("squad channel: " + Util.getSquadChannelNum(squadId) + " squadMsg: " + squadMsg);
+				if (squadMsg != 0 && Util.decode(squadMsg) != null) {
 					targetLoc = Util.getMapLocationFromMsg(squadMsg);
 					state = Util.getSoldierStateFromMsg(squadMsg);
 					encampmentSecureType = Util
 							.getEncampmentTypeFromMsg(squadMsg);
-					lastSquadMsg = squadMsg;
 				}
 			}	
 			// read message sent to all squads except scout
 			if (squadId != HQUnit.SCOUT_SQUAD) {
 				int curMsg = rc.readBroadcast(Util.getAllUnitExceptScoutChannelNum());
-				if (curMsg != lastAllExceptScoutMsg && curMsg != 0 && Util.decode(curMsg) != null) {
+//				System.out.println("allunitExceptScoutChannel: " + Util.getAllUnitExceptScoutChannelNum() + " msg: " + curMsg);
+				if (curMsg != 0 && Util.decode(curMsg) != null) {
 					targetLoc = Util.getMapLocationFromMsg(curMsg);
 					state = Util.getSoldierStateFromMsg(curMsg);
 					encampmentSecureType = Util.getEncampmentTypeFromMsg(curMsg);
-					lastAllExceptScoutMsg = curMsg;
 				}
 			}
-			// read message sent to everyone
+//			 read message sent to everyone
 			int msg = rc.readBroadcast(Util.getAllUnitChannelNum());
+//			System.out.println("allunitchannel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
 			if (msg != 0 && Util.decode(msg) != null) {
 				rc.setIndicatorString(0, "round: " + Clock.getRoundNum() + "all unit channel: " + Util.getAllUnitChannelNum() + " msg: " + msg);
 				targetLoc = Util.getMapLocationFromMsg(msg);
 				state = Util.getSoldierStateFromMsg(msg);
 				encampmentSecureType = Util.getEncampmentTypeFromMsg(msg);
-//				lastAllMsg = msg;
 			}
 
 		}
@@ -121,7 +111,7 @@ public class SoldierUnit extends BaseUnit {
 
 		this.curLoc = rc.getLocation();
 		rc.setIndicatorString(2, "cur state: " + state + " cur target: " + targetLoc + " squadId: " + squadId + " unitId: " + unitId);
-
+//		System.out.println("cur state: " + state + " cur target: " + targetLoc + " squadId: " + squadId + " unitId: " + unitId);
 		switch (state) {
 		case RUSH_ENEMY_HQ:
 			// if next enemyBase, don't move
@@ -287,7 +277,6 @@ public class SoldierUnit extends BaseUnit {
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,125,myTeam);
 			medbayLoc=targetLoc;
 			for (int i = 0; i<friendlyEnc.length; i++){
-//				System.out.println(i);
 				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc[i])).type==RobotType.MEDBAY){
 					medbayLoc=friendlyEnc[i];
 				} 
@@ -413,7 +402,7 @@ public class SoldierUnit extends BaseUnit {
 			throws GameActionException { // 50 - 800 bytecode
 		if (rc.isActive()) {
 
-			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 25,
+			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, defendPoint, 25,
 			otherTeam);
 			if (nearbyEnemies.length >= 1) {
 				if (rc.senseNearbyGameObjects(Robot.class, 4, myTeam).length < 2) {
@@ -450,13 +439,13 @@ public class SoldierUnit extends BaseUnit {
 					// standing on patterned empty sq
 					rc.setIndicatorString(0, "laying mine");
 					rc.layMine();
-					rc.yield();
+//					rc.yield();
 				} else if (rc.senseMine(curLoc) == null
 						&& (curLoc.x + curLoc.y) % 2 == 1){
 					rc.setIndicatorString(0,"laying mine");
 					rc.layMine();
-					rc.yield();
-				} else if (curLoc.distanceSquaredTo(defendPoint) <= (125) && rc.getEnergon()>=35) {
+//					rc.yield();
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= 125 && rc.getEnergon()>=35) {
 					// standing on own mine and within defense radius
 					rc.setIndicatorString(0, "moving towards enemy");
 					this.goToLocationCareful(enemyBaseLoc);
