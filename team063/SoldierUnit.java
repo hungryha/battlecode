@@ -167,9 +167,9 @@ public class SoldierUnit extends BaseUnit {
 			int squadSize;
 			
 			if (this.distToEnemyBaseSquared<=800){
-				squadSize=4;
+				squadSize=3;
 			} else {
-				squadSize=5;
+				squadSize=4;
 			}
 			
 			if (mapHeight <=30 && mapWidth<=30){

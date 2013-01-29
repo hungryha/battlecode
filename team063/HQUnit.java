@@ -162,8 +162,8 @@ public class HQUnit extends BaseUnit {
 		Arrays.sort(zone3Locs, new EncampmentComparatorZone3());
 		Arrays.sort(zone4Locs, new EncampmentComparatorZone4());
 
-//		this.mapStrategy = initialAnalysisAndInitialization();
-		this.mapStrategy = MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
+		this.mapStrategy = initialAnalysisAndInitialization();
+//		this.mapStrategy = MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
 
 		if (mapStrategy.equals(MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE)) {
 			long mem = rc.getTeamMemory()[NUKE_MEM_INDEX];
@@ -172,7 +172,7 @@ public class HQUnit extends BaseUnit {
 				enemyPrevMatchNukeHalf = (int)mem;
 				if (enemyPrevMatchNukeHalf - 202 < DEFAULT_START_NUKE) {
 					System.out.println("setting startNukeRound to : " + (enemyPrevMatchNukeHalf - 213));
-					startNukeRound = enemyPrevMatchNukeHalf - 213;
+					startNukeRound = enemyPrevMatchNukeHalf - 217;
 				}
 			}
 		}
@@ -216,13 +216,15 @@ public class HQUnit extends BaseUnit {
 			// set team memory of enemy half way mark
 			boolean nukeDetected = false;
 			if (Clock.getRoundNum() >= 202) {
-				if (rc.senseEnemyNukeHalfDone() && rc.checkResearchProgress(Upgrade.NUKE) <= 202) {
-					nukeDetected = true;
+				if (rc.senseEnemyNukeHalfDone()) {
 
 					if (!teamMemSet) {
 						rc.setTeamMemory(NUKE_MEM_INDEX, Clock.getRoundNum());
 						teamMemSet = true;
 					}
+				if (rc.checkResearchProgress(Upgrade.NUKE) <= 202) {
+					nukeDetected = true;
+
 					if (rc.isActive()) {
 						if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
 							rc.researchUpgrade(Upgrade.DEFUSION);
@@ -266,7 +268,7 @@ public class HQUnit extends BaseUnit {
 									RobotType.HQ, 0));
 						}
 					}
-
+				}
 				}
 			}
 
@@ -834,44 +836,44 @@ public class HQUnit extends BaseUnit {
 
 	public MapStrategy initialAnalysisAndInitialization() {
 
-		int numEncampmentsBetweenHQs = 0;
-		int numNeutralMinesBetweenHQs = 0;
-		int numTotalMines = 0;
-		int numTotalEncampments = 0;
-		int[][] mineMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
-		int[][] encampmentMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
-
-		MapLocation[] allEncampmentLocs = rc.senseAllEncampmentSquares();
-
-		// should cover all mines
-		MapLocation[] allNeutralMineLocs = rc.senseMineLocations(
-				new MapLocation(mapWidth / 2, mapHeight / 2), 2000,
-				Team.NEUTRAL);
-
-		for (int i = 0; i < allEncampmentLocs.length; i++) {
-			encampmentMap[allEncampmentLocs[i].x][allEncampmentLocs[i].y] = 1;
-		}
-
-		for (int i = 0; i < allNeutralMineLocs.length; i++) {
-			mineMap[allNeutralMineLocs[i].x][allNeutralMineLocs[i].y] = 1;
-		}
-
-		int startX = Math.min(myBaseLoc.x, enemyBaseLoc.x);
-		int endX = Math.max(myBaseLoc.x, enemyBaseLoc.x);
-		int startY = Math.min(myBaseLoc.y, enemyBaseLoc.y);
-		int endY = Math.max(myBaseLoc.y, enemyBaseLoc.y);
-
-		for (int i = startX; i <= endX; i++) {
-			for (int j = startY; j <= endY; j++) {
-				numEncampmentsBetweenHQs += encampmentMap[i][j];
-				numNeutralMinesBetweenHQs += mineMap[i][j];
-			}
-		}
-
-		System.out.println("num encampments between hqs: "
-				+ numEncampmentsBetweenHQs);
-		System.out.println("num neutral mines between hqs: "
-				+ numNeutralMinesBetweenHQs);
+//		int numEncampmentsBetweenHQs = 0;
+//		int numNeutralMinesBetweenHQs = 0;
+//		int numTotalMines = 0;
+//		int numTotalEncampments = 0;
+//		int[][] mineMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
+//		int[][] encampmentMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
+//
+//		MapLocation[] allEncampmentLocs = rc.senseAllEncampmentSquares();
+//
+//		// should cover all mines
+//		MapLocation[] allNeutralMineLocs = rc.senseMineLocations(
+//				new MapLocation(mapWidth / 2, mapHeight / 2), 2000,
+//				Team.NEUTRAL);
+//
+//		for (int i = 0; i < allEncampmentLocs.length; i++) {
+//			encampmentMap[allEncampmentLocs[i].x][allEncampmentLocs[i].y] = 1;
+//		}
+//
+//		for (int i = 0; i < allNeutralMineLocs.length; i++) {
+//			mineMap[allNeutralMineLocs[i].x][allNeutralMineLocs[i].y] = 1;
+//		}
+//
+//		int startX = Math.min(myBaseLoc.x, enemyBaseLoc.x);
+//		int endX = Math.max(myBaseLoc.x, enemyBaseLoc.x);
+//		int startY = Math.min(myBaseLoc.y, enemyBaseLoc.y);
+//		int endY = Math.max(myBaseLoc.y, enemyBaseLoc.y);
+//
+//		for (int i = startX; i <= endX; i++) {
+//			for (int j = startY; j <= endY; j++) {
+//				numEncampmentsBetweenHQs += encampmentMap[i][j];
+//				numNeutralMinesBetweenHQs += mineMap[i][j];
+//			}
+//		}
+//
+//		System.out.println("num encampments between hqs: "
+//				+ numEncampmentsBetweenHQs);
+//		System.out.println("num neutral mines between hqs: "
+//				+ numNeutralMinesBetweenHQs);
 		
 		// start out building suppliers and generators in encampments far-ish
 		// from base
@@ -884,13 +886,14 @@ public class HQUnit extends BaseUnit {
 
 		// heuristics? build more artillery when there are less mines around
 		
-		if (mapHeight >= 65 && mapWidth >= 65) {
-			return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
-		}
-		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), 400).length<=20)) {
+		int areaBetweenBases = distBetweenBases;
+		int numMinesBetweenBases = rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), distBetweenBases/4).length;
+		System.out.println("distBetweenBasesSquared: " + distBetweenBases);
+		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && numMinesBetweenBases < .4*areaBetweenBases)) {
 			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
 		}
-		return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
+		
+		return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
 	}
 
 	// not used
