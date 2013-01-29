@@ -290,8 +290,17 @@ public class SoldierUnit extends BaseUnit {
 				}
 			}
 			break;
-		case CAPTURE_MOVE:
-			break;
+		case LAYING_MINES:
+			Direction randomDir=Direction.values()[(int) Math.round(Math.random()*8)%8];
+			if (rc.senseMine(curLoc) == null
+					&& (curLoc.x * 3 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
+				rc.layMine();
+			} else if (rc.senseMine(curLoc) == null
+					&& (curLoc.x + curLoc.y) % 2 == 1 && !rc.hasUpgrade(Upgrade.PICKAXE)){
+				rc.layMine();
+			} else {
+				rc.move(randomDir);
+			}
 		case DEFEND_POSITION:
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125,(mapWidth * .25)*(mapWidth*.25))),myTeam);
 			medbayLoc=targetLoc;

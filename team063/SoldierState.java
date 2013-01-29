@@ -7,7 +7,7 @@ public enum SoldierState {
 	ATTACK_MOVE, // smart formation movement, don't chase
 	PATROL, // moving between locations and fight
 	SCOUT, // moving to location and avoid enemies
-	CAPTURE_MOVE,
+	LAYING_MINES,
 	DEFEND_POSITION, // lay mines and attacking enemies who come
 	BATTLE, // formation and fight, no moving
 	CHASE_AND_DESTROY,
