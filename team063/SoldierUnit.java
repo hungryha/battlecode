@@ -293,7 +293,7 @@ public class SoldierUnit extends BaseUnit {
 		case CAPTURE_MOVE:
 			break;
 		case DEFEND_POSITION:
-			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,125,myTeam);
+			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125,(mapWidth * .25)*(mapWidth*.25))),myTeam);
 			medbayLoc=targetLoc;
 			for (int i = 0; i<friendlyEnc.length; i++){
 				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc[i])).type==RobotType.MEDBAY){
@@ -322,7 +322,7 @@ public class SoldierUnit extends BaseUnit {
 			 * on encampment: capture it else: if mine in the way: defuse it
 			 * else: go towards targetLoc
 			 */
-			MapLocation[] friendlyEnc2=rc.senseEncampmentSquares(targetLoc,125,myTeam);
+			MapLocation[] friendlyEnc2=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125, (mapWidth * .25)*(mapWidth*.25))),myTeam);
 			medbayLoc=targetLoc;
 			for (int i = 0; i<friendlyEnc2.length;i++){
 //				System.out.println(i);
@@ -420,25 +420,32 @@ public class SoldierUnit extends BaseUnit {
 	protected void defendPosition(MapLocation defendPoint, MapLocation medbayLoc)
 			throws GameActionException { // 50 - 800 bytecode
 		if (rc.isActive()) {
-
+			System.out.println(medbayLoc);
 			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, defendPoint, 64,
 			otherTeam);
 			if (nearbyEnemies.length >= 1) {
 				if (rc.senseNearbyGameObjects(Robot.class, 10, myTeam).length < 2) {
 					rc.setIndicatorString(0, "not enough nearby allies to fight!");
-					this.goToLocationBrute(defendPoint);
-				} else if (curLoc.distanceSquaredTo(defendPoint) <= (125)) {
-					if (rc.getEnergon()>=10){
+					this.goToLocationBrute(targetLoc);
+				} else if (curLoc.distanceSquaredTo(defendPoint) <= ((int) Math.min(125, (mapWidth * .25)*(mapWidth*.25)))) {
+					if (rc.senseNearbyGameObjects(Robot.class,targetLoc,5,otherTeam).length>=1){
+						this.goToLocationBrute(targetLoc);
+					} else if (medbayLoc.equals(targetLoc) && rc.getEnergon()<=10) {
+							MapLocation stepAwayLoc=curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies[0]).location));
+							rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
+							this.goToLocationBrute(stepAwayLoc);
+					} else if (rc.getEnergon()>=35){
 						rc.setIndicatorString(0, "attacking nearby enemy!");
-						this.goToLocationBrute(rc.senseRobotInfo(nearbyEnemies[0]).location);
-					} else if (rc.senseNearbyGameObjects(Robot.class, targetLoc, 5, otherTeam).length<1){
+						this.goToLocationCareful(rc.senseRobotInfo(nearbyEnemies[0]).location);
+					}/* else if (rc.getEnergon()<10){
 						MapLocation stepAwayLoc=curLoc.subtract(curLoc.directionTo(rc.senseRobotInfo(nearbyEnemies[0]).location));
 						rc.setIndicatorString(0,"I am weak! stepping back to: ("+stepAwayLoc.x+","+stepAwayLoc.y+")");
 						this.goToLocationBrute(stepAwayLoc);
-					} else if (rc.getEnergon()>=30 || medbayLoc.equals(targetLoc)) {
-						this.goToLocationBrute(targetLoc);
-					} else {
+					}*/ else if (!medbayLoc.equals(targetLoc)){
 						this.goToLocationCareful(medbayLoc);
+					} else {
+						rc.setIndicatorString(0, "attacking nearby enemy!");
+						this.goToLocationCareful(rc.senseRobotInfo(nearbyEnemies[0]).location);
 					}
 					
 				} else {
@@ -456,7 +463,7 @@ public class SoldierUnit extends BaseUnit {
 				} 
 				
 				else if (rc.senseMine(curLoc) == null
-						&& (curLoc.x * 2 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
+						&& (curLoc.x * 3 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
 					// standing on patterned empty sq
 					rc.setIndicatorString(0, "has pickaxe upgrade, laying mine");
 					rc.layMine();
@@ -467,16 +474,10 @@ public class SoldierUnit extends BaseUnit {
 					rc.layMine();
 //					rc.yield();
 				} 
-				else if (curLoc.distanceSquaredTo(defendPoint) <= 90 && rc.getEnergon()>=35) {
+				else if (curLoc.distanceSquaredTo(targetLoc) <= ((int) Math.min(125, (mapWidth * .25)*(mapWidth*.25))) && rc.getEnergon()>=35) {
 					// standing on own mine and within defense radius
-					if (rc.senseNearbyGameObjects(Robot.class, 25, myTeam).length >=4 ) {
 						rc.setIndicatorString(0, "moving towards enemy");
 						this.goToLocationCareful(enemyBaseLoc);
-					}
-					else {
-						rc.setIndicatorString(0, "within defense radius, but no allies, so laying mine");
-						rc.layMine();
-					}
 					
 //					rc.yield();
 				} else if (rc.getEnergon()>=35 || medbayLoc.equals(targetLoc)){
