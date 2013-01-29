@@ -167,14 +167,17 @@ public class HQUnit extends BaseUnit {
 
 		if (mapStrategy.equals(MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE)) {
 			long mem = rc.getTeamMemory()[NUKE_MEM_INDEX];
+			System.out.println("team memory: " + mem);
 			if (rc.getTeamMemory()[NUKE_MEM_INDEX] != 0) {
 				enemyPrevMatchNukeHalf = (int)mem;
 				if (enemyPrevMatchNukeHalf - 202 < DEFAULT_START_NUKE) {
+					System.out.println("setting startNukeRound to : " + (enemyPrevMatchNukeHalf - 213));
 					startNukeRound = enemyPrevMatchNukeHalf - 213;
 				}
 			}
 		}
 		
+		System.out.println("startNukeRound: " + startNukeRound);
 		System.out.println("zone 1 sorted encampments:");
 		for (int i = 0; i < zone1Locs.length; i++) {
 			System.out.println(zone1Locs[i]);
@@ -199,7 +202,7 @@ public class HQUnit extends BaseUnit {
 
 	@Override
 	public void run() throws GameActionException {
-		System.out.println("start nuke round: " + startNukeRound);
+//		System.out.println("start nuke round: " + startNukeRound);
 		switch(mapStrategy) {
 		case MAP_STRATEGY_NUKE_AND_PICKAXE:
 			// big map, nuke strategy
@@ -212,13 +215,14 @@ public class HQUnit extends BaseUnit {
 			// check enemy nuke progress
 			// set team memory of enemy half way mark
 			boolean nukeDetected = false;
-			if (Clock.getRoundNum() >= 200) {
-				if (rc.senseEnemyNukeHalfDone()) {
-					rc.setTeamMemory(NUKE_MEM_INDEX, Clock.getRoundNum());
+			if (Clock.getRoundNum() >= 202) {
+				if (rc.senseEnemyNukeHalfDone() && rc.checkResearchProgress(Upgrade.NUKE) <= 202) {
+					nukeDetected = true;
+
 					if (!teamMemSet) {
+						rc.setTeamMemory(NUKE_MEM_INDEX, Clock.getRoundNum());
 						teamMemSet = true;
 					}
-					
 					if (rc.isActive()) {
 						if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
 							rc.researchUpgrade(Upgrade.DEFUSION);
@@ -263,14 +267,13 @@ public class HQUnit extends BaseUnit {
 						}
 					}
 
-					nukeDetected = true;
 				}
 			}
 
 			if (!nukeDetected) {
 				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, myTeam);
 				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, otherTeam);
-			if ((friends.length > (4 + enemies.length + curZone1Counter) && !rc.hasUpgrade(Upgrade.PICKAXE))){
+			if (enemies.length < 1 && friends.length > 2 && !rc.hasUpgrade(Upgrade.PICKAXE)){
 				if (rc.isActive()) {
 					rc.researchUpgrade(Upgrade.PICKAXE);
 				}
