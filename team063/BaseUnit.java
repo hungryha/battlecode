@@ -93,10 +93,11 @@ public abstract class BaseUnit {
 				lookingAtCurrently = Direction.values()[(dir.ordinal() + d + 8) % 8];
 				if (rc.canMove(lookingAtCurrently)) {
 					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
-					if ((teamOfMine == null) || (teamOfMine == myTeam)) {
+					if (teamOfMine == null || teamOfMine.equals(myTeam)) {
 						rc.move(lookingAtCurrently);
 					}
 					else {
+						rc.setIndicatorString(1, "in goToLocationBrute: neutral or enemy mine detected, defusing");
 						rc.defuseMine(curLoc.add(lookingAtCurrently));
 					}
 					break;
