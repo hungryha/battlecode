@@ -141,7 +141,25 @@ public class SoldierUnit extends BaseUnit {
 			 * it should defuse mines if there are no enemies around
 			 */
 			
-			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
+			Robot[] tmp = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
+			int nearbyEnemiesLength = tmp.length;
+//			Robot[] nearbyEnemies = new Robot[Math.max(tmp.length - 1, 0)];
+//			int index = 0;
+//			for (index = 0; index < tmp.length; index++) {
+//				if (rc.senseRobotInfo(tmp[index]).location.equals(targetLoc)) {
+////					break;
+//				}
+//				else {
+////					nearbyEnemies[index] = tmp[index];
+//					nearbyEnemiesLength++;
+//				}
+//			}
+//			index++;
+//			for (; index < tmp.length; index++) {
+//				nearbyEnemies[index-1] = tmp[index];
+//			}
+
+//			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, 16, otherTeam);
 			Robot[] nearbyAllies = rc.senseNearbyGameObjects(Robot.class,25,myTeam);
 			Robot[] farAllies;
 			double lowHealth=200;
@@ -151,7 +169,7 @@ public class SoldierUnit extends BaseUnit {
 			if (this.distToEnemyBaseSquared<=800){
 				squadSize=4;
 			} else {
-				squadSize=6;
+				squadSize=5;
 			}
 			
 			if (mapHeight <=30 && mapWidth<=30){
@@ -167,10 +185,10 @@ public class SoldierUnit extends BaseUnit {
 				farMines= rc.senseNonAlliedMineLocations(curLoc, 14);
 			}
 			if (rc.isActive()) {
-				if (nearbyEnemies.length < 1 && farMines.length >0){
+				if (nearbyEnemiesLength < 1 && farMines.length >0){
 					rc.setIndicatorString(0,"defusing mine");
 					rc.defuseMine(farMines[0]);
-				} else if (nearbyAllies.length >= squadSize && nearbyEnemies.length <= 2){
+				} else if (nearbyAllies.length >= squadSize && nearbyEnemiesLength <= 2){
 					rc.setIndicatorString(0, "attacking!");
 					this.goToLocationBrute(targetLoc);
 //					this.goToLocationSmart(targetLoc);
@@ -184,7 +202,7 @@ public class SoldierUnit extends BaseUnit {
 						int[] dirOffsets={0, 1, -1, 2, -2, 3, -3, 4};
 						int minEnemies=10;
 						MapLocation lookingAtCurrently=curLoc;
-						MapLocation curTarget;
+						MapLocation curTarget = curLoc;
 						int adjacentEnemies;
 						Direction lookingDir;
 						for (int offset:dirOffsets){
@@ -200,7 +218,8 @@ public class SoldierUnit extends BaseUnit {
 								}
 							}
 						}
-						Direction moveDir = curLoc.directionTo(lookingAtCurrently);
+//						Direction moveDir = curLoc.directionTo(lookingAtCurrently);
+						Direction moveDir = curLoc.directionTo(curTarget);
 						if (!moveDir.equals(Direction.OMNI) && !moveDir.equals(Direction.NONE)) {
 							rc.move(moveDir);
 						}
@@ -231,7 +250,7 @@ public class SoldierUnit extends BaseUnit {
 //					this.goToLocationSmart(rc.senseRobotInfo(farAllies[0]).location);
 
 				} else {
-					rc.setIndicatorString(0,"no one nearby! retreating home!");
+					rc.setIndicatorString(0,"no one nearby! retreating home! nearby allies: " + nearbyAllies.length + " nearby enemies: " + nearbyEnemiesLength);
 					this.goToLocationBrute(myBaseLoc);
 //					this.goToLocationSmart(myBaseLoc);
 				}

@@ -199,7 +199,7 @@ public class HQUnit extends BaseUnit {
 
 	@Override
 	public void run() throws GameActionException {
-//		System.out.println("start nuke round: " + startNukeRound);
+		System.out.println("start nuke round: " + startNukeRound);
 		switch(mapStrategy) {
 		case MAP_STRATEGY_NUKE_AND_PICKAXE:
 			// big map, nuke strategy
@@ -215,6 +215,10 @@ public class HQUnit extends BaseUnit {
 			if (Clock.getRoundNum() >= 200) {
 				if (rc.senseEnemyNukeHalfDone()) {
 					rc.setTeamMemory(NUKE_MEM_INDEX, Clock.getRoundNum());
+					if (!teamMemSet) {
+						teamMemSet = true;
+					}
+					
 					if (rc.isActive()) {
 						if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
 							rc.researchUpgrade(Upgrade.DEFUSION);
@@ -258,16 +262,15 @@ public class HQUnit extends BaseUnit {
 									RobotType.HQ, 0));
 						}
 					}
-					if (!teamMemSet) {
-						teamMemSet = true;
-					}
+
 					nukeDetected = true;
 				}
 			}
 
 			if (!nukeDetected) {
-			if (unitsCount >= 2 && !rc.hasUpgrade(Upgrade.PICKAXE) && !(rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 16,
-					otherTeam).length > 0)){
+				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, myTeam);
+				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, otherTeam);
+			if ((friends.length > (4 + enemies.length + curZone1Counter) && !rc.hasUpgrade(Upgrade.PICKAXE))){
 				if (rc.isActive()) {
 					rc.researchUpgrade(Upgrade.PICKAXE);
 				}
@@ -288,8 +291,7 @@ public class HQUnit extends BaseUnit {
 							curZone1Counter++;
 						}
 					} 
-					else if (rc.senseNearbyGameObjects(Robot.class, 125,
-							myTeam).length <= 4) {
+					else if (friends.length > (4 + enemies.length + curZone1Counter)) {
 						rc.broadcast(
 								Util.getUnitChannelNum(unitsCount),
 								Util.encodeMsg(
