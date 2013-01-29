@@ -420,7 +420,7 @@ public class SoldierUnit extends BaseUnit {
 	protected void defendPosition(MapLocation defendPoint, MapLocation medbayLoc)
 			throws GameActionException { // 50 - 800 bytecode
 		if (rc.isActive()) {
-			System.out.println(medbayLoc);
+//			System.out.println(medbayLoc);
 			Robot[] nearbyEnemies = rc.senseNearbyGameObjects(Robot.class, defendPoint, 64,
 			otherTeam);
 			if (nearbyEnemies.length >= 1) {
