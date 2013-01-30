@@ -251,7 +251,7 @@ public class SoldierUnit extends BaseUnit {
 //					this.goToLocationSmart(rc.senseRobotInfo(farAllies[0]).location);
 
 				} else if (curLoc.distanceSquaredTo(targetLoc)<=5){
-					rc.setIndicatorString(0,"attacking!");
+					rc.setIndicatorString(0,"next to enemy, attacking!");
 					this.goToLocationBrute(targetLoc);
 				} else {
 					rc.setIndicatorString(0,"no one nearby! retreating home! nearby allies: " + nearbyAllies.length + " nearby enemies: " + nearbyEnemiesLength);

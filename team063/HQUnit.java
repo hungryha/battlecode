@@ -3,6 +3,7 @@ package team063;
 import java.util.Arrays;
 import java.util.Comparator;
 
+
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -98,8 +99,8 @@ public class HQUnit extends BaseUnit {
 			RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR,
 			RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR};
 	
-	protected RobotType[] encampSelection = { RobotType.SHIELDS,
-			RobotType.SHIELDS, RobotType.SHIELDS, RobotType.ARTILLERY,
+	protected RobotType[] encampSelection = { RobotType.ARTILLERY,
+			RobotType.ARTILLERY, RobotType.SHIELDS, RobotType.ARTILLERY,
 			RobotType.ARTILLERY, RobotType.MEDBAY, RobotType.ARTILLERY,
 			RobotType.SHIELDS, RobotType.ARTILLERY, RobotType.MEDBAY,
 			RobotType.ARTILLERY, RobotType.SHIELDS };
@@ -393,51 +394,90 @@ public class HQUnit extends BaseUnit {
 			// small map, rush strategy
 			this.initialRoundActions(mapStrategy);
 
-			if (Clock.getRoundNum() <= 150) {
-
-				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, myTeam);
-				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, otherTeam);
-				if (curZone1Counter < 2 && curZone1Counter <= endZone1Index && zone1Locs[0] != null) {
-					if (friends.length > (2+enemies.length + curZone1Counter)) {
-						rc.broadcast(
-								Util.getUnitChannelNum(unitsCount),
-								Util.encodeMsg(
-										zone1Locs[curZone1Counter],
-										SoldierState.SECURE_ENCAMPMENT,
-										supGenSelection[curZone1Counter],
-										0));
-						if (prevprevUnitsCount != unitsCount) {
-							curZone1Counter++;
-						}
-					} else {
-						rc.broadcast(
-								Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
-								Util.encodeMsg(zone1Locs[0],
-										SoldierState.DEFEND_POSITION,
-										RobotType.HQ, 0));
-					}
-					
-				}
-				else {
-					rc.broadcast(
-							Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
-							Util.encodeMsg(myBaseLoc,
-									SoldierState.DEFEND_POSITION,
-									RobotType.HQ, 0));
-				}
-
-			} else {
-				rc.broadcast(Util.getAllUnitChannelNum(), Util
-						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
-								RobotType.HQ, 0));
-			}
-			
-			
 			if (rc.isActive()) {
 				this.spawnInAvailable();
 			}
-			prevprevUnitsCount = prevUnitsCount;
-			prevUnitsCount = unitsCount;
+			if (Clock.getRoundNum() <= 100){
+				
+				for (int i = 0; i<=3;i++){
+					if (zone1Locs[i]!=null){
+						if (myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc)) || 
+									myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateLeft()) || 
+									myBaseLoc.directionTo(zone1Locs[i]).equals(myBaseLoc.directionTo(enemyBaseLoc).rotateRight())) {
+									
+							rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+									zone1Locs[i],
+									SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+							if (chosenEncampment==null){
+								chosenEncampment=zone1Locs[i];
+							}
+						}
+					}
+				}
+					
+
+			} else if (Clock.getRoundNum() <= 150 && Clock.getRoundNum()>100) {
+				System.out.println(chosenEncampment);
+				if (chosenEncampment!=null){
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+						chosenEncampment.add(chosenEncampment.directionTo(enemyBaseLoc)), SoldierState.DEFEND_POSITION, RobotType.HQ,0));
+				} else {
+					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
+							myBaseLoc, SoldierState.DEFEND_POSITION, RobotType.HQ,0));
+				}
+
+			} /*else if (zone3Locs[0]!=null){
+				rc.broadcast(Util.getAllUnitChannelNum(),Util.encodeMsg(zone3Locs[0], SoldierState.SECURE_ENCAMPMENT, RobotType.ARTILLERY, 0));
+			
+			}*/ else {
+				rc.broadcast(Util.getAllUnitChannelNum(), Util
+						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE, RobotType.HQ, 0));
+			}
+//			if (Clock.getRoundNum() <= 150) {
+//
+//				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, myTeam);
+//				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, otherTeam);
+//				if (curZone1Counter < 2 && curZone1Counter <= endZone1Index && zone1Locs[0] != null) {
+//					if (friends.length > (2+enemies.length + curZone1Counter)) {
+//						rc.broadcast(
+//								Util.getUnitChannelNum(unitsCount),
+//								Util.encodeMsg(
+//										zone1Locs[curZone1Counter],
+//										SoldierState.SECURE_ENCAMPMENT,
+//										supGenSelection[curZone1Counter],
+//										0));
+//						if (prevprevUnitsCount != unitsCount) {
+//							curZone1Counter++;
+//						}
+//					} else {
+//						rc.broadcast(
+//								Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
+//								Util.encodeMsg(zone1Locs[0],
+//										SoldierState.DEFEND_POSITION,
+//										RobotType.HQ, 0));
+//					}
+//					
+//				}
+//				else {
+//					rc.broadcast(
+//							Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
+//							Util.encodeMsg(myBaseLoc,
+//									SoldierState.DEFEND_POSITION,
+//									RobotType.HQ, 0));
+//				}
+//
+//			} else {
+//				rc.broadcast(Util.getAllUnitChannelNum(), Util
+//						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
+//								RobotType.HQ, 0));
+//			}
+//			
+//			
+//			if (rc.isActive()) {
+//				this.spawnInAvailable();
+//			}
+//			prevprevUnitsCount = prevUnitsCount;
+//			prevUnitsCount = unitsCount;
 			break;
 		case MAP_STRATEGY_NORMAL_MACRO:
 			// check enemy nuke progress
@@ -496,7 +536,7 @@ public class HQUnit extends BaseUnit {
 				}
 				// START OF ROUND STRATEGY ANALYSIS
 				Robot[] enemiesByBase = rc.senseNearbyGameObjects(
-						Robot.class, distBetweenBases / 9, otherTeam);
+						Robot.class, distBetweenBases / 4, otherTeam);
 				if (normalNukeDetected) {
 					roundStrategy = RoundStrategy.PUSH;
 					if (rc.isActive()) {
@@ -510,14 +550,14 @@ public class HQUnit extends BaseUnit {
 				else if (enemiesByBase.length > 0) {
 					roundStrategy = RoundStrategy.DEFEND_BASE;
 				}
-				else if (Clock.getRoundNum() < 300) {
+				else if (Clock.getRoundNum() < 200) {
 					roundStrategy = RoundStrategy.BUILD_MACRO;
 				}
-				else if (Clock.getRoundNum() >= 300 && Clock.getRoundNum() < 425) {
+				else if (Clock.getRoundNum() >= 200 && Clock.getRoundNum() < 325) {
 					roundStrategy = RoundStrategy.RALLY;
 				}
 				
-				else if (Clock.getRoundNum() >= 425 && Clock.getRoundNum() < 1200) {
+				else if (Clock.getRoundNum() >= 325 && Clock.getRoundNum() < 1200) {
 					roundStrategy = RoundStrategy.PUSH;
 				}
 				
@@ -536,28 +576,29 @@ public class HQUnit extends BaseUnit {
 				case BUILD_MACRO:
 					if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_SEND_COST) {
 						
-						if (unitsCount >= 6 && unitsCount < 11) {
-							int zone1Index = unitsCount - 6;
-							if (zone1Index <= endZone1Index && zone1Locs[zone1Index] != null) {
-								rc.broadcast(
-										Util.getUnitChannelNum(unitsCount),
-										Util.encodeMsg(zone1Locs[zone1Index],
-												SoldierState.SECURE_ENCAMPMENT,
-												supGenSelection[zone1Index], 0));
-							}
-						}
+//						if (unitsCount >= 6 && unitsCount < 11) {
+//							int zone1Index = unitsCount - 6;
+//							if (zone1Index <= endZone1Index && zone1Locs[zone1Index] != null) {
+//								rc.broadcast(
+//										Util.getUnitChannelNum(unitsCount),
+//										Util.encodeMsg(zone1Locs[zone1Index],
+//												SoldierState.SECURE_ENCAMPMENT,
+//												supGenSelection[zone1Index], 0));
+//							}
+//						}
+//
+//						if (unitsCount >= 16 && unitsCount < 21) {
+//							int index = unitsCount - 11;
+//							if (index <= endZone1Index && zone1Locs[index] != null) {
+//								rc.broadcast(
+//										Util.getUnitChannelNum(unitsCount),
+//										Util.encodeMsg(zone1Locs[index],
+//												SoldierState.SECURE_ENCAMPMENT,
+//												supGenSelection[index], 0));
+//							}
+//						}
 
-						if (unitsCount >= 16 && unitsCount < 21) {
-							int index = unitsCount - 11;
-							if (index <= endZone1Index && zone1Locs[index] != null) {
-								rc.broadcast(
-										Util.getUnitChannelNum(unitsCount),
-										Util.encodeMsg(zone1Locs[index],
-												SoldierState.SECURE_ENCAMPMENT,
-												supGenSelection[index], 0));
-							}
-						}
-
+						if (zone2Locs[0] != null) {
 						// if encampment captured, capture the next one
 						if (rc.canSenseSquare(zone2Locs[curZone2Counter])) {
 							GameObject obj = rc
@@ -575,30 +616,37 @@ public class HQUnit extends BaseUnit {
 										endZone2Index);
 							}
 						}
-					rc.broadcast(
-							Util.getSquadChannelNum(ENCAMPMENT_SQUAD_1),
-							Util.encodeMsg(zone2Locs[curZone2Counter],
-									SoldierState.SECURE_ENCAMPMENT,
-									encampSelection[curZone2Counter], 0));
-					rc.broadcast(Util
-							.getSquadChannelNum(ENCAMPMENT_SQUAD_2),
-							Util.encodeMsg(zone2Locs[Math.max(0,
-									curZone2Counter - 1)],
-									SoldierState.SECURE_ENCAMPMENT,
-									encampSelection[Math.max(0,
-											curZone2Counter - 1)], 0));
-					rc.broadcast(Util
-							.getSquadChannelNum(ENCAMPMENT_SQUAD_3),
-							Util.encodeMsg(zone2Locs[Math.max(0,
-									curZone2Counter - 2)],
-									SoldierState.SECURE_ENCAMPMENT,
-									encampSelection[Math.max(0,
-											curZone2Counter - 2)], 0));
-					rc.broadcast(Util
-							.getSquadChannelNum(DEFEND_BASE_SQUAD),
-							Util.encodeMsg(myBaseLoc,
-									SoldierState.DEFEND_POSITION,
+						rc.broadcast(Util
+								.getSquadChannelNum(ENCAMPMENT_SQUAD_1), Util
+								.encodeMsg(zone2Locs[curZone2Counter],
+										SoldierState.SECURE_ENCAMPMENT,
+										encampSelection[curZone2Counter], 0));
+						rc.broadcast(Util
+								.getSquadChannelNum(ENCAMPMENT_SQUAD_2), Util
+								.encodeMsg(zone2Locs[Math.max(0,
+										curZone2Counter - 1)],
+										SoldierState.SECURE_ENCAMPMENT,
+										encampSelection[Math.max(0,
+												curZone2Counter - 1)], 0));
+						rc.broadcast(Util
+								.getSquadChannelNum(ENCAMPMENT_SQUAD_3), Util
+								.encodeMsg(zone2Locs[Math.max(0,
+										curZone2Counter - 2)],
+										SoldierState.SECURE_ENCAMPMENT,
+										encampSelection[Math.max(0,
+												curZone2Counter - 2)], 0));
+						rc.broadcast(
+								Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
+								Util.encodeMsg(myBaseLoc,
+										SoldierState.DEFEND_POSITION,
+										RobotType.HQ, 0));
+						}
+						else {
+							// zone 2 is null
+							rc.broadcast(Util.getAllUnitExceptScoutChannelNum(), Util.encodeMsg(enemyBaseLoc,
+									SoldierState.ATTACK_MOVE,
 									RobotType.HQ, 0));
+						}
 					}
 					if (rc.isActive()) {
 						this.spawnInAvailable();
@@ -608,7 +656,7 @@ public class HQUnit extends BaseUnit {
 //					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 //							enemyBaseLoc, SoldierState.ATTACK_MOVE,
 //							RobotType.HQ, 0));
-					if (zone3Locs[0] == null) {
+					if (zone3Locs[0] == null || distBetweenBases < 500) {
 						rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
 								enemyBaseLoc, SoldierState.ATTACK_MOVE,
 								RobotType.HQ, 0));
@@ -861,8 +909,8 @@ public class HQUnit extends BaseUnit {
 		int numMinesBetweenBases = rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), distBetweenBases/4).length;
 		System.out.println("distBetweenBasesSquared: " + distBetweenBases);
 		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && numMinesBetweenBases < .3*areaBetweenBases)) {
-//			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
-			return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
+			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
+//			return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
 		}
 		
 		return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;

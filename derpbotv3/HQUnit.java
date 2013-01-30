@@ -418,36 +418,7 @@ public class HQUnit extends BaseUnit {
 					rc.broadcast(Util.getAllUnitChannelNum(), Util
 					.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
 							RobotType.HQ, 0));
-////					if (rc.senseCaptureCost() > rc.getTeamPower()) {
-////						rc.broadcast(Util.getAllUnitChannelNum(), Util
-////						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
-////								RobotType.HQ, 0));
-////					}
-////					else {
-////						// if encampment captured, capture the next one
-////						if (rc.canSenseSquare(zone3Locs[curZone3Counter])) {
-////							GameObject obj = rc
-////									.senseObjectAtLocation(zone3Locs[curZone3Counter]);
-////							// should use broadcast, oh well
-////							Robot[] objs = rc.senseNearbyGameObjects(
-////									Robot.class, zone3Locs[curZone3Counter], 1,
-////									myTeam);
-////
-////							if (obj != null
-////									&& obj.getTeam().equals(myTeam)
-////									&& rc.senseRobotInfo(objs[0]).type.isEncampment) {
-////								// prev encampment captured
-////								System.out.println("prev encampment captured: " + curZone3Counter);
-////								curZone3Counter = Math.min(curZone3Counter + 1,
-////										endZone3Index);
-////							}
-////						}
-////
-////						rc.broadcast(Util.getAllUnitChannelNum(), Util
-////								.encodeMsg(zone3Locs[curZone3Counter],
-////										SoldierState.SECURE_ENCAMPMENT,
-////										RobotType.ARTILLERY, 0));
-////					}
+
 					if (rc.isActive()) {
 						this.spawnInAvailable();
 					}

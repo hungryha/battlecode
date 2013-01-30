@@ -94,6 +94,7 @@ public abstract class BaseUnit {
 				if (rc.canMove(lookingAtCurrently)) {
 					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
 					if (teamOfMine == null || teamOfMine.equals(myTeam)) {
+						rc.setIndicatorString(1, "in goToLocationBrute: moving to " + lookingAtCurrently);
 						rc.move(lookingAtCurrently);
 					}
 					else {
