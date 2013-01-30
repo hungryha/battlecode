@@ -298,20 +298,24 @@ public class SoldierUnit extends BaseUnit {
 			Direction randomDir=Direction.values()[(int) Math.round(Math.random()*8)%8];
 			MapLocation[] currentMineLocs= rc.senseMineLocations(curLoc,2,myTeam);
 			MapLocation lookingAtCurrently= curLoc.add(randomDir);
-			if (rc.senseMine(curLoc) == null
-					&& (curLoc.x * 3 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
-				rc.layMine();
-			} else if (rc.senseMine(curLoc) == null
-					&& (curLoc.x + curLoc.y) % 2 == 1 && !rc.hasUpgrade(Upgrade.PICKAXE)){
-				rc.layMine();
-			} else {
-				for (MapLocation mineLoc:currentMineLocs){
-					if (mineLoc==null){
-						lookingAtCurrently=mineLoc;
-						break;
+			if (rc.isActive()) {
+				if (rc.senseMine(curLoc) == null
+						&& (curLoc.x * 3 + curLoc.y) % 5 == 1
+						&& rc.hasUpgrade(Upgrade.PICKAXE)) {
+					rc.layMine();
+				} else if (rc.senseMine(curLoc) == null
+						&& (curLoc.x + curLoc.y) % 2 == 1
+						&& !rc.hasUpgrade(Upgrade.PICKAXE)) {
+					rc.layMine();
+				} else {
+					for (MapLocation mineLoc : currentMineLocs) {
+						if (mineLoc == null) {
+							lookingAtCurrently = mineLoc;
+							break;
+						}
 					}
+					this.goToLocationBrute(lookingAtCurrently);
 				}
-				this.goToLocationBrute(lookingAtCurrently);
 			}
 		case DEFEND_POSITION:
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125,(mapWidth * .25)*(mapWidth*.25))),myTeam);

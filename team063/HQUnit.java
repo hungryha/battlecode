@@ -860,8 +860,9 @@ public class HQUnit extends BaseUnit {
 		int areaBetweenBases = distBetweenBases;
 		int numMinesBetweenBases = rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), distBetweenBases/4).length;
 		System.out.println("distBetweenBasesSquared: " + distBetweenBases);
-		if (distBetweenBases <= 600 || (distBetweenBases<=1000 && numMinesBetweenBases < .3*areaBetweenBases)) {
-			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
+		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && numMinesBetweenBases < .3*areaBetweenBases)) {
+//			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
+			return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
 		}
 		
 		return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
