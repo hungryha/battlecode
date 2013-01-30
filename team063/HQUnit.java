@@ -91,12 +91,13 @@ public class HQUnit extends BaseUnit {
 	protected int[] squads;
 	private int encampCounter;
 
-	protected RobotType[] supGenSelection = { RobotType.SUPPLIER,
-			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,
-			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,
-			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,
-			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,
-			RobotType.SUPPLIER, RobotType.GENERATOR, RobotType.SUPPLIER,};
+	protected RobotType[] supGenSelection = { 
+			RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR,
+			RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR,
+			RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR,
+			RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR,
+			RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR};
+	
 	protected RobotType[] encampSelection = { RobotType.SHIELDS,
 			RobotType.SHIELDS, RobotType.SHIELDS, RobotType.ARTILLERY,
 			RobotType.ARTILLERY, RobotType.MEDBAY, RobotType.ARTILLERY,
@@ -108,6 +109,13 @@ public class HQUnit extends BaseUnit {
 		RobotType.GENERATOR, RobotType.SUPPLIER, RobotType.SUPPLIER,
 		RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR,
 		RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.GENERATOR,
+	};
+	protected RobotType[] rushStratEncampments = {
+		RobotType.SHIELDS, RobotType.SUPPLIER, RobotType.SUPPLIER,
+		RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER,
+		RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER,
+		RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER,
+		RobotType.SUPPLIER, RobotType.SUPPLIER, RobotType.SUPPLIER,
 	};
 	private enum MapStrategy {
 		MAP_STRATEGY_NUKE_AND_PICKAXE, // build suppliers, generators, artillery, and medbays around you, upgrade pickaxe and nuke obv
@@ -298,7 +306,6 @@ public class HQUnit extends BaseUnit {
 										nukeStratZone1Encampents[curZone1Counter],
 										0));
 						if (prevprevUnitsCount != unitsCount) {
-//							System.out.println("prevUnitsCout: " + prevUnitsCount + " unitsCount: " + unitsCount);
 							curZone1Counter++;
 						}
 					} 
@@ -385,59 +392,53 @@ public class HQUnit extends BaseUnit {
 		case MAP_STRATEGY_STRAIGHT_RUSH:
 			// System.out.println("small map: rush strategy");
 			// small map, rush strategy
-			if (rc.isActive()) {
-				this.spawnInAvailable();
-			}
-			if (Clock.getRoundNum() <= 100) {
+			this.initialRoundActions(mapStrategy);
 
-				for (int i = 0; i <= 3; i++) {
-					if (zone1Locs[i] != null) {
-						if (myBaseLoc.directionTo(zone1Locs[i]).equals(
-								myBaseLoc.directionTo(enemyBaseLoc))
-								|| myBaseLoc.directionTo(zone1Locs[i]).equals(
-										myBaseLoc.directionTo(enemyBaseLoc)
-												.rotateLeft())
-								|| myBaseLoc.directionTo(zone1Locs[i]).equals(
-										myBaseLoc.directionTo(enemyBaseLoc)
-												.rotateRight())) {
+			if (Clock.getRoundNum() <= 150) {
 
-							rc.broadcast(Util.getAllUnitChannelNum(), Util
-									.encodeMsg(zone1Locs[i],
-											SoldierState.SECURE_ENCAMPMENT,
-											RobotType.ARTILLERY, 0));
-							if (chosenEncampment == null) {
-								chosenEncampment = zone1Locs[i];
-							}
+				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, myTeam);
+				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, otherTeam);
+				if (curZone1Counter < 2 && curZone1Counter <= endZone1Index && zone1Locs[0] != null) {
+					if (friends.length > (2+enemies.length + curZone1Counter)) {
+						rc.broadcast(
+								Util.getUnitChannelNum(unitsCount),
+								Util.encodeMsg(
+										zone1Locs[curZone1Counter],
+										SoldierState.SECURE_ENCAMPMENT,
+										supGenSelection[curZone1Counter],
+										0));
+						if (prevprevUnitsCount != unitsCount) {
+							curZone1Counter++;
 						}
+					} else {
+						rc.broadcast(
+								Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
+								Util.encodeMsg(zone1Locs[0],
+										SoldierState.DEFEND_POSITION,
+										RobotType.HQ, 0));
 					}
+					
+				}
+				else {
+					rc.broadcast(
+							Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
+							Util.encodeMsg(myBaseLoc,
+									SoldierState.DEFEND_POSITION,
+									RobotType.HQ, 0));
 				}
 
-			} else if (Clock.getRoundNum() <= 150 && Clock.getRoundNum() > 100) {
-				System.out.println(chosenEncampment);
-				if (chosenEncampment != null) {
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-							chosenEncampment.add(chosenEncampment
-									.directionTo(enemyBaseLoc)),
-							SoldierState.DEFEND_POSITION, RobotType.HQ, 0));
-				} else {
-					rc.broadcast(Util.getAllUnitChannelNum(), Util.encodeMsg(
-							myBaseLoc, SoldierState.DEFEND_POSITION,
-							RobotType.HQ, 0));
-				}
-
-			} /*
-			 * else if (zone3Locs[0]!=null){
-			 * rc.broadcast(Util.getAllUnitChannelNum
-			 * (),Util.encodeMsg(zone3Locs[0], SoldierState.SECURE_ENCAMPMENT,
-			 * RobotType.ARTILLERY, 0));
-			 * 
-			 * }
-			 */else {
+			} else {
 				rc.broadcast(Util.getAllUnitChannelNum(), Util
 						.encodeMsg(enemyBaseLoc, SoldierState.ATTACK_MOVE,
 								RobotType.HQ, 0));
 			}
-
+			
+			
+			if (rc.isActive()) {
+				this.spawnInAvailable();
+			}
+			prevprevUnitsCount = prevUnitsCount;
+			prevUnitsCount = unitsCount;
 			break;
 		case MAP_STRATEGY_NORMAL_MACRO:
 			// check enemy nuke progress
@@ -776,6 +777,13 @@ public class HQUnit extends BaseUnit {
 			}
 			break;
 		case MAP_STRATEGY_STRAIGHT_RUSH:
+			if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST) {
+				if (unitsCount >= 1) {
+					rc.broadcast(
+						Util.getUnitChannelNum(unitsCount),
+						Util.encodeUnitSquadAssignmentChangeMsg(DEFEND_BASE_SQUAD));
+				}
+			}
 			break;
 		case MAP_STRATEGY_NORMAL_MACRO:
 			if (rc.getTeamPower() >= GameConstants.BROADCAST_SEND_COST) {
@@ -903,39 +911,11 @@ public class HQUnit extends BaseUnit {
 		int areaBetweenBases = distBetweenBases;
 		int numMinesBetweenBases = rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), distBetweenBases/4).length;
 		System.out.println("distBetweenBasesSquared: " + distBetweenBases);
-		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && numMinesBetweenBases < .4*areaBetweenBases)) {
+		if (distBetweenBases <= 600 || (distBetweenBases<=1000 && numMinesBetweenBases < .3*areaBetweenBases)) {
 			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
 		}
 		
 		return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
-	}
-
-	// not used
-	public void findPath(MapLocation start, MapLocation goal) {
-		MapLocation[] path = new MapLocation[200];
-		int[][] costs = new int[mapHeight][mapWidth];
-		MapLocation[] mines = rc.senseNonAlliedMineLocations(new MapLocation(
-				mapHeight / 2, mapWidth / 2), 2500);
-		int total = mapHeight * mapWidth;
-		int[] mineMap = new int[total];
-		for (int i = 0; i < mines.length; i++) {
-			int index = mines[i].x + mines[i].y * mapWidth;
-			mineMap[index] = 1;
-		}
-
-		for (int i = 0; i < mapHeight; i++) {
-			for (int j = 0; j < mapWidth; j++) {
-				int index = i + j * mapWidth;
-				if (mineMap[index] == 0) {
-					costs[i][j] = 1;
-				} else {
-					costs[i][j] = 12;
-				}
-			}
-		}
-
-		int[] alreadyEvaluated = new int[total];
-
 	}
 
 	public void zoneEncampments(MapLocation[] encampmentLocs) {
