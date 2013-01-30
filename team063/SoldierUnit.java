@@ -306,7 +306,7 @@ public class SoldierUnit extends BaseUnit {
 		case DEFEND_POSITION:
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125,(mapWidth * .25)*(mapWidth*.25))),myTeam);
 			medbayLoc=targetLoc;
-			if (!wearingHat && Clock.getBytecodesLeft()>6500){
+			if (!wearingHat && Clock.getBytecodesLeft()>6500 && rc.getTeamPower()>GameConstants.HAT_POWER_COST+40){
 				rc.wearHat();
 				wearingHat=true;
 			}
