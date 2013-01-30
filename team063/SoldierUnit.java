@@ -44,6 +44,7 @@ public class SoldierUnit extends BaseUnit {
 		 * 1. read broadcasts 2. switch state or squad if necessary 3. act upon
 		 * state
 		 */
+		
 		if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_READ_COST) {
 			
 			if (unitId == HQUnit.NO_UNIT_ID) {
@@ -219,11 +220,12 @@ public class SoldierUnit extends BaseUnit {
 								}
 							}
 						}
+						this.goToLocationCareful(curTarget);
 //						Direction moveDir = curLoc.directionTo(lookingAtCurrently);
-						Direction moveDir = curLoc.directionTo(curTarget);
-						if (!moveDir.equals(Direction.OMNI) && !moveDir.equals(Direction.NONE)) {
-							rc.move(moveDir);
-						}
+//						Direction moveDir = curLoc.directionTo(curTarget);
+//						if (!moveDir.equals(Direction.OMNI) && !moveDir.equals(Direction.NONE)) {
+//							rc.move(moveDir);
+//						}
 						
 //						for (int index = 0; index < nearbyEnemies.length - 3; index += 3) {
 //							if (rc.senseRobotInfo(nearbyEnemies[index]).energon < lowHealth) {
