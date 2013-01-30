@@ -1,17 +1,10 @@
 package team063;
 
-
-import java.util.Arrays;
-import java.util.Comparator;
-
-import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
-import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
-import battlecode.common.RobotType;
 import battlecode.common.Team;
 
 public abstract class BaseUnit {	
@@ -94,11 +87,11 @@ public abstract class BaseUnit {
 				if (rc.canMove(lookingAtCurrently)) {
 					Team teamOfMine = rc.senseMine(curLoc.add(lookingAtCurrently));
 					if (teamOfMine == null || teamOfMine.equals(myTeam)) {
-						rc.setIndicatorString(1, "in goToLocationBrute: moving to " + lookingAtCurrently);
+//						rc.setIndicatorString(1, "in goToLocationBrute: moving to " + lookingAtCurrently);
 						rc.move(lookingAtCurrently);
 					}
 					else {
-						rc.setIndicatorString(1, "in goToLocationBrute: neutral or enemy mine detected, defusing");
+//						rc.setIndicatorString(1, "in goToLocationBrute: neutral or enemy mine detected, defusing");
 						rc.defuseMine(curLoc.add(lookingAtCurrently));
 					}
 					break;

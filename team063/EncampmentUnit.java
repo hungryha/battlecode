@@ -1,11 +1,9 @@
 package team063;
 
-import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.Robot;
-import battlecode.common.GameConstants;
 
 public class EncampmentUnit extends BaseUnit {
 	public EncampmentUnit(RobotController rc) {

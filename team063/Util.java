@@ -2,7 +2,6 @@ package team063;
 
 import battlecode.common.Clock;
 import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
 public class Util {

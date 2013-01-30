@@ -14,7 +14,6 @@ import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
-import battlecode.common.Team;
 import battlecode.common.Upgrade;
 
 //singleton
@@ -550,18 +549,18 @@ public class HQUnit extends BaseUnit {
 				else if (enemiesByBase.length > 0) {
 					roundStrategy = RoundStrategy.DEFEND_BASE;
 				}
-				else if (Clock.getRoundNum() < 200) {
+				else if (Clock.getRoundNum() < 150) {
 					roundStrategy = RoundStrategy.BUILD_MACRO;
 				}
-				else if (Clock.getRoundNum() >= 200 && Clock.getRoundNum() < 325) {
+				else if (Clock.getRoundNum() >= 150 && Clock.getRoundNum() < 275) {
 					roundStrategy = RoundStrategy.RALLY;
 				}
 				
-				else if (Clock.getRoundNum() >= 325 && Clock.getRoundNum() < 1200) {
+				else if (Clock.getRoundNum() >= 275 && Clock.getRoundNum() < 800) {
 					roundStrategy = RoundStrategy.PUSH;
 				}
 				
-				else if (Clock.getRoundNum() >= 1200) {
+				else if (Clock.getRoundNum() >= 800) {
 					roundStrategy = RoundStrategy.RESEARCH_NUKE;
 				}
 				else {
@@ -576,27 +575,27 @@ public class HQUnit extends BaseUnit {
 				case BUILD_MACRO:
 					if (rc.getTeamPower() >= 5 * GameConstants.BROADCAST_SEND_COST) {
 						
-//						if (unitsCount >= 6 && unitsCount < 11) {
-//							int zone1Index = unitsCount - 6;
-//							if (zone1Index <= endZone1Index && zone1Locs[zone1Index] != null) {
-//								rc.broadcast(
-//										Util.getUnitChannelNum(unitsCount),
-//										Util.encodeMsg(zone1Locs[zone1Index],
-//												SoldierState.SECURE_ENCAMPMENT,
-//												supGenSelection[zone1Index], 0));
-//							}
-//						}
-//
-//						if (unitsCount >= 16 && unitsCount < 21) {
-//							int index = unitsCount - 11;
-//							if (index <= endZone1Index && zone1Locs[index] != null) {
-//								rc.broadcast(
-//										Util.getUnitChannelNum(unitsCount),
-//										Util.encodeMsg(zone1Locs[index],
-//												SoldierState.SECURE_ENCAMPMENT,
-//												supGenSelection[index], 0));
-//							}
-//						}
+						if (unitsCount >= 6 && unitsCount < 11) {
+							int zone1Index = unitsCount - 6;
+							if (zone1Index <= endZone1Index && zone1Locs[zone1Index] != null) {
+								rc.broadcast(
+										Util.getUnitChannelNum(unitsCount),
+										Util.encodeMsg(zone1Locs[zone1Index],
+												SoldierState.SECURE_ENCAMPMENT,
+												supGenSelection[zone1Index], 0));
+							}
+						}
+
+						if (unitsCount >= 16 && unitsCount < 21) {
+							int index = unitsCount - 11;
+							if (index <= endZone1Index && zone1Locs[index] != null) {
+								rc.broadcast(
+										Util.getUnitChannelNum(unitsCount),
+										Util.encodeMsg(zone1Locs[index],
+												SoldierState.SECURE_ENCAMPMENT,
+												supGenSelection[index], 0));
+							}
+						}
 
 						if (zone2Locs[0] != null) {
 						// if encampment captured, capture the next one
@@ -698,11 +697,17 @@ public class HQUnit extends BaseUnit {
 					}
 					break;
 				case DEFEND_BASE:
+//					rc.broadcast(
+//							Util.getAllUnitChannelNum(),
+//							Util.encodeMsg(
+//									rc.senseRobotInfo(enemiesByBase[0]).location,
+//									SoldierState.ATTACK_MOVE,
+//									RobotType.HQ, 0));
 					rc.broadcast(
 							Util.getAllUnitChannelNum(),
 							Util.encodeMsg(
-									rc.senseRobotInfo(enemiesByBase[0]).location,
-									SoldierState.ATTACK_MOVE,
+									myBaseLoc,
+									SoldierState.DEFEND_POSITION,
 									RobotType.HQ, 0));
 					break;
 				case RESEARCH_NUKE:
@@ -735,12 +740,7 @@ public class HQUnit extends BaseUnit {
 										RobotType.ARTILLERY, 0));
 					}
 					if (rc.isActive()) {
-						if (!rc.hasUpgrade(Upgrade.DEFUSION)) {
-							rc.researchUpgrade(Upgrade.DEFUSION);
-						}
-						else {
-							this.spawnInAvailable();
-						}
+						this.spawnInAvailable();
 					}
 					break;
 				default:
@@ -909,8 +909,8 @@ public class HQUnit extends BaseUnit {
 		int numMinesBetweenBases = rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), distBetweenBases/4).length;
 		System.out.println("distBetweenBasesSquared: " + distBetweenBases);
 		if (distBetweenBases <= 800 || (distBetweenBases<=1000 && numMinesBetweenBases < .3*areaBetweenBases)) {
-			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
-//			return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
+//			return MapStrategy.MAP_STRATEGY_STRAIGHT_RUSH;
+			return MapStrategy.MAP_STRATEGY_NORMAL_MACRO;
 		}
 		
 		return MapStrategy.MAP_STRATEGY_NUKE_AND_PICKAXE;
