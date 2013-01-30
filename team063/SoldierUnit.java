@@ -243,14 +243,14 @@ public class SoldierUnit extends BaseUnit {
 						
 					}
 
-				} else if (farAllies.length >= 7 && curLoc.distanceSquaredTo(targetLoc)>2){
+				} else if (farAllies.length >= 7 && curLoc.distanceSquaredTo(targetLoc)>5){
 					rc.setIndicatorString(0, "regrouping to " + rc.senseRobotInfo(farAllies[0]).location);
 
 					
 					this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
 //					this.goToLocationSmart(rc.senseRobotInfo(farAllies[0]).location);
 
-				} else if (curLoc.distanceSquaredTo(targetLoc)<=2){
+				} else if (curLoc.distanceSquaredTo(targetLoc)<=5){
 					rc.setIndicatorString(0,"attacking!");
 					this.goToLocationBrute(targetLoc);
 				} else {
