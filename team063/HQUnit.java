@@ -146,6 +146,7 @@ public class HQUnit extends BaseUnit {
 	private int startNukeRound = DEFAULT_START_NUKE;
 	private int prevUnitsCount = 1;
 	private int prevprevUnitsCount = 1;
+	private int numMineLayers = 0;
 	public HQUnit(RobotController rc) {
 		super(rc);
 		this.unitsMap = new int[2000];
@@ -287,8 +288,8 @@ public class HQUnit extends BaseUnit {
 			}
 
 			if (!nukeReact) {
-				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, myTeam);
-				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 125, otherTeam);
+				Robot[] friends = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 150, myTeam);
+				Robot[] enemies = rc.senseNearbyGameObjects(Robot.class, myBaseLoc, 150, otherTeam);
 			if (enemies.length < 1 && friends.length > 2 && !rc.hasUpgrade(Upgrade.PICKAXE)){
 				if (rc.isActive()) {
 					rc.researchUpgrade(Upgrade.PICKAXE);
@@ -309,18 +310,21 @@ public class HQUnit extends BaseUnit {
 							curZone1Counter++;
 						}
 					} 
-					else if (friends.length > (4 + enemies.length + curZone1Counter)) {
-						rc.broadcast(
-								Util.getUnitChannelNum(unitsCount),
-								Util.encodeMsg(
-										zone1Locs[curZone1Counter],
-										SoldierState.SECURE_ENCAMPMENT,
-										nukeStratZone1Encampents[curZone1Counter],
-										0));
-						if (prevprevUnitsCount != unitsCount) {
-							curZone1Counter++;
-						}
-					} else {
+					else if (friends.length > (3 + enemies.length)) {
+							rc.broadcast(
+										Util.getUnitChannelNum(unitsCount),
+										Util.encodeMsg(
+												zone1Locs[curZone1Counter],
+												SoldierState.SECURE_ENCAMPMENT,
+												nukeStratZone1Encampents[curZone1Counter],
+												0));
+							if (prevprevUnitsCount != unitsCount) {
+									curZone1Counter++;
+							}
+//						}
+					}
+					
+					else {
 						rc.broadcast(
 								Util.getSquadChannelNum(DEFEND_BASE_SQUAD),
 								Util.encodeMsg(myBaseLoc,
@@ -329,24 +333,19 @@ public class HQUnit extends BaseUnit {
 					}
 					
 				}
-//				else if (curZone4Counter <= endZone4Index && zone4Locs[0] != null) {
-//					if (rc.senseNearbyGameObjects(Robot.class,125,myTeam).length <= 4) {
-//						System.out.println("picking zone 4 encampment");
-//						rc.broadcast(Util.getUnitChannelNum(unitsCount), Util
-//								.encodeMsg(zone4Locs[curZone4Counter],
-//										SoldierState.SECURE_ENCAMPMENT,
-//										supGenSelection[curZone4Counter], 0));
-//						if (prevprevUnitsCount != unitsCount) {
-//							curZone4Counter++;
-//						}
-//					}
-//					else {
-//						rc.broadcast(Util.getSquadChannelNum(DEFEND_BASE_SQUAD), Util.encodeMsg(
-//								myBaseLoc, SoldierState.DEFEND_POSITION,
-//								RobotType.HQ, 0));
-//					}
-//				}
 				else {
+					if (numMineLayers < 2) {
+							rc.broadcast(
+									Util.getUnitChannelNum(unitsCount),
+									Util.encodeMsg(
+											myBaseLoc,
+											SoldierState.LAYING_MINES,
+											nukeStratZone1Encampents[curZone1Counter],
+											0));
+						if (prevprevUnitsCount != unitsCount) {
+								numMineLayers++;
+						}
+					}
 					rc.broadcast(Util.getSquadChannelNum(DEFEND_BASE_SQUAD), Util.encodeMsg(
 							myBaseLoc, SoldierState.DEFEND_POSITION,
 							RobotType.HQ, 0));
@@ -858,56 +857,6 @@ public class HQUnit extends BaseUnit {
 
 	public MapStrategy initialAnalysisAndInitialization() {
 
-//		int numEncampmentsBetweenHQs = 0;
-//		int numNeutralMinesBetweenHQs = 0;
-//		int numTotalMines = 0;
-//		int numTotalEncampments = 0;
-//		int[][] mineMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
-//		int[][] encampmentMap = new int[GameConstants.MAP_MAX_WIDTH][GameConstants.MAP_MAX_HEIGHT];
-//
-//		MapLocation[] allEncampmentLocs = rc.senseAllEncampmentSquares();
-//
-//		// should cover all mines
-//		MapLocation[] allNeutralMineLocs = rc.senseMineLocations(
-//				new MapLocation(mapWidth / 2, mapHeight / 2), 2000,
-//				Team.NEUTRAL);
-//
-//		for (int i = 0; i < allEncampmentLocs.length; i++) {
-//			encampmentMap[allEncampmentLocs[i].x][allEncampmentLocs[i].y] = 1;
-//		}
-//
-//		for (int i = 0; i < allNeutralMineLocs.length; i++) {
-//			mineMap[allNeutralMineLocs[i].x][allNeutralMineLocs[i].y] = 1;
-//		}
-//
-//		int startX = Math.min(myBaseLoc.x, enemyBaseLoc.x);
-//		int endX = Math.max(myBaseLoc.x, enemyBaseLoc.x);
-//		int startY = Math.min(myBaseLoc.y, enemyBaseLoc.y);
-//		int endY = Math.max(myBaseLoc.y, enemyBaseLoc.y);
-//
-//		for (int i = startX; i <= endX; i++) {
-//			for (int j = startY; j <= endY; j++) {
-//				numEncampmentsBetweenHQs += encampmentMap[i][j];
-//				numNeutralMinesBetweenHQs += mineMap[i][j];
-//			}
-//		}
-//
-//		System.out.println("num encampments between hqs: "
-//				+ numEncampmentsBetweenHQs);
-//		System.out.println("num neutral mines between hqs: "
-//				+ numNeutralMinesBetweenHQs);
-		
-		// start out building suppliers and generators in encampments far-ish
-		// from base
-		// defense strategy: build shields(25%), medbays(25%), artillery(50%),
-		// capture neutral and enemy medbays near base, build nuke
-		// offense strategy: build artillery near their hq,
-		// build shields if they have artillery near base,
-		// attacking units should recharge at nearby shields and medbay
-		// build artillery at most within 7 units of bases
-
-		// heuristics? build more artillery when there are less mines around
-		
 		int areaBetweenBases = distBetweenBases;
 		int numMinesBetweenBases = rc.senseNonAlliedMineLocations(new MapLocation(mapWidth/2,mapHeight/2), distBetweenBases/4).length;
 		System.out.println("distBetweenBasesSquared: " + distBetweenBases);
