@@ -29,6 +29,8 @@ public class SoldierUnit extends BaseUnit {
 	private Direction wallDir = null; // direction of wall relative to unit
 	private MapLocation medbayLoc;
 	
+	private Boolean wearingHat=false;
+	
 	public SoldierUnit(RobotController rc) {
 		super(rc);
 		squadId = HQUnit.NO_SQUAD;
@@ -304,6 +306,10 @@ public class SoldierUnit extends BaseUnit {
 		case DEFEND_POSITION:
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125,(mapWidth * .25)*(mapWidth*.25))),myTeam);
 			medbayLoc=targetLoc;
+			if (!wearingHat && Clock.getBytecodesLeft()>6500){
+				rc.wearHat();
+				wearingHat=true;
+			}
 			for (int i = 0; i<friendlyEnc.length; i++){
 				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc[i])).type==RobotType.MEDBAY){
 					medbayLoc=friendlyEnc[i];
