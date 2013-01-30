@@ -317,8 +317,10 @@ public class SoldierUnit extends BaseUnit {
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125,(mapWidth * .25)*(mapWidth*.25))),myTeam);
 			medbayLoc=targetLoc;
 			if (!wearingHat && Clock.getBytecodesLeft()>6500 && rc.getTeamPower()>GameConstants.HAT_POWER_COST+40){
-				rc.wearHat();
-				wearingHat=true;
+				if (rc.isActive()) {
+					rc.wearHat();
+					wearingHat=true;
+				}
 			}
 			for (int i = 0; i<friendlyEnc.length; i++){
 				if (rc.senseRobotInfo((Robot) rc.senseObjectAtLocation(friendlyEnc[i])).type==RobotType.MEDBAY){
