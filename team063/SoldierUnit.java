@@ -181,7 +181,6 @@ public class SoldierUnit extends BaseUnit {
 			} else {
 				farAllies = rc.senseNearbyGameObjects(Robot.class,49,myTeam);
 			}
-			curLoc=rc.getLocation();
 			MapLocation[] farMines= {};
 			if (rc.hasUpgrade(Upgrade.DEFUSION)){
 				farMines= rc.senseNonAlliedMineLocations(curLoc, 14);
@@ -244,13 +243,16 @@ public class SoldierUnit extends BaseUnit {
 						
 					}
 
-				} else if (farAllies.length >= 7){
+				} else if (farAllies.length >= 7 && curLoc.distanceSquaredTo(targetLoc)>25){
 					rc.setIndicatorString(0, "regrouping to " + rc.senseRobotInfo(farAllies[0]).location);
 
 					
 					this.goToLocationBrute(rc.senseRobotInfo(farAllies[0]).location);
 //					this.goToLocationSmart(rc.senseRobotInfo(farAllies[0]).location);
 
+				} else if (curLoc.distanceSquaredTo(targetLoc)<=25){
+					rc.setIndicatorString(0,"attacking!");
+					this.goToLocationBrute(targetLoc);
 				} else {
 					rc.setIndicatorString(0,"no one nearby! retreating home! nearby allies: " + nearbyAllies.length + " nearby enemies: " + nearbyEnemiesLength);
 					this.goToLocationBrute(myBaseLoc);
@@ -294,6 +296,8 @@ public class SoldierUnit extends BaseUnit {
 			break;
 		case LAYING_MINES:
 			Direction randomDir=Direction.values()[(int) Math.round(Math.random()*8)%8];
+			MapLocation[] currentMineLocs= rc.senseMineLocations(curLoc,2,myTeam);
+			MapLocation lookingAtCurrently= curLoc.add(randomDir);
 			if (rc.senseMine(curLoc) == null
 					&& (curLoc.x * 3 + curLoc.y) % 5 == 1 && rc.hasUpgrade(Upgrade.PICKAXE)) {
 				rc.layMine();
@@ -301,7 +305,13 @@ public class SoldierUnit extends BaseUnit {
 					&& (curLoc.x + curLoc.y) % 2 == 1 && !rc.hasUpgrade(Upgrade.PICKAXE)){
 				rc.layMine();
 			} else {
-				rc.move(randomDir);
+				for (MapLocation mineLoc:currentMineLocs){
+					if (mineLoc==null){
+						lookingAtCurrently=mineLoc;
+						break;
+					}
+				}
+				this.goToLocationBrute(lookingAtCurrently);
 			}
 		case DEFEND_POSITION:
 			MapLocation[] friendlyEnc=rc.senseEncampmentSquares(targetLoc,((int) Math.min(125,(mapWidth * .25)*(mapWidth*.25))),myTeam);
